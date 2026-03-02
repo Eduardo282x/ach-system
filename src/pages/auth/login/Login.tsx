@@ -7,9 +7,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router";
 
 export const Login = () => {
     const [show, setShow] = useState<boolean>(false);
+    const navigate = useNavigate();
     const { register, handleSubmit } = useForm<LoginForm>({
         defaultValues: {
             username: '',
@@ -20,12 +22,12 @@ export const Login = () => {
     const onSubmit = async (data: LoginForm) => {
         const result = await authLoginApi(data);
 
-    if (result.error) {
-            console.log(result.error.message);
+        if (result.data == null) {
+            console.log(result.message);
             return;
         }
 
-        console.log(result.data);
+        navigate("/");
     }
 
     return (
@@ -44,10 +46,10 @@ export const Login = () => {
                 <Field>
                     <FieldLabel>Contraseña</FieldLabel>
                     <div className="w-full relative">
-                    <Input type={show ? "text" : "password"} {...register('password')} />
-                    <button type="button" className="absolute flex items-center h-full top-0 right-4 cursor-pointer"  onClick={() => setShow(!show)}>
-                        {show ? <FaRegEye /> : <FaRegEyeSlash />}
-                    </button>
+                        <Input type={show ? "text" : "password"} {...register('password')} />
+                        <button type="button" className="absolute flex items-center h-full top-0 right-4 cursor-pointer" onClick={() => setShow(!show)}>
+                            {show ? <FaRegEye /> : <FaRegEyeSlash />}
+                        </button>
                     </div>
                 </Field>
 

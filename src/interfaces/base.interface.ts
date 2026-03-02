@@ -4,14 +4,3 @@ export interface BaseResponse<T> {
     message:    string;
     data:       T;
 }
-
-export interface ApiError {
-    message: string;
-    statusCode: number;
-    details?: unknown;
-}
-
-export type ApiResult<T> = {
-    data: T | null;
-    error: ApiError | null;
-};

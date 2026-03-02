@@ -1,84 +1,62 @@
-import type { ApiError, ApiResult, BaseResponse } from "@/interfaces/base.interface";
+import type { BaseResponse } from "@/interfaces/base.interface";
 import axios from "axios";
 
 export const api = axios.create({
     baseURL: `${import.meta.env.VITE_API_URL}/api`,
 });
 
-const getApiError = (error: unknown): ApiError => {
+const getApiError = (error: unknown): BaseResponse<null> => {
     if (axios.isAxiosError(error)) {
         return {
             message: error.response?.data?.message || error.message || "Error de servidor",
             statusCode: error.response?.status || 500,
-            details: error.response?.data,
+            success: false,
+            data: null,
         };
     }
 
     return {
         message: "Error inesperado",
         statusCode: 500,
-        details: error,
+        success: false,
+        data: null,
     };
 };
 
-export const getDataApi = async <R>(url: string): Promise<ApiResult<R>> => {
+export const getDataApi = async <R>(url: string): Promise<BaseResponse<R | null>> => {
     try {
         const res = await api.get<BaseResponse<R>>(url);
-        return {
-            data: res.data.data,
-            error: null,
-        };
+        return res.data;
     } catch (error) {
-        return {
-            data: null,
-            error: getApiError(error),
-        };
+        return getApiError(error);
     }
 };
 
-export const postDataApi = async <T, R>(url: string, data: T): Promise<ApiResult<R>> => {
+export const postDataApi = async <T, R>(url: string, data: T): Promise<BaseResponse<R | null>> => {
     try {
-        const res = await api.post<BaseResponse<R>>(url, data);
-        return {
-            data: res.data.data,
-            error: null,
-        };
+        const res = await api.post<BaseResponse<R>>(url, data).then((response) => response.data);
+        return res;
     } catch (error: unknown) {
-        return {
-            data: null,
-            error: getApiError(error),
-        };
+        return getApiError(error);
     }
 };
 
-export const putDataApi = async <T, R>(endpoint: string, data: T): Promise<ApiResult<R>> => {
+export const putDataApi = async <T, R>(endpoint: string, data: T): Promise<BaseResponse<R | null>> => {
     try {
         const response = await api.put<BaseResponse<R>>(endpoint, data);
-        return {
-            data: response.data.data,
-            error: null,
-        };
+        return response.data;
     } catch (error: unknown) {
-        return {
-            data: null,
-            error: getApiError(error),
-        };
+        return getApiError(error);
     }
 };
 
-export const deleteDataApi = async <R>(endpoint: string, data: number | string): Promise<ApiResult<R>> => {
+export const deleteDataApi = async <R>(endpoint: string, data: number | string): Promise<BaseResponse<R | null>> => {
     try {
         const response = await api.delete<BaseResponse<R>>(`${endpoint}/${data}`);
-        return {
-            data: response.data.data,
-            error: null,
-        };
+        return response.data;
     } catch (error: unknown) {
-        return {
-            data: null,
-            error: getApiError(error),
-        };
-    }
+        return getApiError(error);
+    };
 };
 
 // Interceptors

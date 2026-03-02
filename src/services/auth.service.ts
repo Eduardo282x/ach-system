@@ -4,7 +4,7 @@ import { postDataApi } from "./api.service";
 export const authLoginApi = async (data: LoginForm) => {
     const result = await postDataApi<LoginForm, LoginData>("/auth/login", data);
 
-    if (result.error || !result.data) {
+    if (result.data == null) {
         return result;
     }
 

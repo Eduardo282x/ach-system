@@ -1,5 +1,7 @@
 import { useEffect } from "react"
 import { Outlet, useNavigate } from "react-router";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
 
 export const Layout = () => {
     const navigate = useNavigate();
@@ -16,6 +18,12 @@ export const Layout = () => {
     }, []);
 
     return (
-        <div><Outlet /></div>
+        <div className="w-screen h-full flex flex-col">
+            <Header />
+            <div className="flex-1 bg-gray-200 p-4">
+                <Outlet />
+            </div>
+            <Footer/>
+        </div>
     )
 }

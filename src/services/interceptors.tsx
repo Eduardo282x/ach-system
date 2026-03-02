@@ -15,9 +15,9 @@ export const useAxiosInterceptor = () => {
     useEffect(() => {
         const interceptor = api.interceptors.response.use(
             (response) => {
-                console.log(response);
+                // console.log(response);
 
-            // if (response.status === 401) {
+                // if (response.status === 401) {
                 //     navigate('/login')
                 // }
 
@@ -26,7 +26,7 @@ export const useAxiosInterceptor = () => {
                     if (isValidMessage(message.message)) {
                         toast.success(message.message, {
                             duration: 1500,
-                            position: 'bottom-center'
+                            position: 'top-right'
                         });
                     }
                 }
@@ -35,12 +35,12 @@ export const useAxiosInterceptor = () => {
             (error) => {
                 if (['post', 'put', 'delete'].includes(error.config?.method || '')) {
                     const message = error.response?.data;
-                    console.log(error.response);
+                    // console.log(error.response);
 
                     if (isValidMessage(message?.message)) {
                         toast.error(message.message, {
                             duration: 1500,
-                            position: 'bottom-center'
+                            position: 'top-right'
                         });
                     }
                 }
