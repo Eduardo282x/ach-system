@@ -1,5 +1,5 @@
 import { IoMdClose } from 'react-icons/io';
-import { Input } from '../input';
+import { Input } from '../ui/input';
 import { useState } from 'react';
 import { IoIosSearch } from "react-icons/io";
 

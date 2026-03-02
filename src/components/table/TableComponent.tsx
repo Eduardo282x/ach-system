@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 import {
     DropdownMenu,
@@ -7,7 +7,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../button";
+import { Button } from "../ui/button";
 import { FaFilter } from "react-icons/fa";
 
 export interface ColumnDef<T> {

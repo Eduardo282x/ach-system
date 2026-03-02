@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@/components/ui/table/TableComponent";
+import type { ColumnDef } from "@/components/table/TableComponent";
 import { formatDate, formatNumberWithDecimal } from "@/helpers/formatters";
 import type { Product } from "@/interfaces/inventory.interface";
 import { GoPencil } from "react-icons/go";
