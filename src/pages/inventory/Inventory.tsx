@@ -1,58 +1,71 @@
 import { Button } from "@/components/ui/button"
 import { FilterComponent } from "@/components/table/FilterComponent";
-import { getInventoryApi } from "@/services/inventory.service";
-import { useEffect, useState } from "react";
 import { IoMdAdd } from "react-icons/io";
-import { inventoryColumns, type InventoryData } from "./inventory.data";
-import { SelectColumnsComponent, TableComponent, type ColumnDef } from "@/components/table/TableComponent";
-import type { Product } from "@/interfaces/inventory.interface";
+import { SelectColumnsComponent, TableComponent } from "@/components/table/TableComponent";
 import PageTransitionComponent from "@/components/PageTransition";
+import { useInventoryStore } from "@/store/inventory.store";
+import { useDeleteProductMutation, useInventoryQuery } from "@/hooks/inventory.hook";
+import { FaArrowLeft } from "react-icons/fa";
+import { ProductForm, type ProductFormMode } from "./ProductForm";
+import type { Product } from "@/interfaces/inventory.interface";
+import { useState } from "react";
+import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
 
 export const Inventory = () => {
-    const [filter, setFilter] = useState('');
-    const [columns, setColumns] = useState<ColumnDef<Product>[]>(inventoryColumns);
-    const [toggle, setToggle] = useState<boolean>(false)
-    const [products, setProducts] = useState<InventoryData>({
-        allInventory: [],
-        inventory: []
-    });
+    const {
+        filter,
+        columns,
+        toggle,
+        setFilter,
+        setColumns,
+        openForm,
+        closeForm
+    } = useInventoryStore((state) => state);
 
-    const getProductsApi = async () => {
-        await getInventoryApi().then((result) => {
-            setProducts({
-                allInventory: result.products,
-                inventory: result.products,
-            });
-        }).catch((error) => {
-            console.log(error);
-        });
+    const { data, isLoading } = useInventoryQuery(filter);
+    const [productSelected, setProductSelected] = useState<Product | null>(null);
+    const [formMode, setFormMode] = useState<ProductFormMode>("create");
+    const products = data?.products ?? [];
+    const [openDialog, setOpenDialog] = useState(false);
+
+    const deleteProductMutation = useDeleteProductMutation();
+
+    const getActionTable = async (action: string, data: Product) => {
+        if (action === "edit") {
+            setFormMode("edit");
+            setProductSelected(data);
+            openForm();
+        }
+        if (action === "delete") {
+            setProductSelected(data);
+            setOpenDialog(true);
+        }
+        if (action === "addDetail") {
+            setFormMode("addDetail");
+            setProductSelected(data);
+            openForm();
+            console.log("Add Detail", data);
+        }
     }
 
-    // const filterProducts = (value: string) => {
-    //     const filtered = products.allInventory.filter((product) => {
-    //         return product.name.toLowerCase().includes(value.toLowerCase()) || product.barcode.toLowerCase().includes(value.toLowerCase());
-    //     });
-    //     setProducts({
-    //         ...products,
-    //         inventory: filtered
-    //     });
-    // }
-
-    useEffect(() => {
-        getProductsApi();
-    }, []);
-
-    const openForm = () => {
-        setToggle(true);
+    const deleteProduct = () => {
+        if (productSelected) {
+            deleteProductMutation.mutate(productSelected.id);
+        }
+        setOpenDialog(false);
     }
 
-    const closeForm = () => {
-        setToggle(false);
-    }
+    const openCreateForm = () => {
+        setFormMode("create");
+        setProductSelected(null);
+        openForm();
+    };
 
-    useEffect(() => {
-        // filterProducts(filter);
-    }, [filter]);
+    const handleCloseForm = () => {
+        setFormMode("create");
+        setProductSelected(null);
+        closeForm();
+    };
 
     return (
         <div className="w-full">
@@ -67,24 +80,38 @@ export const Inventory = () => {
 
                             <div className="flex items-center gap-2">
                                 <SelectColumnsComponent columns={columns} onChange={setColumns} />
-                                <Button variant="primary" onClick={openForm}><IoMdAdd /> Agregar Producto</Button>
+                                <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
                             </div>
                         </div>
 
                         <TableComponent
+                            onChange={getActionTable}
                             columns={columns.filter(column => column.visible)}
-                            data={products.inventory}
+                            data={isLoading ? [] : products}
                         />
                     </div>
                 </div>
 
                 <div>
-                    <p className="text-2xl font-semibold mb-2 ml-2">Agregar Producto</p>
-                    <Button variant="primary" onClick={closeForm}><IoMdAdd /> Volver</Button>
+                    <p className="text-2xl font-semibold mb-2 ml-2">
+                        <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
+                        Agregar Producto
+                    </p>
+
+                    <ProductForm product={productSelected} mode={formMode} closeForm={handleCloseForm} />
                 </div>
             </PageTransitionComponent>
 
-
+            <AlertDialogComponent
+                title="Eliminar Producto"
+                description="¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer."
+                open={openDialog}
+                close={() => setOpenDialog(false)}
+                onConfirm={() => {
+                    deleteProduct();
+                }}
+                onCancel={() => setOpenDialog(false)}
+            />
         </div>
     )
 }

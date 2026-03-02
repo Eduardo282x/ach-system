@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { Outlet, useNavigate } from "react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 export const Layout = () => {
     const navigate = useNavigate();
@@ -20,10 +21,12 @@ export const Layout = () => {
     return (
         <div className="w-screen h-full flex flex-col">
             <Header />
-            <div className="flex-1 bg-gray-200 p-4">
-                <Outlet />
-            </div>
-            <Footer/>
+            <TooltipProvider>
+                <div className="flex-1 bg-gray-200 p-4">
+                    <Outlet />
+                </div>
+            </TooltipProvider>
+            <Footer />
         </div>
     )
 }

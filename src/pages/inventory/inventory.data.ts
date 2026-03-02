@@ -1,8 +1,9 @@
 import type { ColumnDef } from "@/components/table/TableComponent";
-import { formatDate, formatNumberWithDecimal } from "@/helpers/formatters";
+import { formatDate, formatNumberWithDecimal, translateCurrency } from "@/helpers/formatters";
 import type { Product } from "@/interfaces/inventory.interface";
 import { GoPencil } from "react-icons/go";
 import { FaRegTrashCan } from "react-icons/fa6";
+import { IoMdAdd } from "react-icons/io";
 
 export interface InventoryData {
     allInventory: Product[];
@@ -26,6 +27,13 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         visible: true,
     },
     {
+        header: 'Presentacion',
+        key: 'presentation',
+        width: '12rem',
+        element: (row) => `${row.presentation.trim() === '' ? '-' : row.presentation}`,
+        visible: true,
+    },
+    {
         header: 'Detallado',
         key: 'isDetail',
         width: '8rem',
@@ -43,7 +51,7 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         header: 'Precio',
         key: 'price',
         width: '8rem',
-        element: (row) => `${formatNumberWithDecimal(row.price)} ${row.currency === 'USD' ? '$' : '€'}`,
+        element: (row) => `${formatNumberWithDecimal(row.price)} ${translateCurrency(row.currency)}`,
         visible: true,
     },
     {
@@ -61,11 +69,19 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         visible: true,
         icons: [
             {
+                label:'Agregar Detalle',
+                icon: IoMdAdd,
+                action: 'addDetail',
+                variant: 'outline',
+            },
+            {
+                label:'Editar',
                 icon: GoPencil,
                 action: 'edit',
                 variant: 'primary',
             },
             {
+                label:'Eliminar',
                 icon: FaRegTrashCan,
                 action: 'delete',
                 variant: 'error',

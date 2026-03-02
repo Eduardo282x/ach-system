@@ -28,3 +28,14 @@ export const formatNumberWithDecimal = (number: number | string, digits?: number
 export const formatCurrency = (value: string | number, currency: string) => {
     return new Intl.NumberFormat('es-VE', { style: 'currency', currency }).format(Number(value));
 }
+
+export const translateCurrency = (currency: string) => {
+    switch (currency) {
+        case 'USD': 
+            return '$';
+        case 'EUR':
+            return '€';
+        default:
+            return currency;
+    }
+}

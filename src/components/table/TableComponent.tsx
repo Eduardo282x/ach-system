@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { FaFilter } from "react-icons/fa";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export interface ColumnDef<T> {
     key: keyof T;
@@ -18,6 +19,7 @@ export interface ColumnDef<T> {
     icons?: {
         icon: React.ComponentType<{ className?: string }>;
         action: string;
+        label: string;
         variant: 'primary' | 'error' | 'outline';
     }[]
     visible: boolean;
@@ -26,9 +28,10 @@ export interface ColumnDef<T> {
 interface TableComponentProps<T> {
     columns: ColumnDef<T>[];
     data: T[];
+    onChange: (action: string, data: T) => void;
 }
 
-export const TableComponent = <T,>({ columns, data }: TableComponentProps<T>) => {
+export const TableComponent = <T,>({ columns, data, onChange }: TableComponentProps<T>) => {
 
     const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
         switch (variant) {
@@ -69,9 +72,16 @@ export const TableComponent = <T,>({ columns, data }: TableComponentProps<T>) =>
                                         {column.icons ? (
                                             <div className="flex items-center gap-4">
                                                 {column.icons.map((icon) => (
-                                                    <Button size='icon' variant='ghost' key={icon.action}>
-                                                        <icon.icon key={icon.action} className={`${styleVariant(icon.variant)} text-lg`} />
-                                                    </Button>
+                                                    <Tooltip key={icon.action}>
+                                                        <TooltipTrigger asChild>
+                                                            <Button size='icon' variant='ghost' onClick={() => onChange(icon.action, row)}>
+                                                                <icon.icon className={`${styleVariant(icon.variant)} text-lg`} />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{icon.label}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                 ))}
                                             </div>
                                         ) : (
