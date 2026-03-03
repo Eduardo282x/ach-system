@@ -16,7 +16,7 @@ export interface ColumnDef<T> {
     header: string;
     width?: string;
     element: (row: T) => string | JSX.Element;
-    icons?: (row: T) =>{
+    icons?: (row: T) => {
         icon: React.ComponentType<{ className?: string }>;
         action: string;
         label: string;
@@ -28,10 +28,11 @@ export interface ColumnDef<T> {
 interface TableComponentProps<T> {
     columns: ColumnDef<T>[];
     data: T[];
+    ignorePagination?: boolean;
     onChange: (action: string, data: T) => void;
 }
 
-export const TableComponent = <T,>({ columns, data, onChange }: TableComponentProps<T>) => {
+export const TableComponent = <T,>({ columns, data, onChange, ignorePagination }: TableComponentProps<T>) => {
 
     const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
         switch (variant) {
@@ -94,9 +95,11 @@ export const TableComponent = <T,>({ columns, data, onChange }: TableComponentPr
                     </TableBody>
                 </Table>
             </div>
-            <div>
-                <p className="text-sm text-gray-700 mt-3 ml-1">Total de elementos {data.length}</p>
-            </div>
+            {!ignorePagination && data.length > 0 && (
+                <div>
+                    <p className="text-sm text-gray-700 mt-3 ml-1">Total de elementos {data.length}</p>
+                </div>
+            )}
         </div>
     )
 }

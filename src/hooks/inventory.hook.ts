@@ -1,6 +1,6 @@
-import type { Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { ExchangeRateBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, postExchangeRateApi, updateProductApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect } from "react";
 
@@ -96,6 +96,33 @@ export const useExchangeRateAutomaticQuery = () => {
 	}, [query.data, setExchangeRates]);
 
 	return query;
+};
+
+export const useExchangeRateMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (data: ExchangeRateBody) => postExchangeRateApi(data),
+		onSuccess: (response) => {
+			if (response == null) {
+				return;
+			}
+
+			const currentRates = useInventoryStore.getState().exchangeRates;
+			const exists = currentRates.some((rate) => rate.currency === response.currency);
+
+			const updatedRates = exists
+				? currentRates.map((rate) => (rate.currency === response.currency ? response : rate))
+				: [response, ...currentRates];
+
+			useInventoryStore.getState().setExchangeRates(updatedRates);
+
+			queryClient.setQueryData<{ exchangeRate: typeof updatedRates }>(
+				[EXCHANGE_RATE_TODAY_QUERY_KEY],
+				{ exchangeRate: updatedRates },
+			);
+		},
+	});
 };
 
 export const useCreateProductMutation = () => {

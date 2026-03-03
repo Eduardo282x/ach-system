@@ -13,6 +13,7 @@ import { Inventory } from './pages/inventory/Inventory';
 import { Dispatch } from './pages/dispatch/Dispatch';
 import { queryClient } from './lib/query-client';
 import { Users } from './pages/users/Users';
+import { ExchangeRate } from './pages/exchangeRate/ExchangeRate';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -41,6 +42,10 @@ function App() {
               {
                 path: '/inventario',
                 element: <Inventory />
+              },
+              {
+                path: '/tasas',
+                element: <ExchangeRate />
               },
               {
                 path: '/historial-inventario',

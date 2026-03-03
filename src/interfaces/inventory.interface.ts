@@ -50,7 +50,7 @@ export interface ExchangeRate {
 
 export interface ExchangeRateBody {
     name: string;
-    rate: string;
+    rate: number;
     currency: ExchangeRateType;
 }
 

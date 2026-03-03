@@ -1,4 +1,4 @@
-import type { ExchangeRate, ExchangeRateContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
+import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
 import { deleteDataApi, getDataApi, postDataApi, putDataApi } from "./api.service";
 
 const inventoryUrl = '/products';
@@ -41,6 +41,10 @@ export const deleteProductApi = async (id: number) => {
 export const getExchangeRateTodayApi = async (): Promise<ExchangeRateContent> => {
     const response = await getDataApi<ExchangeRateContent>(`${inventoryUrl}/exchange-rate/today`);
     return response.data || { exchangeRate: [] };
+}
+export const postExchangeRateApi = async (data: ExchangeRateBody): Promise<ExchangeRate | null> => {
+    const response = await postDataApi<ExchangeRateBody, ExchangeRate | null>(`${inventoryUrl}/exchange-rate`, data);
+    return response.data;
 }
 export const getExchangeRateAutomaticApi = async (): Promise<ExchangeRate[]> => {
     const response = await postDataApi<null, ExchangeRate[]>(`${inventoryUrl}/exchange-rate/automatic`, null);
