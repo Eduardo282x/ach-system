@@ -4,12 +4,7 @@ import type { Product } from "@/interfaces/inventory.interface";
 import { GoPencil } from "react-icons/go";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdAdd } from "react-icons/io";
-
-export interface InventoryData {
-    allInventory: Product[];
-    inventory: Product[];
-}
-
+import { IoCubeOutline } from "react-icons/io5";
 
 export const inventoryColumns: ColumnDef<Product>[] = [
     {
@@ -48,6 +43,13 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         visible: true,
     },
     {
+        header: 'Cantidad Detallada',
+        key: 'unitsDetail',
+        width: '8rem',
+        element: (row) => row.unitsDetail ? row.unitsDetail.toString() : '-',
+        visible: true,
+    },
+    {
         header: 'Precio',
         key: 'price',
         width: '8rem',
@@ -67,11 +69,11 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         width: '8rem',
         element: () => '',
         visible: true,
-        icons: [
+        icons: (row) => [
             {
-                label:'Agregar Detalle',
-                icon: IoMdAdd,
-                action: 'addDetail',
+                label: row.isDetail ? 'Cargar y descargar' : 'Agregar Detalle',
+                icon: row.isDetail ? IoCubeOutline : IoMdAdd,
+                action: row.isDetail ? 'breakdown' : 'addDetail',
                 variant: 'outline',
             },
             {

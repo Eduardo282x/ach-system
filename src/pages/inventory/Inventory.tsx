@@ -4,12 +4,13 @@ import { IoMdAdd } from "react-icons/io";
 import { SelectColumnsComponent, TableComponent } from "@/components/table/TableComponent";
 import PageTransitionComponent from "@/components/PageTransition";
 import { useInventoryStore } from "@/store/inventory.store";
-import { useDeleteProductMutation, useInventoryQuery } from "@/hooks/inventory.hook";
+import { useBreakDownProductMutation, useDeleteProductMutation, useInventoryQuery } from "@/hooks/inventory.hook";
 import { FaArrowLeft } from "react-icons/fa";
 import { ProductForm, type ProductFormMode } from "./ProductForm";
 import type { Product } from "@/interfaces/inventory.interface";
 import { useState } from "react";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
+import toast from 'react-hot-toast';
 
 export const Inventory = () => {
     const {
@@ -29,6 +30,7 @@ export const Inventory = () => {
     const [openDialog, setOpenDialog] = useState(false);
 
     const deleteProductMutation = useDeleteProductMutation();
+    const breakDownProductMutation = useBreakDownProductMutation();
 
     const getActionTable = async (action: string, data: Product) => {
         if (action === "edit") {
@@ -40,11 +42,21 @@ export const Inventory = () => {
             setProductSelected(data);
             setOpenDialog(true);
         }
+        if (action === "breakdown") {
+            await breakDownProductMutation.mutateAsync(data.id);
+        }
         if (action === "addDetail") {
+            const findParent = products.find((product) => product.parentId === data.id);
+            if (findParent) {
+                toast.error("No se puede agregar un detalle a un producto que ya tiene un detalle.", {
+                    duration: 1500,
+                    position: 'top-right'
+                });
+                return;
+            }
             setFormMode("addDetail");
             setProductSelected(data);
             openForm();
-            console.log("Add Detail", data);
         }
     }
 

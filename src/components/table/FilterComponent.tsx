@@ -1,6 +1,6 @@
 import { IoMdClose } from 'react-icons/io';
 import { Input } from '../ui/input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IoIosSearch } from "react-icons/io";
 
 interface FilterComponentProps {
@@ -13,8 +13,17 @@ export const FilterComponent = ({ placeholder, onChange }: FilterComponentProps)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
-        onChange?.(e.target.value);
-    }
+    };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            onChange?.(value);
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [value, onChange]);
+
+    
     return (
         <div className="relative">
             <div className="absolute top-2 left-2 text-xl text-gray-400">
@@ -22,7 +31,7 @@ export const FilterComponent = ({ placeholder, onChange }: FilterComponentProps)
             </div>
             <Input placeholder={placeholder ?? "Buscar..."} className="pl-9 w-96" value={value} onChange={handleChange} />
             {value !== '' && (
-                <div className="absolute top-2 right-4 text-xl text-gray-400 cursor-pointer" onClick={() => { setValue(''); onChange?.(''); }}>
+                <div className="absolute top-2 right-4 text-xl text-gray-400 cursor-pointer" onClick={() => { setValue(''); }}>
                     <IoMdClose />
                 </div>
             )}

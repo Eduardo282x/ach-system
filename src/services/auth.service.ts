@@ -1,4 +1,5 @@
 import type { LoginForm, LoginData } from "@/interfaces/auth.interface";
+import { useAuthStore } from "@/store/auth.store";
 import { postDataApi } from "./api.service";
 
 export const authLoginApi = async (data: LoginForm) => {
@@ -8,6 +9,6 @@ export const authLoginApi = async (data: LoginForm) => {
         return result;
     }
 
-    localStorage.setItem("token", result.data.token);
+    useAuthStore.getState().setSession(result.data.token, result.data.user);
     return result;
 };

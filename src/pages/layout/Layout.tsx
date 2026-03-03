@@ -3,30 +3,32 @@ import { Outlet, useNavigate } from "react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { useAuthStore } from "@/store/auth.store";
+import { useExchangeRateTodayQuery } from "@/hooks/inventory.hook";
 
 export const Layout = () => {
     const navigate = useNavigate();
-
-    const validateToken = () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/login');
-        }
-    }
+    useExchangeRateTodayQuery();
+    const token = useAuthStore((state) => state.token);
+    const clearSession = useAuthStore((state) => state.clearSession);
+    const isTokenExpired = useAuthStore((state) => state.isTokenExpired);
 
     useEffect(() => {
-        validateToken();
-    }, []);
+        if (!token || isTokenExpired()) {
+            clearSession();
+            navigate('/login');
+        }
+    }, [token, isTokenExpired, clearSession, navigate]);
 
     return (
         <div className="w-screen h-full flex flex-col">
-            <Header />
             <TooltipProvider>
+                <Header />
                 <div className="flex-1 bg-gray-200 p-4">
                     <Outlet />
                 </div>
+                <Footer />
             </TooltipProvider>
-            <Footer />
         </div>
     )
 }

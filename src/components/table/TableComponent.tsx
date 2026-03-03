@@ -16,7 +16,7 @@ export interface ColumnDef<T> {
     header: string;
     width?: string;
     element: (row: T) => string | JSX.Element;
-    icons?: {
+    icons?: (row: T) =>{
         icon: React.ComponentType<{ className?: string }>;
         action: string;
         label: string;
@@ -71,7 +71,7 @@ export const TableComponent = <T,>({ columns, data, onChange }: TableComponentPr
                                     <TableCell key={column.key.toString()}>
                                         {column.icons ? (
                                             <div className="flex items-center gap-4">
-                                                {column.icons.map((icon) => (
+                                                {column.icons(row).map((icon) => (
                                                     <Tooltip key={icon.action}>
                                                         <TooltipTrigger asChild>
                                                             <Button size='icon' variant='ghost' onClick={() => onChange(icon.action, row)}>

@@ -29,6 +29,14 @@ export const formatCurrency = (value: string | number, currency: string) => {
     return new Intl.NumberFormat('es-VE', { style: 'currency', currency }).format(Number(value));
 }
 
+export const formatNumberWithDots = (number: number | string, prefix?: string, suffix?: string, isRif?: boolean): string => {
+    const text = isRif ?
+        `${number.toString().slice(0, 1)}-${number.toString().slice(1).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
+        :
+        number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    return `${prefix}${text}${suffix}`;
+}
+
 export const translateCurrency = (currency: string) => {
     switch (currency) {
         case 'USD': 

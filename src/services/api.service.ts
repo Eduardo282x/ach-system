@@ -1,4 +1,5 @@
 import type { BaseResponse } from "@/interfaces/base.interface";
+import { useAuthStore } from "@/store/auth.store";
 import axios from "axios";
 
 export const api = axios.create({
@@ -62,7 +63,7 @@ export const deleteDataApi = async <R>(endpoint: string, data: number | string):
 // Interceptors
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("token");
+        const token = useAuthStore.getState().token || localStorage.getItem("token");
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -77,7 +78,7 @@ api.interceptors.request.use(
 //     (res) => res,
 //     (error) => {
 //         if (error.response?.status === 401) {
-//             localStorage.removeItem("token");
+//             useAuthStore.getState().clearSession();
 //             window.location.href = "/login";
 //         }
 //         return Promise.reject(error);

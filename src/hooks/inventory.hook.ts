@@ -1,8 +1,12 @@
 import type { Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createProductApi, deleteProductApi, getInventoryApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, updateProductApi } from "@/services/inventory.service";
+import { useInventoryStore } from "@/store/inventory.store";
+import { useEffect } from "react";
 
 export const INVENTORY_QUERY_KEY = "inventory";
+export const EXCHANGE_RATE_TODAY_QUERY_KEY = "exchange-rate-today";
+export const EXCHANGE_RATE_AUTOMATIC_QUERY_KEY = "exchange-rate-automatic";
 
 const productMatchesSearch = (product: Product, search: string) => {
 	if (!search) {
@@ -59,6 +63,41 @@ export const useInventoryQuery = (search: string) => {
 	});
 };
 
+export const useExchangeRateTodayQuery = () => {
+	const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
+
+	const query = useQuery({
+		queryKey: [EXCHANGE_RATE_TODAY_QUERY_KEY],
+		queryFn: () => getExchangeRateTodayApi(),
+	});
+
+	useEffect(() => {
+		if (query.data) {
+			setExchangeRates(query.data.exchangeRate);
+		}
+	}, [query.data, setExchangeRates]);
+
+	return query;
+};
+
+export const useExchangeRateAutomaticQuery = () => {
+	const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
+
+	const query = useQuery({
+		queryKey: [EXCHANGE_RATE_AUTOMATIC_QUERY_KEY],
+		queryFn: () => getExchangeRateAutomaticApi(),
+		enabled: false,
+	});
+
+	useEffect(() => {
+		if (Array.isArray(query.data)) {
+			setExchangeRates(query.data);
+		}
+	}, [query.data, setExchangeRates]);
+
+	return query;
+};
+
 export const useCreateProductMutation = () => {
 	const queryClient = useQueryClient();
 
@@ -90,29 +129,50 @@ export const useUpdateProductMutation = () => {
 };
 
 export const useDeleteProductMutation = () => {
-    const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async (id: number) => deleteProductApi(id),
-        onSuccess: (_, id) => {
-            const queries = queryClient.getQueriesData<{ products: Product[] }>({
-                queryKey: [INVENTORY_QUERY_KEY],
-            });
+	return useMutation({
+		mutationFn: async (id: number) => deleteProductApi(id),
+		onSuccess: (response, id) => {
+			if (!response.success) {
+				return;
+			}
 
-            queries.forEach(([queryKey, oldData]) => {
-                if (!oldData) {
-                    return;
-                }
+			const queries = queryClient.getQueriesData<{ products: Product[] }>({
+				queryKey: [INVENTORY_QUERY_KEY],
+			});
 
-                const search = typeof queryKey[1] === "string" ? queryKey[1] : "";
-                const matches = productMatchesSearch({ id } as Product, search);
+			queries.forEach(([queryKey, oldData]) => {
+				if (!oldData) {
+					return;
+				}
 
-                if (matches) {
-                    queryClient.setQueryData<{ products: Product[] }>(queryKey, {
-                        products: oldData.products.filter((item) => item.id !== id),
-                    });
-                }
-            });
-        },
-    });
+				const search = typeof queryKey[1] === "string" ? queryKey[1] : "";
+				const matches = productMatchesSearch({ id } as Product, search);
+
+				if (matches) {
+					queryClient.setQueryData<{ products: Product[] }>(queryKey, {
+						products: oldData.products.filter((item) => item.id !== id),
+					});
+				}
+			});
+		},
+	});
+};
+
+export const useBreakDownProductMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (childId: number) => breakDownProductApi({ childId }),
+		onSuccess: async (response) => {
+			if (response.data == null) {
+				return;
+			}
+
+			await queryClient.invalidateQueries({
+				queryKey: [INVENTORY_QUERY_KEY],
+			});
+		},
+	});
 };

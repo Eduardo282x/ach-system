@@ -1,6 +1,6 @@
 
 import './App.css'
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Login } from './pages/auth/login/Login';
@@ -12,6 +12,7 @@ import { Home } from './pages/home/Home';
 import { Inventory } from './pages/inventory/Inventory';
 import { Dispatch } from './pages/dispatch/Dispatch';
 import { queryClient } from './lib/query-client';
+import { Users } from './pages/users/Users';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -19,7 +20,6 @@ function AxiosInterceptorProvider() {
 };
 
 function App() {
-
   return (
     <div className="w-screen h-screen bg-gray-100">
       <QueryClientProvider client={queryClient}>
@@ -43,12 +43,24 @@ function App() {
                 element: <Inventory />
               },
               {
+                path: '/historial-inventario',
+                element: <Inventory />
+              },
+              {
                 path: '/despacho',
                 element: <Dispatch />
               },
               {
+                path: '/cajeros',
+                element: <Users />
+              },
+              {
                 path: '/clientes',
                 element: <Customers />
+              },
+              {
+                path: '*',
+                element: <Navigate to="/inventario" replace />
               }
             ]
           }

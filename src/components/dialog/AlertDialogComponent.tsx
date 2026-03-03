@@ -11,12 +11,13 @@ interface AlertDialogProps {
     title: string;
     description: string;
     open: boolean;
+    labelBtnConfirm?: string;
     close: () => void;
     onConfirm: () => void;
     onCancel: () => void;
 }
 
-export const AlertDialogComponent = ({ title, description, open, close, onConfirm, onCancel }: AlertDialogProps) => {
+export const AlertDialogComponent = ({ title, description, open, labelBtnConfirm = "Confirmar", close, onConfirm, onCancel }: AlertDialogProps) => {
     return (
         <Dialog open={open} onOpenChange={close}>
             <DialogContent>
@@ -28,7 +29,7 @@ export const AlertDialogComponent = ({ title, description, open, close, onConfir
                 </DialogHeader>
                 <div className="flex justify-end gap-2">
                     <Button variant="secondary" onClick={onCancel}>Cancelar</Button>
-                    <Button variant="destructive" onClick={onConfirm}>Confirmar</Button>
+                    <Button variant="destructive" onClick={onConfirm}>{labelBtnConfirm}</Button>
                 </div>
             </DialogContent>
         </Dialog>

@@ -1,5 +1,5 @@
 import type { RolesInterface, User, UserBody, UsersInterface } from "@/interfaces/users.interface";
-import { getDataApi, postDataApi } from "./api.service";
+import { deleteDataApi, getDataApi, postDataApi, putDataApi } from "./api.service";
 
 const usersUrl = '/users';
 
@@ -24,6 +24,11 @@ export const createUserApi = async (data: UserBody) => {
 }
 
 export const updateUserApi = async (id: number, data: UserBody) => {
-    const response = await postDataApi<UserBody, User>(`${usersUrl}/${id}`, data);
+    const response = await putDataApi<UserBody, User>(`${usersUrl}/${id}`, data);
+    return response;
+}
+
+export const deleteUserApi = async (id: number) => {
+    const response = await deleteDataApi<User>(`${usersUrl}`, id);
     return response;
 }
