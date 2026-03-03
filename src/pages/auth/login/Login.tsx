@@ -27,7 +27,12 @@ export const Login = () => {
             return;
         }
 
-        navigate("/");
+        if(result.data.user.role === "CAJERO") {
+            navigate("/despacho");
+            return;
+        } else {
+            navigate("/inventory");
+        }
     }
 
     return (

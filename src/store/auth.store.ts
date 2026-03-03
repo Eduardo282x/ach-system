@@ -5,7 +5,10 @@ import { persist } from "zustand/middleware";
 interface AuthStore {
 	token: string | null;
 	user: User | null;
+	cashier: string | null;
+	isAdmin: boolean;
 	setSession: (token: string, user: User) => void;
+	setCashier: (cashier: string) => void;
 	clearSession: () => void;
 	isTokenExpired: () => boolean;
 }
@@ -30,13 +33,18 @@ export const useAuthStore = create<AuthStore>()(
 		(set, get) => ({
 			token: null,
 			user: null,
+			cashier: null,
+			isAdmin: false,
+			setCashier: (cashier) => {
+				set({ cashier });
+			},
 			setSession: (token, user) => {
 				localStorage.setItem("token", token);
-				set({ token, user });
+				set({ token, user, isAdmin: user.role === 'ADMIN' });
 			},
 			clearSession: () => {
 				localStorage.removeItem("token");
-				set({ token: null, user: null });
+				set({ token: null, user: null, cashier: null, isAdmin: false });
 			},
 			isTokenExpired: () => {
 				const token = get().token;
@@ -57,6 +65,8 @@ export const useAuthStore = create<AuthStore>()(
 			partialize: (state) => ({
 				token: state.token,
 				user: state.user,
+				cashier: state.cashier,
+				isAdmin: state.isAdmin,
 			}),
 		},
 	),

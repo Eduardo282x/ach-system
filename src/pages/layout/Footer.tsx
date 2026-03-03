@@ -5,15 +5,27 @@ import { useExchangeRateAutomaticQuery } from "@/hooks/inventory.hook";
 import { useAuthStore } from "@/store/auth.store";
 import { useInventoryStore } from "@/store/inventory.store";
 import { IoMdSync } from "react-icons/io";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { useUsersQuery } from "@/hooks/users.hook";
 
 export const Footer = () => {
     const today = new Date();
-    const user = useAuthStore((state) => state.user);
+    const { user, cashier, isAdmin } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
 
     const bcvRate = exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined;
     const euroRate = exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined;
+
+    const { data } = useUsersQuery('');
+    const users = data?.users ?? [];
+    // const users = data?.users.filter(item => item.role == 'CAJERO') ?? [];
+
+    const cashiersOptions = users.map((user) => ({
+        label: user.name,
+        value: user.id.toString(),
+    }));
 
     const translateRole = (role: string) => {
         const rol = role.toLowerCase();
@@ -38,7 +50,24 @@ export const Footer = () => {
             <div>
                 {user?.name || user?.username} {translateRole(user?.role || '')} | {formatDateString(today.toISOString())}
             </div>
-            <div></div>
+            <div className={`${isAdmin ? 'flex' : 'hidden'} items-center gap-2`}>
+                <Label>Cajero: </Label>
+                <Select
+                    value={cashier || ''}
+                    onValueChange={(value) => useAuthStore.getState().setCashier(value)}
+                >
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Seleccione un cajero" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            {cashiersOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
             <div className="flex items-center gap-3">
                 <Tooltip>
                     <TooltipTrigger asChild>

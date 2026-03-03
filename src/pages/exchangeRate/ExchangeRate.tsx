@@ -24,7 +24,6 @@ export const ExchangeRate = () => {
         exchangeRateMutation.mutate(data);
     }
 
-
     return (
         <div className="w-1/2 mx-auto p-4">
             <div className="flex items-center justify-between mb-2">

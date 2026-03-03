@@ -10,5 +10,8 @@ export const authLoginApi = async (data: LoginForm) => {
     }
 
     useAuthStore.getState().setSession(result.data.token, result.data.user);
+    if(result.data.user.role === "CAJERO") {
+        useAuthStore.getState().setCashier(result.data.user.id.toString());
+    }
     return result;
 };

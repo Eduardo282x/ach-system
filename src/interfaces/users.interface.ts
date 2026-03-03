@@ -6,7 +6,7 @@ export interface User {
     id: number;
     name: string;
     username: string;
-    role: string;
+    role: TypeRole;
     email: string;
     createdAt: Date;
     updatedAt: Date;
@@ -18,8 +18,10 @@ export interface RolesInterface {
 
 export interface Role {
     name: string;
-    role: string;
+    role: TypeRole;
 }
+
+export type TypeRole = "ADMIN" | "CAJERO" | "SUPERVISOR";
 
 
 //Body
