@@ -4,3 +4,8 @@ export interface BaseResponse<T> {
     message:    string;
     data:       T;
 }
+
+export interface DateRangeFilter {
+    startDate: string | Date;
+    endDate:   string | Date;
+}

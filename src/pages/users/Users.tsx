@@ -11,6 +11,8 @@ import { useState } from "react";
 import type { User } from "@/interfaces/users.interface";
 import { UsersForm, type UsersFormMode } from "./UsersForm";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
+import { BsBox } from "react-icons/bs";
+import { CashDrawers } from "../sessions/CashDrawers";
 
 export const Users = () => {
     const {
@@ -27,8 +29,10 @@ export const Users = () => {
     const users = data?.users ?? [];
 
     const [userSelected, setUserSelected] = useState<User | null>(null);
+
     const [formMode, setFormMode] = useState<UsersFormMode>("create");
     const [openDialog, setOpenDialog] = useState(false);
+    const [openCashDrawer, setOpenCashDrawer] = useState(false);
 
     const deleteUserMutation = useDeleteUserMutation();
 
@@ -59,6 +63,18 @@ export const Users = () => {
         openForm();
     };
 
+    const handleOpenCashDrawers = () => {
+        setOpenCashDrawer(true)
+        openForm();
+    }
+
+    const handleCloseCashDrawer = () => {
+        closeForm();
+        setTimeout(() => {
+            setOpenCashDrawer(false)
+        }, 500);
+    }
+
     const handleCloseForm = () => {
         setFormMode("create");
         setUserSelected(null);
@@ -69,7 +85,10 @@ export const Users = () => {
         <div className="w-full">
             <PageTransitionComponent toggle={toggle}>
                 <div>
-                    <p className="text-2xl font-semibold mb-2 ml-2">Cajeros/Usuarios</p>
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-2xl font-semibold mb-2 ml-2">Cajeros/Usuarios</p>
+                        <Button variant="primary" onClick={handleOpenCashDrawers}><BsBox /> Ver Cajas</Button>
+                    </div>
 
                     <div className="rounded-xl bg-white p-4">
                         <div className="w-full flex items-center justify-between mb-4">
@@ -90,12 +109,18 @@ export const Users = () => {
                 </div>
 
                 <div>
-                    <p className="text-2xl font-semibold mb-2 ml-2">
-                        <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
-                        {formMode === "edit" ? "Editar Cajero" : "Agregar Cajero"}
-                    </p>
+                    {!openCashDrawer ? (
+                        <>
+                            <p className="text-2xl font-semibold mb-2 ml-2">
+                                <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
+                                {formMode === "edit" ? "Editar Cajero" : "Agregar Cajero"}
+                            </p>
 
-                    <UsersForm mode={formMode} user={userSelected} closeForm={handleCloseForm} />
+                            <UsersForm mode={formMode} user={userSelected} closeForm={handleCloseForm} />
+                        </>
+                    ) : (
+                        <CashDrawers close={handleCloseCashDrawer}/>
+                    )}
                 </div>
             </PageTransitionComponent>
 
