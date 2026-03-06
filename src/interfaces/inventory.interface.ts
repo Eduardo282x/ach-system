@@ -1,3 +1,5 @@
+import type { User } from "./sessions.interface";
+
 export interface InventoryInterface {
     products: Product[];
 }
@@ -8,14 +10,14 @@ export interface Product {
     presentation: string;
     barcode: string;
     price: string;
-    currency: string;
-    stock: number;
-    isDetail: boolean;
-    parentId: number | null;
-    unitsDetail: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-    exchangeRates: { [key: string]: number };
+    currency: ExchangeRateType;
+    stock?: number;
+    isDetail?: boolean;
+    parentId?: number | null;
+    unitsDetail?: number | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+    exchangeRates?: { [key: string]: number };
 }
 
 
@@ -55,3 +57,36 @@ export interface ExchangeRateBody {
 }
 
 export type ExchangeRateType = 'USD' | 'EUR';
+
+//History
+export interface HistoryInventoryContent {
+    history: HistoryInventory[];
+    pagination: PaginationContent;
+}
+
+export interface PaginationContent {
+    total: number;
+    page: number;
+    size: number;
+}
+
+export interface HistoryInventory {
+    id: number;
+    productId: number;
+    quantity: number;
+    type: MovementType;
+    reason: string;
+    userId: number;
+    createdAt: Date;
+    product: Product;
+    user: User;
+}
+
+export type MovementType =
+    'SALE' |
+    'RESTOCK' |
+    'CONVERSION' |
+    'ADJUSTMENT' |
+    'RETURN';
+
+// Duplicate Product interface removed. See above for the merged definition.

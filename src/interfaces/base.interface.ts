@@ -1,11 +1,18 @@
 export interface BaseResponse<T> {
-    success:    boolean;
+    success: boolean;
     statusCode: number;
-    message:    string;
-    data:       T;
+    message: string;
+    data: T;
 }
 
 export interface DateRangeFilter {
     startDate: string | Date;
-    endDate:   string | Date;
+    endDate: string | Date;
+}
+
+export interface Pagination {
+    page: number;
+    size: number;
+    startDate?: string | Date;
+    endDate?: string | Date;
 }

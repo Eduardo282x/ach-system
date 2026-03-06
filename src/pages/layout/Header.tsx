@@ -1,10 +1,6 @@
 import { Button } from "@/components/ui/button"
-import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark, MdOutlineShoppingCart } from "react-icons/md";
-import { HiOutlineCurrencyDollar } from "react-icons/hi";
-import { IoSettingsOutline } from "react-icons/io5";
-import { PiUsersThree } from "react-icons/pi";
-import { GoHistory } from "react-icons/go";
-import { useNavigate } from "react-router";
+import { MdOutlineShoppingCart } from "react-icons/md";
+import { useLocation, useNavigate } from "react-router";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,10 +11,18 @@ import { Separator } from "@/components/ui/separator"
 import { useState } from "react";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
 import { useAuthStore } from "@/store/auth.store";
+import { getHeaderDataWithActive } from "./header.data";
+import type { TypeRole } from "@/interfaces/users.interface";
+
+const validRoles: TypeRole[] = ['ADMIN', 'SUPERVISOR', 'CAJERO'];
 
 export const Header = () => {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
     const useAuthStoreState = useAuthStore((state) => state);
+    const userRole = useAuthStoreState.user?.role?.toUpperCase();
+    const role = validRoles.includes(userRole as TypeRole) ? (userRole as TypeRole) : undefined;
+    const items = getHeaderDataWithActive(pathname, role);
 
     const [open, setOpen] = useState(false);
 
@@ -40,32 +44,73 @@ export const Header = () => {
             </div>
 
             <div className="flex items-center gap-2">
-                {useAuthStoreState.user?.role.toLowerCase() === 'admin' && (
-                    <>
-                        <Button variant="primary" onClick={() => navigate("/clientes")}><PiUsersThree /> Clientes</Button>
-                        <Button variant="primary" onClick={() => navigate("/historial-inventario")}><GoHistory /> Inventario Historial</Button>
-                    </>
-                )}
-                <Button variant="primary" onClick={() => navigate("/inventario")}><MdOutlineInventory2 /> Inventario</Button>
-                <Button variant="primary" onClick={() => navigate("/despacho")}><MdOutlinePointOfSale /> Despacho</Button>
-                {/* <Button variant="outline">Crédito</Button> */}
-                <Button variant="primary" onClick={() => navigate("/cierre-caja")}><HiOutlineCurrencyDollar /> Cierre de Caja</Button>
+                {items.map((item) => {
+                    if (item.type === 'dropdown') {
+                        const Icon = item.icon;
 
+                        return (
+                            <DropdownMenu key={item.title}>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant={item.active ? 'primary' : 'secondaryBorder'} size="sm">
+                                        {Icon && <Icon />}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    {item.children.map((child) => {
+                                        if (child.type === 'separator') {
+                                            return <Separator key={`${item.title}-separator`} className="my-1" />;
+                                        }
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="gray" size="sm"><IoSettingsOutline /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => navigate('/tasas')}>Tasa del dia</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/cajeros')}>Gestionar Cajeros</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/historial-cajeros')}>Historial de Cajeros</DropdownMenuItem>
-                        <Separator className="my-1" />
-                        <DropdownMenuItem onClick={openDialog}>Salir</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                                        return (
+                                            <DropdownMenuItem
+                                                key={`${item.title}-${child.title}`}
+                                                onClick={() => {
+                                                    if (child.action === 'logout') {
+                                                        openDialog();
+                                                        return;
+                                                    }
 
-                <Button variant="outline" size="sm"><MdQuestionMark /></Button>
+                                                    if (child.navigateTo) {
+                                                        navigate(child.navigateTo);
+                                                    }
+                                                }}
+                                            >
+                                                {child.title}
+                                            </DropdownMenuItem>
+                                        );
+                                    })}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )
+                    }
+
+                    if (item.title === 'Ayuda' && item.icon) {
+                        const Icon = item.icon;
+
+                        return (
+                            <Button key={item.title} variant="outline" size="sm">
+                                <Icon />
+                            </Button>
+                        );
+                    }
+
+                    if (item.type === 'button' && item.icon) {
+                        const Icon = item.icon;
+
+                        return (
+                            <Button
+                                key={item.title}
+                                variant={item.active ? 'primary' : 'secondaryBorder'}
+                                onClick={() => item.navigateTo && navigate(item.navigateTo)}
+                            >
+                                <Icon />
+                                {item.title}
+                            </Button>
+                        );
+                    }
+
+                    return null;
+                })}
             </div>
 
             <AlertDialogComponent

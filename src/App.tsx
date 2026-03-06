@@ -14,6 +14,7 @@ import { Dispatch } from './pages/dispatch/Dispatch';
 import { queryClient } from './lib/query-client';
 import { Users } from './pages/users/Users';
 import { ExchangeRate } from './pages/exchangeRate/ExchangeRate';
+import { HistoryInventory } from './pages/inventory/HistoryInventory';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -49,7 +50,7 @@ function App() {
               },
               {
                 path: '/historial-inventario',
-                element: <Inventory />
+                element: <HistoryInventory />
               },
               {
                 path: '/despacho',

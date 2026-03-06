@@ -1,8 +1,9 @@
 import type { ExchangeRateBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, postExchangeRateApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, updateProductApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect } from "react";
+import type { Pagination } from "@/interfaces/base.interface";
 
 export const INVENTORY_QUERY_KEY = "inventory";
 export const EXCHANGE_RATE_TODAY_QUERY_KEY = "exchange-rate-today";
@@ -60,6 +61,13 @@ export const useInventoryQuery = (search: string) => {
 	return useQuery({
 		queryKey: [INVENTORY_QUERY_KEY, normalizedSearch],
 		queryFn: () => getInventoryApi(normalizedSearch || undefined),
+	});
+};
+
+export const useInventoryHistoryQuery = (filter: Pagination) => {
+	return useQuery({
+		queryKey: [INVENTORY_QUERY_KEY, filter],
+		queryFn: () => getInventoryHistoryApi(filter),
 	});
 };
 

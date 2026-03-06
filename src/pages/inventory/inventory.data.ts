@@ -39,14 +39,14 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         header: 'Cantidad',
         key: 'stock',
         width: '8rem',
-        element: (row) => row.stock.toString(),
+        element: (row) => (row.stock ?? 0).toString(),
         visible: true,
     },
     {
         header: 'Cantidad Detallada',
         key: 'unitsDetail',
         width: '8rem',
-        element: (row) => row.unitsDetail ? row.unitsDetail.toString() : '-',
+        element: (row) => (row.unitsDetail ?? 0).toString(),
         visible: true,
     },
     {
@@ -60,7 +60,7 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         header: 'Creación',
         key: 'createdAt',
         width: '8rem',
-        element: (row) => formatDate(row.createdAt),
+        element: (row) => row.createdAt ? formatDate(row.createdAt) : '-',
         visible: false,
     },
     {

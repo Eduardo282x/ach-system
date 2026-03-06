@@ -5,6 +5,16 @@ export const formatDate = (dateString: Date | string) => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${day}/${month}/${year}`;
 }
+export const formatDateWithTime = (dateString: Date | string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
 
 export const formatDateString = (dateString: string) => {
     const date = new Date(dateString);
@@ -16,6 +26,16 @@ export const formatDateString = (dateString: string) => {
     const dayName = days[date.getDay()];
     return `${dayName}, ${day} de ${monthName} de ${year}`;
 }
+
+export const formatOnlyDateStringFilter = (dateString: Date | undefined) => {
+    if (!dateString) return undefined;
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 
 export const formatNumberWithDecimal = (number: number | string, digits?: number): string => {
     const parsed = typeof number === 'string' ? parseFloat(number) : number;
