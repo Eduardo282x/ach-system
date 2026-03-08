@@ -18,3 +18,10 @@ export interface User {
     createdAt: Date;
     updatedAt: Date;
 }
+
+
+export interface Cashier {
+    id:        number;
+    name:      string;
+    cashDrawer: string;
+}

@@ -1,4 +1,4 @@
-import { useState, type JSX } from "react";
+import { useCallback, useMemo, useState, type JSX } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 import {
@@ -13,12 +13,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import type { Pagination } from "@/interfaces/base.interface";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
+import { Loading } from "../loader/Loading";
 
 export interface ColumnDef<T> {
     key: keyof T;
     header: string;
     width?: string;
     element: (row: T) => string | JSX.Element;
+    class?: (row: T) => string;
     icons?: (row: T) => {
         icon: React.ComponentType<{ className?: string }>;
         action: string;
@@ -34,11 +36,20 @@ interface TableComponentProps<T> {
     pagination?: Pagination
     totalElements?: number
     ignorePagination?: boolean;
+    isLoading?: boolean;
     onChange: (action: string, data: T) => void;
 }
 
-export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, pagination, totalElements }: TableComponentProps<T>) => {
+export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, pagination, totalElements, isLoading }: TableComponentProps<T>) => {
     const [size, setSize] = useState(pagination?.size || 100);
+
+    const getRowKey = useCallback((row: T, rowIndex: number) => {
+        if (typeof row === "object" && row !== null && "id" in row) {
+            return String((row as { id?: string | number }).id ?? rowIndex);
+        }
+
+        return String(rowIndex);
+    }, []);
 
     const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
         switch (variant) {
@@ -53,6 +64,35 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
         }
     }
 
+    const tableRows = useMemo(() => {
+        return data.map((row, rowIndex) => (
+            <TableRow key={getRowKey(row, rowIndex)} className="bg-muted">
+                {columns.map((column) => (
+                    <TableCell key={column.key.toString()}>
+                        {column.icons ? (
+                            <div className="flex items-center gap-4">
+                                {column.icons(row).map((icon) => (
+                                    <Tooltip key={icon.action}>
+                                        <TooltipTrigger asChild>
+                                            <Button size='icon' variant='ghost' onClick={() => onChange(icon.action, row)}>
+                                                <icon.icon className={`${styleVariant(icon.variant)} text-lg`} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{icon.label}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className={column.class ? column.class(row) : ''}>{column.element(row)}</p>
+                        )}
+                    </TableCell>
+                ))}
+            </TableRow>
+        ));
+    }, [data, columns, onChange, getRowKey]);
+
     return (
         <div>
             <div className="rounded-md border hidden lg:block shadow-md">
@@ -65,39 +105,22 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.length === 0 && (
+                        {data.length === 0 && !isLoading && (
                             <TableRow>
-                                <TableCell className="h-24 text-center" colSpan={columns.length}>
+                                <TableCell className="h-full text-center py-32 bg-gray-200" colSpan={columns.length}>
                                     No hay datos disponibles
                                 </TableCell>
                             </TableRow>
                         )}
-                        {data.map((row, rowIndex) => (
-                            <TableRow key={rowIndex} className="bg-muted">
-                                {columns.map((column) => (
-                                    <TableCell key={column.key.toString()}>
-                                        {column.icons ? (
-                                            <div className="flex items-center gap-4">
-                                                {column.icons(row).map((icon) => (
-                                                    <Tooltip key={icon.action}>
-                                                        <TooltipTrigger asChild>
-                                                            <Button size='icon' variant='ghost' onClick={() => onChange(icon.action, row)}>
-                                                                <icon.icon className={`${styleVariant(icon.variant)} text-lg`} />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>{icon.label}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            column.element(row)
-                                        )}
-                                    </TableCell>
-                                ))}
+                        {isLoading && (
+                            <TableRow>
+                                <TableCell className="h-full text-center py-32 bg-gray-200" colSpan={columns.length}>
+                                    <Loading />
+                                    <p className="text-sm text-gray-700">Cargando...</p>
+                                </TableCell>
                             </TableRow>
-                        ))}
+                        )}
+                        {tableRows}
                     </TableBody>
                 </Table>
             </div>

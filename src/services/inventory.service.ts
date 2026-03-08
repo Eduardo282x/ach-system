@@ -62,6 +62,10 @@ export const postExchangeRateApi = async (data: ExchangeRateBody): Promise<Excha
     const response = await postDataApi<ExchangeRateBody, ExchangeRate | null>(`${inventoryUrl}/exchange-rate`, data);
     return response.data;
 }
+export const putExchangeRateDefaultApi = async (id: number): Promise<ExchangeRate | null> => {
+    const response = await putDataApi<null, ExchangeRate | null>(`${inventoryUrl}/exchange-rate/default/${id}`, null);
+    return response.data;
+}
 export const getExchangeRateAutomaticApi = async (): Promise<ExchangeRate[]> => {
     const response = await postDataApi<null, ExchangeRate[]>(`${inventoryUrl}/exchange-rate/automatic`, null);
     return response.data || [];

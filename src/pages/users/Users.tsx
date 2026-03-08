@@ -92,7 +92,9 @@ export const Users = () => {
 
                     <div className="rounded-xl bg-white p-4">
                         <div className="w-full flex items-center justify-between mb-4">
+                            <div className="w-96">
                             <FilterComponent placeholder="Buscar cajero..." onChange={setFilter} />
+                            </div>
 
                             <div className="flex items-center gap-2">
                                 <SelectColumnsComponent columns={columns} onChange={setColumns} />

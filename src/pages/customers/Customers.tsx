@@ -14,14 +14,17 @@ export const Customers = () => {
 
             <div className="rounded-xl bg-white p-4">
                 <div className="w-full flex items-center justify-between mb-4">
-                    <FilterComponent placeholder="Buscar cliente..." onChange={setFilter} />
+                    <div className="w-96">
+                        <FilterComponent placeholder="Buscar cliente..." onChange={setFilter} />
+                    </div>
                     <SelectColumnsComponent columns={columns} onChange={setColumns} />
                 </div>
 
                 <TableComponent
                     onChange={() => undefined}
                     columns={columns.filter((column) => column.visible)}
-                    data={isLoading ? [] : customers}
+                    data={customers}
+                    isLoading={isLoading}
                 />
             </div>
         </div>

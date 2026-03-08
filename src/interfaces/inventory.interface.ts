@@ -11,7 +11,10 @@ export interface Product {
     barcode: string;
     price: string;
     currency: ExchangeRateType;
+    quantity?: number;
     stock?: number;
+    subtotalBs?: number;
+    subtotal?: number;
     isDetail?: boolean;
     parentId?: number | null;
     unitsDetail?: number | null;
@@ -44,6 +47,7 @@ export interface ExchangeRateContent {
 }
 export interface ExchangeRate {
     name: string;
+    id: number;
     rate: number;
     currency: ExchangeRateType;
     isDefault: boolean;

@@ -21,10 +21,10 @@ export const Layout = () => {
     }, [token, isTokenExpired, clearSession, navigate]);
 
     return (
-        <div className="w-screen h-full flex flex-col">
+        <div className="w-screen h-full flex flex-col overflow-hidden">
             <TooltipProvider>
                 <Header />
-                <div className="flex-1 bg-gray-200 p-4">
+                <div className="flex-1 bg-gray-200 p-4 overflow-auto">
                     <Outlet />
                 </div>
                 <Footer />

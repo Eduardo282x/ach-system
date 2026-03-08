@@ -6,7 +6,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full rounded-md overflow-auto max-h-104"
+      className="relative w-full rounded-md overflow-auto h-104 max-h-104"
     >
       <table
         data-slot="table"

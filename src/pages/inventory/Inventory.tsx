@@ -4,7 +4,7 @@ import { IoMdAdd } from "react-icons/io";
 import { SelectColumnsComponent, TableComponent } from "@/components/table/TableComponent";
 import PageTransitionComponent from "@/components/PageTransition";
 import { useInventoryStore } from "@/store/inventory.store";
-import { useBreakDownProductMutation, useDeleteProductMutation, useInventoryQuery } from "@/hooks/inventory.hook";
+import { useBreakDownProductMutation, useDeleteProductMutation, useInventoryQueryLocal } from "@/hooks/inventory.hook";
 import { FaArrowLeft } from "react-icons/fa";
 import { ProductForm, type ProductFormMode } from "./ProductForm";
 import type { Product } from "@/interfaces/inventory.interface";
@@ -23,7 +23,7 @@ export const Inventory = () => {
         closeForm
     } = useInventoryStore((state) => state);
 
-    const { data, isLoading } = useInventoryQuery(filter);
+    const { data, isLoading } = useInventoryQueryLocal(filter);
     const [productSelected, setProductSelected] = useState<Product | null>(null);
     const [formMode, setFormMode] = useState<ProductFormMode>("create");
     const products = data?.products ?? [];
@@ -88,18 +88,21 @@ export const Inventory = () => {
 
                     <div className="rounded-xl bg-white p-4">
                         <div className="w-full flex items-center justify-between mb-4">
-                            <FilterComponent placeholder="Buscar producto..." onChange={setFilter} />
-
+                            <div className="w-96">
+                                <FilterComponent placeholder="Buscar producto..." onChange={setFilter} loading={isLoading} />
+                            </div>
                             <div className="flex items-center gap-2">
                                 <SelectColumnsComponent columns={columns} onChange={setColumns} />
                                 <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
                             </div>
                         </div>
+                        
 
                         <TableComponent
                             onChange={getActionTable}
                             columns={columns.filter(column => column.visible)}
-                            data={isLoading ? [] : products}
+                            data={products}
+                            isLoading={isLoading}
                         />
                     </div>
                 </div>

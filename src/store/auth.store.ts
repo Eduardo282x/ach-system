@@ -1,14 +1,14 @@
-import type { User } from "@/interfaces/auth.interface";
+import type { Cashier, User } from "@/interfaces/auth.interface";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface AuthStore {
 	token: string | null;
 	user: User | null;
-	cashier: string | null;
+	cashier: Cashier | null;
 	isAdmin: boolean;
 	setSession: (token: string, user: User) => void;
-	setCashier: (cashier: string) => void;
+	setCashier: (cashier: Cashier) => void;
 	clearSession: () => void;
 	isTokenExpired: () => boolean;
 }

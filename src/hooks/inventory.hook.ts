@@ -1,8 +1,8 @@
 import type { ExchangeRateBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
 
 export const INVENTORY_QUERY_KEY = "inventory";
@@ -53,6 +53,45 @@ const upsertInventoryCache = (
 			});
 		}
 	});
+};
+
+const inventoryMatchesSearch = (product: Product, search: string) => {
+	if (!search) {
+		return true;
+	}
+
+	const normalized = search.toLowerCase();
+	return (
+		product.name.toLowerCase().includes(normalized) ||
+		product.presentation.toLowerCase().includes(normalized) ||
+		product.barcode.toLowerCase().includes(normalized)
+	);
+};
+
+export const useInventoryQueryLocal = (search: string) => {
+	const normalizedSearch = search.trim();
+
+	const query = useQuery({
+		queryKey: [INVENTORY_QUERY_KEY],
+		queryFn: () => getInventoryApi(),
+	});
+
+	const products = useMemo(() => {
+		const source = query.data?.products ?? [];
+
+		if (!normalizedSearch) {
+			return source;
+		}
+
+		return source.filter((product) => inventoryMatchesSearch(product, normalizedSearch));
+	}, [query.data?.products, normalizedSearch]);
+
+	return {
+		...query,
+		data: {
+			products,
+		},
+	};
 };
 
 export const useInventoryQuery = (search: string) => {
@@ -122,6 +161,38 @@ export const useExchangeRateMutation = () => {
 			const updatedRates = exists
 				? currentRates.map((rate) => (rate.currency === response.currency ? response : rate))
 				: [response, ...currentRates];
+
+			useInventoryStore.getState().setExchangeRates(updatedRates);
+
+			queryClient.setQueryData<{ exchangeRate: typeof updatedRates }>(
+				[EXCHANGE_RATE_TODAY_QUERY_KEY],
+				{ exchangeRate: updatedRates },
+			);
+		},
+	});
+};
+
+export const useExchangeRateDefaultMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (id: number) => putExchangeRateDefaultApi(id),
+		onSuccess: (response) => {
+			if (response == null) {
+				return;
+			}
+
+			const currentRates = useInventoryStore.getState().exchangeRates;
+
+			const updatedRates = currentRates.map(rate => {
+				if (rate.id === response.id) {
+					return response;
+				}
+				return {
+					...rate,
+					isDefault: false
+				};
+			})
 
 			useInventoryStore.getState().setExchangeRates(updatedRates);
 
