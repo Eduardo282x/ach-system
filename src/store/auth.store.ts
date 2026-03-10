@@ -6,9 +6,11 @@ interface AuthStore {
 	token: string | null;
 	user: User | null;
 	cashier: Cashier | null;
+	cashDrawerSession: string;
 	isAdmin: boolean;
 	setSession: (token: string, user: User) => void;
 	setCashier: (cashier: Cashier) => void;
+	setCashDrawerSession: (cashDrawerSession: string) => void;
 	clearSession: () => void;
 	isTokenExpired: () => boolean;
 }
@@ -34,9 +36,13 @@ export const useAuthStore = create<AuthStore>()(
 			token: null,
 			user: null,
 			cashier: null,
+			cashDrawerSession: '',
 			isAdmin: false,
 			setCashier: (cashier) => {
 				set({ cashier });
+			},
+			setCashDrawerSession: (cashDrawerSession) => {
+				set({ cashDrawerSession });
 			},
 			setSession: (token, user) => {
 				localStorage.setItem("token", token);
@@ -44,7 +50,7 @@ export const useAuthStore = create<AuthStore>()(
 			},
 			clearSession: () => {
 				localStorage.removeItem("token");
-				set({ token: null, user: null, cashier: null, isAdmin: false });
+				set({ token: null, user: null, cashier: null, cashDrawerSession: '', isAdmin: false });
 			},
 			isTokenExpired: () => {
 				const token = get().token;
@@ -66,6 +72,7 @@ export const useAuthStore = create<AuthStore>()(
 				token: state.token,
 				user: state.user,
 				cashier: state.cashier,
+				cashDrawerSession: state.cashDrawerSession,
 				isAdmin: state.isAdmin,
 			}),
 		},

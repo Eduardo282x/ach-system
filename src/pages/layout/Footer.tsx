@@ -7,13 +7,23 @@ import { useInventoryStore } from "@/store/inventory.store";
 import { IoMdSync } from "react-icons/io";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useUsersQuery } from "@/hooks/users.hook";
 import { useEffect, useState } from "react";
+import { useCashDrawersQuery, useOpenSessionMutation, useSessionsQuery } from "@/hooks/sessions.hook";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
     const today = new Date();
-    const { user, cashier, isAdmin } = useAuthStore((state) => state);
+    const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
+    const { data, } = useSessionsQuery({ status: 'OPEN' });
+
+    const [open, setOpen] = useState<boolean>(false);
+    const [cashDrawerSelected, setCashDrawerSelected] = useState<number | null>(null);
+    const [balance, setBalance] = useState<number>(0);
+    const cashDrawers = useCashDrawersQuery();
+    const openSessionMutation = useOpenSessionMutation();
+
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
@@ -28,21 +38,20 @@ export const Footer = () => {
         setEuroRate(euroRate);
     }, [exchangeRates])
 
-    const { data } = useUsersQuery('');
-    const users = data?.users ?? [];
-    // const users = data?.users.filter(item => item.role == 'CAJERO') ?? [];
+    const cashierSessionOptions = data ? data.sessions.map((cashDrawerSession) => ({
+        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
+        value: cashDrawerSession.sessionId.toString(),
+    })) : [];
 
-    const cashiersOptions = users.map((user) => ({
-        label: user.name,
-        value: user.id.toString(),
-    }));
-
-    const cashierState = cashier as unknown;
-    const cashierValue = typeof cashierState === 'object' && cashierState !== null && 'id' in cashierState
-        ? String((cashierState as { id?: number | string }).id ?? '')
-        : typeof cashierState === 'string'
-            ? cashierState
-            : '';
+    useEffect(() => {
+        if (data && data.sessions.length > 0) {
+            const activeSession = data.sessions.find(session => session.user.id === user?.id);
+            if (!activeSession) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setOpen(true);
+            }
+        }
+    }, [data, user])
 
     const translateRole = (role: string) => {
         const rol = role.toLowerCase();
@@ -62,11 +71,28 @@ export const Footer = () => {
         await exchangeRateAutomaticQuery.refetch();
     }
 
-    // const handleDefault = (rate: ExchangeRate | null) => {
-    //     if (!rate?.id) return;
-    //     if (rate?.isDefault) return;
-    //     exchangeRateDefaultMutation.mutate(rate.id);
-    // }
+    const onChangeCashDrawerSession = (value: string) => {
+        const selectedCashier = data?.sessions.find(session => session.sessionId.toString() === value);
+        if (selectedCashier) {
+            useAuthStore.getState().setCashier({ id: selectedCashier.user.id, name: selectedCashier.user.name, cashDrawer: selectedCashier.cashDrawer.name.toString() });
+            useAuthStore.getState().setCashDrawerSession(selectedCashier.sessionId.toString());
+        }
+    }
+
+    const validateToCloseDialog = () => {
+        if (cashDrawerSelected === null || balance <= 0) {
+            return;
+        }
+        setOpen(false);
+    }
+
+    const openSession = () => {
+        openSessionMutation.mutate({
+            cashDrawerId: Number(cashDrawerSelected),
+            openingBalance: balance,
+        })
+        setOpen(false);
+    }
 
     return (
         <div className='w-full py-2 px-6 bg-white flex items-center justify-between font-semibold text-sm'>
@@ -76,20 +102,15 @@ export const Footer = () => {
             <div className={`${isAdmin ? 'flex' : 'hidden'} items-center gap-2`}>
                 <Label>Cajero: </Label>
                 <Select
-                    value={cashierValue}
-                    onValueChange={(value) => {
-                        const selectedCashier = users.find(user => user.id.toString() === value);
-                        if (selectedCashier) {
-                            useAuthStore.getState().setCashier({ id: selectedCashier.id, name: selectedCashier.name, cashDrawer: selectedCashier.id.toString() });
-                        }
-                    }}
+                    value={cashDrawerSession}
+                    onValueChange={onChangeCashDrawerSession}
                 >
                     <SelectTrigger className="w-40">
                         <SelectValue placeholder="Seleccione un cajero" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            {cashiersOptions.map((option) => (
+                            {cashierSessionOptions.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                             ))}
                         </SelectGroup>
@@ -125,6 +146,52 @@ export const Footer = () => {
                     </TooltipContent>
                 </Tooltip> */}
             </div>
+
+            <Dialog open={open} onOpenChange={validateToCloseDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            <p className='text-center text-blue-800 -mt-4 font-semibold text-xl'>Apertura de caja</p>
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="w-full">
+                        <div className="flex flex-col gap-2 my-4">
+                            <p className='font-semibold'>Seleccionar caja</p>
+                            <div className='flex items-center gap-2'>
+                                <Select defaultValue={cashDrawerSelected?.toString()} onValueChange={(value) => setCashDrawerSelected(Number(value))}>
+                                    <SelectTrigger className="w-full bg-white">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent align="start">
+                                        <SelectGroup>
+                                            {cashDrawers.data?.cashDrawers.map((cashDrawer) => (
+                                                <SelectItem key={cashDrawer.id} value={cashDrawer.id.toString()}>{cashDrawer.name}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2 my-4">
+                            <p className='font-semibold'>Balance inicial (Bs)</p>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                value={balance}
+                                onChange={(event) => setBalance(Number(event.target.value))}
+                                placeholder="Ingrese el balance inicial"
+                            />
+                            <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
+                        </div>
+
+                        <Button variant='primary' className="mt-2 w-full" onClick={openSession} disabled={balance <= 0 || cashDrawerSelected === null}>
+                            Aceptar
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

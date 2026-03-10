@@ -11,6 +11,9 @@ export const getSessionsApi = async (filter?: Partial<SessionFilter>): Promise<S
     if (filter && filter.cashDrawerId) {
         params += params ? `&cashDrawerId=${filter.cashDrawerId}` : `?cashDrawerId=${filter.cashDrawerId}`;
     }
+    if (filter && filter.status) {
+        params += params ? `&status=${filter.status}` : `?status=${filter.status}`;
+    }
     const response = await getDataApi<SessionsContent>(`${sessionsUrl}${params}`);
     if (response.data == null) {
         return { sessions: [] };

@@ -2,6 +2,7 @@ import type { DateRangeFilter } from "./base.interface";
 
 export interface SessionFilter extends DateRangeFilter {
     cashDrawerId: number;
+    status: EventType;
 }
 
 export interface SessionsContent {
@@ -11,9 +12,9 @@ export interface SessionsContent {
 export interface Session {
     id: string;
     sessionId: number;
-    eventType: string;
+    eventType: EventType;
     eventAt: Date;
-    status: string;
+    status: EventType;
     openingBalance: string;
     closingBalance: null | string;
     totalSales: string;
@@ -22,6 +23,8 @@ export interface Session {
     cashDrawer: CashDrawer;
     user: User;
 }
+
+export type EventType = 'OPEN' | 'CLOSE' | 'CLOSED' | '';
 
 export interface User {
     id: number;

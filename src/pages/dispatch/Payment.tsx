@@ -54,7 +54,7 @@ interface PaymentProps {
 
 export const Payment = ({ customerId }: PaymentProps) => {
     const { total, totalUSD, productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
-    const { user, cashier } = useAuthStore((state) => state);
+    const { cashDrawerSession } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const createInvoiceMutation = useCreateInvoiceMutation();
 
@@ -203,7 +203,7 @@ export const Payment = ({ customerId }: PaymentProps) => {
         const usdRateValue = exchangeRates.find((rate) => rate.currency === 'USD')?.id ?? usdRate;
         const eurRateValue = exchangeRates.find((rate) => rate.currency === 'EUR')?.id ?? 0;
         // const sessionId = 3;
-        const sessionId = cashier?.id ?? user?.id ?? 0;
+        const sessionId = cashDrawerSession ? Number(cashDrawerSession) : 0;
 
         if (!sessionId) {
             toast.error('No hay sesión/cajero seleccionado para registrar la factura');

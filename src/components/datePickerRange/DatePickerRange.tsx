@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { addDays, format } from "date-fns"
+import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { useState } from "react"
 import { type DateRange } from "react-day-picker"
@@ -15,9 +15,10 @@ interface DatePickerRangeProps {
 }
 
 export function DatePickerRange({ display = 'block', onChange }: DatePickerRangeProps) {
+    const today = new Date();
     const [date, setDate] = useState<DateRange | undefined>({
-        from: new Date(new Date().getFullYear(), 0, 20),
-        to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+        from: new Date(today.getFullYear(), today.getMonth(), 1),
+        to: new Date(today.getFullYear(), today.getMonth() + 1, 0),
     })
 
     const changeDate = (selectedDate: DateRange | undefined) => {

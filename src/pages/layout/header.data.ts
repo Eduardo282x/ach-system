@@ -46,7 +46,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/inventario',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'SUPERVISOR'],
         children: []
     },
     {
@@ -64,7 +64,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/cierre-caja',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'SUPERVISOR'],
         children: []
     },
     {

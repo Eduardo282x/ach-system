@@ -60,6 +60,7 @@ export const useSessionsQuery = (filter?: Partial<SessionFilter>) => {
 		startDate: filter?.startDate ? String(filter.startDate) : "",
 		endDate: filter?.endDate ? String(filter.endDate) : "",
 		cashDrawerId: filter?.cashDrawerId ?? 0,
+		status: filter?.status ?? "",
 	};
 
 	return useQuery({

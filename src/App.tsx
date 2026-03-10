@@ -15,6 +15,7 @@ import { queryClient } from './lib/query-client';
 import { Users } from './pages/users/Users';
 import { ExchangeRate } from './pages/exchangeRate/ExchangeRate';
 import { HistoryInventory } from './pages/inventory/HistoryInventory';
+import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -59,6 +60,10 @@ function App() {
               {
                 path: '/cajeros',
                 element: <Users />
+              },
+              {
+                path: '/historial-cajeros',
+                element: <CashDrawerSession />
               },
               {
                 path: '/clientes',

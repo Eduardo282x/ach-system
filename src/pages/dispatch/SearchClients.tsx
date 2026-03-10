@@ -109,6 +109,18 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
         setOpenDialog(true);
     }
 
+    const onChangeIdentify = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        const numericValue = value.replace(/\D/g, '');
+        setIdentify(numericValue);
+    }
+
+    const onSearchClientKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            searchClient();
+        }
+    }
+
     return (
         <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             <div className='bg-white text-center text-xl font-semibold text-blue-800 py-2 relative'>
@@ -170,8 +182,10 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                                     </SelectContent>
                                 </Select>
                                 <Input
+                                    type='number'
                                     value={identify}
-                                    onChange={(event) => setIdentify(event.target.value)}
+                                    onChange={onChangeIdentify}
+                                    onKeyDown={onSearchClientKeyDown}
                                     placeholder="Ingrese la cédula del cliente"
                                 />
                                 <Button variant='primary' onClick={searchClient} disabled={isSearching}>
