@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button"
-import { formatNumberWithDecimal } from "@/helpers/formatters";
+import { formatDate, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
 import { useDispatchStore } from "@/store/dispatch.store";
 import { useInventoryStore } from "@/store/inventory.store";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FiShoppingCart } from "react-icons/fi";
 import {
     Dialog,
@@ -25,7 +25,9 @@ import type { DispatchBody } from "@/interfaces/distpatch.interface";
 import { useCreateInvoiceMutation } from "@/hooks/dispatch.hook";
 import { useAuthStore } from "@/store/auth.store";
 import toast from "react-hot-toast";
-
+import { PrintInvoice } from "./PrintInvoice";
+import { useReactToPrint } from 'react-to-print';
+import type { Client } from "@/interfaces/customer.interface";
 interface CardPayment {
     name: string;
     value: string;
@@ -49,14 +51,17 @@ interface PaymentForm {
 }
 
 interface PaymentProps {
-    customerId?: number;
+    customer?: Client | null;
 }
 
-export const Payment = ({ customerId }: PaymentProps) => {
+export const Payment = ({ customer }: PaymentProps) => {
     const { total, totalUSD, productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
-    const { cashDrawerSession } = useAuthStore((state) => state);
+    const { cashDrawerSession, cashier, user } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const createInvoiceMutation = useCreateInvoiceMutation();
+
+    const componentRef = useRef<HTMLDivElement>(null);
+
 
     const [open, setOpen] = useState<boolean>(false);
 
@@ -127,6 +132,49 @@ export const Payment = ({ customerId }: PaymentProps) => {
         { name: 'Cambio/Vuelto', value: `${formatNumberWithDecimal(changeUSD)}`, valueBs: `${formatNumberWithDecimal(changeBs)}`, variant: 'quaternary' },
     ];
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+    const invoiceData = useMemo(() => {
+        const now = new Date();
+        return {
+            invoiceNumber: undefined,
+            date: formatDate(now),
+            time: formatOnlyTime(now),
+            cashier: cashier?.name || user?.name || '--',
+            customer: {
+                fullName: customer?.fullName || '--',
+                identify: customer?.identify || '--',
+                phone: customer?.phone || '--',
+            },
+            totals: {
+                totalBs: total,
+                totalUSD,
+            },
+            productsList: productList.map((product) => {
+
+                const findExchangeRate = exchangeRates.find((rate) => rate.currency === product.currency);
+                const exchangeRate = findExchangeRate ? findExchangeRate.rate : 1;
+
+                const unitPrice = Number(product.price) * exchangeRate;
+
+                const quantity = product.quantity ?? 0;
+                const subtotal = product.subtotalBs ?? quantity * unitPrice;
+                return {
+                    id: product.id,
+                    name: product.name,
+                    quantity,
+                    unitPrice,
+                    subtotal,
+                };
+            }),
+            payments: payments.map((payment) => ({
+                typePayment: payment.typePayment,
+                reference: payment.reference,
+                amountBs: payment.amountBs,
+                amountUSD: payment.amount,
+            })),
+        };
+    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, user?.name]);
+
     const openDialog = () => {
         setOpen(true);
     }
@@ -138,14 +186,14 @@ export const Payment = ({ customerId }: PaymentProps) => {
 
         const selectedType = typesPayment.find((type) => type.id.toString() === formData.typeSelected);
         if (!selectedType) return;
-        
+
         let amountBs = 0
         let amountUSD = 0
 
         const restBsBefore = Math.max(total - totalPayedBs, 0);
         const restUSDBefore = Math.max(totalUSD - totalPayedUSD, 0);
 
-        if(selectedType.currency == 'BS'){
+        if (selectedType.currency == 'BS') {
             amountBs = amount;
             if (restBsBefore > 0) {
                 const proportionalUSD = (amountBs / restBsBefore) * restUSDBefore;
@@ -179,8 +227,15 @@ export const Payment = ({ customerId }: PaymentProps) => {
         setPayments((prevPayments) => prevPayments.filter((_, i) => i !== index));
     }
 
+    const handlePrint = useReactToPrint({
+        contentRef: componentRef,
+        documentTitle: 'Factura',
+        onAfterPrint: () => {
+        }
+    });
+
     const completePayment = () => {
-        if (!customerId) {
+        if (!customer?.id) {
             toast.error('Debe seleccionar un cliente para continuar');
             return;
         }
@@ -211,7 +266,7 @@ export const Payment = ({ customerId }: PaymentProps) => {
         }
 
         const dispatchData: DispatchBody = {
-            customerId,
+            customerId: customer.id,
             sessionId,
             exchangeRateUsdId: usdRateValue,
             exchangeRateEurId: eurRateValue,
@@ -236,6 +291,8 @@ export const Payment = ({ customerId }: PaymentProps) => {
                     return;
                 }
 
+                handlePrint();
+
                 toast.success(response.message || 'Factura registrada correctamente');
                 setPayments([]);
                 setProductList([]);
@@ -251,6 +308,11 @@ export const Payment = ({ customerId }: PaymentProps) => {
 
     return (
         <div className='w-[20%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
+            {/* Imprimir factura */}
+            <div className='hidden'>
+                <PrintInvoice ref={componentRef} data={invoiceData} />
+            </div>
+
             <div className='text-center text-xl bg-white font-semibold text-blue-800 py-2'>
                 <p>Total</p>
             </div>
@@ -265,7 +327,7 @@ export const Payment = ({ customerId }: PaymentProps) => {
 
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="!w-3/4">
+                <DialogContent className="w-3/4!">
                     <DialogHeader>
                         <DialogTitle>
                             <div className="flex items-center gap-2 text-2xl">

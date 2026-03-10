@@ -7,13 +7,25 @@ export const formatDate = (dateString: Date | string) => {
 }
 export const formatDateWithTime = (dateString: Date | string) => {
     const date = new Date(dateString);
+    const hours24 = date.getHours();
+    const period = hours24 >= 12 ? 'pm' : 'am';
+    const hours12 = hours24 % 12 || 12;
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
+    const hours = String(hours12).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${period}`;
+}
+export const formatOnlyTime = (dateString: Date | string) => {
+    const date = new Date(dateString);
+    const hours24 = date.getHours();
+    const period = hours24 >= 12 ? 'pm' : 'am';
+    const hours12 = hours24 % 12 || 12;
+    const hours = String(hours12).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes} ${period}`;
 }
 
 export const formatDateString = (dateString: string) => {
@@ -59,7 +71,7 @@ export const formatNumberWithDots = (number: number | string, prefix?: string, s
 
 export const translateCurrency = (currency: string) => {
     switch (currency) {
-        case 'USD': 
+        case 'USD':
             return '$';
         case 'EUR':
             return '€';

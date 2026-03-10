@@ -11,13 +11,17 @@ export const Dispatch = () => {
     const disabled = selectedClient == null;
     useTypesPaymentsQuery();
 
+
     return (
         <div className='w-full'>
+
             <div className="flex items-center gap-4 h-36 mb-2">
                 <SearchClients onClientChange={setSelectedClient} />
                 <InfoCashDrawer />
-                <Payment customerId={selectedClient?.id} />
+                <Payment customer={selectedClient} />
             </div>
+
+
 
             <div className={`w-full transition-opacity ${disabled ? 'opacity-70' : 'opacity-100'} relative`} aria-disabled={disabled}>
                 {disabled && (
