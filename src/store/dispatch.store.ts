@@ -1,4 +1,5 @@
-import type { PaymentType } from "@/interfaces/distpatch.interface";
+import { formatOnlyDateStringFilter } from "@/helpers/formatters";
+import type { PaymentType, ResumenContent, ResumenFilter } from "@/interfaces/distpatch.interface";
 import type { Product } from "@/interfaces/inventory.interface";
 import { create } from "zustand";
 
@@ -24,4 +25,18 @@ export const useDispatchStore = create<DispatchStore>((set) => ({
     setProductList: (products) => set((state) => ({
         productList: typeof products === 'function' ? products(state.productList) : products,
     })),
+}));
+
+interface SalesStore {
+    filter: ResumenFilter;
+    resumen: ResumenContent | null;
+    setFilter: (filter: ResumenFilter) => void;
+    setResumen: (resumen: ResumenContent) => void;
+}
+
+export const useSalesStore = create<SalesStore>((set) => ({
+    resumen: null,
+    filter: { date: formatOnlyDateStringFilter(new Date()) },
+    setFilter: (filter) => set({ filter }),
+    setResumen: (resumen) => set({ resumen }),
 }));

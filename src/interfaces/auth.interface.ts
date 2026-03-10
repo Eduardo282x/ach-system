@@ -1,3 +1,4 @@
+import type { TypeRole } from "./users.interface";
 
 export interface LoginForm {
     username: string;
@@ -13,7 +14,7 @@ export interface User {
     id:        number;
     name:      string;
     username:  string;
-    role:      string;
+    role:      TypeRole;
     email:     string;
     createdAt: Date;
     updatedAt: Date;

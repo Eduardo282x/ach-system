@@ -1,3 +1,5 @@
+import type { ExchangeRateType } from "@/interfaces/inventory.interface";
+
 export const formatDate = (dateString: Date | string) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -39,8 +41,8 @@ export const formatDateString = (dateString: string) => {
     return `${dayName}, ${day} de ${monthName} de ${year}`;
 }
 
-export const formatOnlyDateStringFilter = (dateString: Date | undefined) => {
-    if (!dateString) return undefined;
+export const formatOnlyDateStringFilter = (dateString: Date | undefined): string => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -69,12 +71,14 @@ export const formatNumberWithDots = (number: number | string, prefix?: string, s
     return `${prefix}${text}${suffix}`;
 }
 
-export const translateCurrency = (currency: string) => {
+export const translateCurrency = (currency: ExchangeRateType) => {
     switch (currency) {
         case 'USD':
             return '$';
         case 'EUR':
             return '€';
+        case 'BS':
+            return 'Bs';
         default:
             return currency;
     }

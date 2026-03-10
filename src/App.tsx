@@ -16,6 +16,7 @@ import { Users } from './pages/users/Users';
 import { ExchangeRate } from './pages/exchangeRate/ExchangeRate';
 import { HistoryInventory } from './pages/inventory/HistoryInventory';
 import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
+import { CashClosing } from './pages/cashClosing/CashClosing';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -60,6 +61,10 @@ function App() {
               {
                 path: '/cajeros',
                 element: <Users />
+              },
+              {
+                path: '/cierre-caja',
+                element: <CashClosing />
               },
               {
                 path: '/historial-cajeros',

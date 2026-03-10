@@ -1,5 +1,6 @@
-import type { DispatchBody } from "@/interfaces/distpatch.interface";
-import { createInvoicesApi, getTypesPaymentApi } from "@/services/dispatch.service";
+import type { BaseResponse } from "@/interfaces/base.interface";
+import type { DispatchBody, InvoiceResponseContent, ResumenFilter } from "@/interfaces/distpatch.interface";
+import { createInvoicesApi, getResumenSalesApi, getTypesPaymentApi } from "@/services/dispatch.service";
 import { useDispatchStore } from "@/store/dispatch.store";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -22,8 +23,17 @@ export const useTypesPaymentsQuery = () => {
     return query;
 };
 
+export const useResumenSalesQuery = (filter: ResumenFilter) => {
+	const query =  useQuery({
+		queryKey: ["resumen-sales", filter],
+		queryFn: async () => getResumenSalesApi(filter),
+	});
+
+    return query;
+};
+
 export const useCreateInvoiceMutation = () => {
-    return useMutation({
+    return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, DispatchBody>({
         mutationFn: async (data: DispatchBody) => createInvoicesApi(data),
     });
 };

@@ -28,6 +28,7 @@ import toast from "react-hot-toast";
 import { PrintInvoice } from "./PrintInvoice";
 import { useReactToPrint } from 'react-to-print';
 import type { Client } from "@/interfaces/customer.interface";
+import { flushSync } from "react-dom";
 interface CardPayment {
     name: string;
     value: string;
@@ -59,9 +60,8 @@ export const Payment = ({ customer }: PaymentProps) => {
     const { cashDrawerSession, cashier, user } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const createInvoiceMutation = useCreateInvoiceMutation();
-
+    const [invoiceNumber, setInvoiceNumber] = useState<string>('');
     const componentRef = useRef<HTMLDivElement>(null);
-
 
     const [open, setOpen] = useState<boolean>(false);
 
@@ -132,11 +132,10 @@ export const Payment = ({ customer }: PaymentProps) => {
         { name: 'Cambio/Vuelto', value: `${formatNumberWithDecimal(changeUSD)}`, valueBs: `${formatNumberWithDecimal(changeBs)}`, variant: 'quaternary' },
     ];
 
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const invoiceData = useMemo(() => {
         const now = new Date();
         return {
-            invoiceNumber: undefined,
+            invoiceNumber: invoiceNumber,
             date: formatDate(now),
             time: formatOnlyTime(now),
             cashier: cashier?.name || user?.name || '--',
@@ -173,7 +172,7 @@ export const Payment = ({ customer }: PaymentProps) => {
                 amountUSD: payment.amount,
             })),
         };
-    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, user?.name]);
+    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, invoiceNumber, user?.name, exchangeRates]);
 
     const openDialog = () => {
         setOpen(true);
@@ -291,9 +290,13 @@ export const Payment = ({ customer }: PaymentProps) => {
                     return;
                 }
 
+                const receivedInvoiceNumber = response.data?.invoice?.invoiceNumber ?? '';
+                flushSync(() => {
+                    setInvoiceNumber(receivedInvoiceNumber);
+                });
+
                 handlePrint();
 
-                toast.success(response.message || 'Factura registrada correctamente');
                 setPayments([]);
                 setProductList([]);
                 setTotal(0);

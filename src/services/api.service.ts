@@ -33,6 +33,16 @@ export const getDataApi = async <R>(url: string): Promise<BaseResponse<R | null>
     }
 };
 
+export const getDataFileApi = (endpoint: string) => {
+    return api.get(endpoint, {
+        responseType: 'blob',
+    },).then((response) => {
+        return response.data;
+    }).catch(err => {
+        return err.response.data;
+    })
+};
+
 export const postDataApi = async <T, R>(url: string, data: T): Promise<BaseResponse<R | null>> => {
     try {
         const res = await api.post<BaseResponse<R>>(url, data).then((response) => response.data);

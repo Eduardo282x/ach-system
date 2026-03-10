@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 export const Footer = () => {
     const today = new Date();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
-    const { data, } = useSessionsQuery({ status: 'OPEN' });
+    const { data } = useSessionsQuery({ status: 'OPEN' });
 
     const [open, setOpen] = useState<boolean>(false);
     const [cashDrawerSelected, setCashDrawerSelected] = useState<number | null>(null);
@@ -44,7 +44,7 @@ export const Footer = () => {
     })) : [];
 
     useEffect(() => {
-        if (data && data.sessions.length > 0) {
+        if (data && data.sessions.length > 0 && user?.role == 'CAJERO') {
             const activeSession = data.sessions.find(session => session.user.id === user?.id);
             if (!activeSession) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect

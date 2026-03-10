@@ -22,6 +22,8 @@ const buttonVariants = cva(
           "bg-violet-900 text-white hover:bg-violet-500",
         success:
           "bg-green-600 text-white hover:bg-green-500",
+        export:
+          "bg-green-700 text-white hover:bg-green-600",
         secondaryBorder:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-2 border-gray-300",
         ghost:

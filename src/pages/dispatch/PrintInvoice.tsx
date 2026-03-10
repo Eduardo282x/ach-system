@@ -55,7 +55,7 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                         <p><strong>Cliente: </strong>{data.customer.fullName}</p>
                         <p><strong>Telefono: </strong>{data.customer.phone}</p>
                     </div>
-                    <div>
+                    <div className="text-right">
                         <p><strong>Cajero: </strong>{data.cashier}</p>
                         <p><strong>Hora: </strong>{data.time}</p>
                         <p><strong>C.I: </strong>{formatNumberWithDots(data.customer.identify, '', '', true)}</p>
