@@ -116,6 +116,10 @@ export const ListProducts = () => {
         return formatNumberWithDecimal(priceBs);
     }
 
+    const priceProduct = (product: Product) => {
+        return `${formatNumberWithDecimal(product.price)}${translateCurrency(product.currency)}`
+    }
+
     //Calculate Total
     useEffect(() => {
         const totalUSD = productList.reduce((acc, product) => {
@@ -144,12 +148,12 @@ export const ListProducts = () => {
                         {productFilter.length > 0 ? productFilter.map((product, index: number) => (
                             <div key={index} onClick={() => handleSelectProduct(product)} className='text-sm flex items-center justify-between p-2 border-b last:border-0 hover:bg-gray-100 cursor-pointer'>
                                 <div className="">
-                                    <p className='text-gray-500 w-32'>#{product.barcode}</p>
                                     <p className='font-semibold'>{product.name} - {product.presentation}</p>
+                                    <p><span className='font-semibold'>Precio:</span> {priceProduct(product)} | {calculatePriceBs(product)} Bs</p>
+                                    <p><span className='font-semibold'>Cantidad:</span> {product.stock}</p>
                                 </div>
                                 <div>
-                                    <p><span className='font-semibold'>Precio:</span> {formatNumberWithDecimal(product.price)}{translateCurrency(product.currency)}</p>
-                                    <p><span className='font-semibold'>Cantidad:</span> {product.stock}</p>
+                                    <p className='text-gray-500 w-32'>#{product.barcode}</p>
                                 </div>
                             </div>
                         )) : (

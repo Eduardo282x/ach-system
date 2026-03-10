@@ -33,7 +33,7 @@ export interface ProductBody {
     currency: string;
     stock: number;
     isDetail: boolean;
-    parentId: number | null;
+    parentId: number | null | undefined;
     unitsDetail: number | null;
 }
 
@@ -60,7 +60,7 @@ export interface ExchangeRateBody {
     currency: ExchangeRateType;
 }
 
-export type ExchangeRateType = 'USD' | 'EUR';
+export type ExchangeRateType = 'USD' | 'EUR' | 'BS';
 
 //History
 export interface HistoryInventoryContent {

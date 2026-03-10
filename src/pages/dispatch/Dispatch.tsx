@@ -4,17 +4,19 @@ import { useState } from 'react';
 import { ListProducts } from './ListProducts';
 import type { Client } from '@/interfaces/customer.interface';
 import { Payment } from './Payment';
+import { useTypesPaymentsQuery } from '@/hooks/dispatch.hook';
 
 export const Dispatch = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const disabled = selectedClient == null;
+    useTypesPaymentsQuery();
 
     return (
         <div className='w-full'>
             <div className="flex items-center gap-4 h-36 mb-2">
                 <SearchClients onClientChange={setSelectedClient} />
                 <InfoCashDrawer />
-                <Payment/>
+                <Payment customerId={selectedClient?.id} />
             </div>
 
             <div className={`w-full transition-opacity ${disabled ? 'opacity-70' : 'opacity-100'} relative`} aria-disabled={disabled}>
@@ -26,7 +28,7 @@ export const Dispatch = () => {
                         </div>
                     </div>
                 )}
-                <ListProducts/>
+                <ListProducts />
             </div>
         </div>
     )
