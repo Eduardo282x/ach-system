@@ -30,7 +30,8 @@ export const formatOnlyTime = (dateString: Date | string) => {
     return `${hours}:${minutes} ${period}`;
 }
 
-export const formatDateString = (dateString: string) => {
+export const formatDateString = (dateString: Date | string | undefined, skipDate?: boolean) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     const year = date.getFullYear();
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -38,7 +39,7 @@ export const formatDateString = (dateString: string) => {
     const day = String(date.getDate()).padStart(2, '0');
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     const dayName = days[date.getDay()];
-    return `${dayName}, ${day} de ${monthName} de ${year}`;
+    return `${!skipDate ? dayName + ', ' : ''}${day} de ${monthName} de ${year}`;
 }
 
 export const formatOnlyDateStringFilter = (dateString: Date | undefined): string => {

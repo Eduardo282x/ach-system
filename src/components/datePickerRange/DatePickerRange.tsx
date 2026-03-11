@@ -81,19 +81,28 @@ export function DatePicker({ onChange }: DatePickerProps) {
         onChange(selectedDate);
     }
 
+    const onChangeToday = () => {
+        const today = new Date();
+        setDate(today);
+        onChange(today);
+    }
+
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <div className="flex flex-col gap-2">
                     <Label>Selecciona una fecha</Label>
-                    <Button
-                        variant="outline"
-                        data-empty={!date}
-                        className="w-80 justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
-                    >
-                        {date ? format(date, "PPP", { locale: es }) : <span>Selecciona una fecha</span>}
-                        <ChevronDownIcon />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            data-empty={!date}
+                            className="w-80 justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
+                        >
+                            {date ? format(date, "PPP", { locale: es }) : <span>Selecciona una fecha</span>}
+                            <ChevronDownIcon />
+                        </Button>
+                        <Button variant='primary' onClick={onChangeToday}>Hoy</Button>
+                    </div>
                 </div>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

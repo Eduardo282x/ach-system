@@ -39,8 +39,10 @@ export const Header = () => {
     return (
         <div className="w-full py-4 px-6 flex items-center justify-between bg-white">
             <div className="flex items-center gap-2">
-                <MdOutlineShoppingCart className="text-2xl" />
-                <span className="text-xl font-bold">Inversiones Gustavo, C.A</span>
+                <div className="bg-blue-800 p-2 rounded-md">
+                    <MdOutlineShoppingCart className="text-2xl text-white" />
+                </div>
+                <span className="text-xl font-bold">{import.meta.env.VITE_NAME}</span>
             </div>
 
             <div className="flex items-center gap-2">

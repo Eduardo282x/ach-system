@@ -105,7 +105,7 @@ export const Footer = () => {
                     value={cashDrawerSession}
                     onValueChange={onChangeCashDrawerSession}
                 >
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-60">
                         <SelectValue placeholder="Seleccione un cajero" />
                     </SelectTrigger>
                     <SelectContent>

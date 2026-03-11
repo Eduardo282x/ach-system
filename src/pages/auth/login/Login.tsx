@@ -26,7 +26,6 @@ export const Login = () => {
         const result = await authLoginApi(data);
 
         if (result.data == null) {
-            console.log(result.message);
             setLoading(false);
             return;
         }

@@ -46,7 +46,7 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
     return (
         <div ref={ref} className="w-full h-full relative">
             <div className="p-4 w-96 scale-50 origin-top-left absolute top-0 left-0 text-sm">
-                <p className='text-xl font-bold text-center'>Inversiones Gustavo V, C.A</p>
+                <p className='text-xl font-bold text-center'>{import.meta.env.VITE_NAME}</p>
 
                 <div className='flex items-start justify-between w-full my-4'>
                     <div>

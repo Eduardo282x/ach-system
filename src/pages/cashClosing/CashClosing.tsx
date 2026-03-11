@@ -10,11 +10,12 @@ import { useSessionsQuery } from "@/hooks/sessions.hook";
 import { Button } from "@/components/ui/button";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { getResumenSalesExcelApi } from "@/services/dispatch.service";
+import { Loading } from "@/components/loader/Loading";
 
 export const CashClosing = () => {
 
     const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined });
-    const { data: resumen, isLoading, isError } = useResumenSalesQuery(filter);
+    const { data: resumen, isLoading } = useResumenSalesQuery(filter);
 
     const cashDrawerSessions = useSessionsQuery({ status: 'OPEN' });
 
@@ -46,7 +47,7 @@ export const CashClosing = () => {
         })
     }
 
-    const handleExportExcel = async() => {
+    const handleExportExcel = async () => {
         const blob = await getResumenSalesExcelApi(filter);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -88,9 +89,11 @@ export const CashClosing = () => {
                     </div>
                 </div>
 
-                {isLoading && <p>Cargando resumen...</p>}
-                {isError && <p>No se pudo cargar el resumen.</p>}
-                {resumen && resumen.totalInvoice > 0 ? (
+                {isLoading && <div className="flex flex-col items-center gap-2 py-10">
+                    <Loading />
+                    <p>Cargando resumen...</p>
+                </div>}
+                {resumen && resumen.totalInvoice > 0 && (
                     <div className="space-y-2">
                         <div className="rounded-md overflow-hidden border border-gray-300">
                             <div className="grid grid-cols-4 border-b p-2 bg-gray-200 font-semibold">
@@ -117,7 +120,8 @@ export const CashClosing = () => {
                         <p className="font-semibold">Total facturas: {resumen.totalInvoice}</p>
 
                     </div>
-                ) : (
+                )}
+                {resumen && resumen.totalInvoice === 0 && (
                     <p className="text-center text-xl text-gray-700 py-20">No se encontraron ventas para la fecha seleccionada.</p>
                 )}
             </div>

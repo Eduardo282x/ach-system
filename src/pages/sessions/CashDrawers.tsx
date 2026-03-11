@@ -17,10 +17,8 @@ export const CashDrawers = ({ close }: CashDrawersProps) => {
     const createCashDrawerMutation = useCreateCashDrawerMutation();
     const updateCashDrawerMutation = useUpdateCashDrawerMutation();
     const cashDrawers = data?.cashDrawers ?? [];
-    console.log(cashDrawers);
     const [cashDrawerSelected, setCashDrawerSelected] = useState<CashDrawer | null>(null);
     const [name, setName] = useState<string>('');
-    console.log(cashDrawerSelected);
 
 
     const getActionCashDrawerTable = (action: string, data: CashDrawer) => {

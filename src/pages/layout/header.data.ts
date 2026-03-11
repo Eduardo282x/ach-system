@@ -5,6 +5,7 @@ import { HiOutlineCurrencyDollar } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark } from "react-icons/md";
 import { PiUsersThree } from "react-icons/pi";
+import { LuLayoutDashboard } from "react-icons/lu";
 
 export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
 
@@ -22,6 +23,15 @@ export interface HeaderInterface {
 }
 
 export const headerData: HeaderInterface[] = [
+    {
+        title: 'Dashboard',
+        icon: LuLayoutDashboard,
+        navigateTo: '/',
+        type: 'button',
+        active: false,
+        auth: ['ADMIN', 'SUPERVISOR'],
+        children: []
+    },
     {
         title: 'Clientes',
         icon: PiUsersThree,
