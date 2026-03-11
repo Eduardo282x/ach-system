@@ -9,7 +9,7 @@ import { LuLayoutDashboard } from "react-icons/lu";
 
 export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
 
-export type HeaderAction = 'logout';
+export type HeaderAction = 'logout' | 'help';
 
 export interface HeaderInterface {
     title: string;
@@ -134,6 +134,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '',
         type: 'button',
         active: false,
+        action: 'help',
         auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
         children: []
     },

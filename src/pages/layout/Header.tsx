@@ -13,6 +13,8 @@ import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
 import { useAuthStore } from "@/store/auth.store";
 import { getHeaderDataWithActive } from "./header.data";
 import type { TypeRole } from "@/interfaces/users.interface";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import achLogo from "@/assets/ach.png";
 
 const validRoles: TypeRole[] = ['ADMIN', 'SUPERVISOR', 'CAJERO'];
 
@@ -25,9 +27,14 @@ export const Header = () => {
     const items = getHeaderDataWithActive(pathname, role);
 
     const [open, setOpen] = useState(false);
+    const [openInfo, setOpenInfo] = useState(false);
 
     const openDialog = () => {
         setOpen(true);
+    }
+
+    const openInfoDialog = () => {
+        setOpenInfo(true);
     }
 
     const logout = () => {
@@ -90,7 +97,7 @@ export const Header = () => {
                         const Icon = item.icon;
 
                         return (
-                            <Button key={item.title} variant="outline" size="sm">
+                            <Button key={item.title} onClick={openInfoDialog} variant="outline" size="sm">
                                 <Icon />
                             </Button>
                         );
@@ -126,6 +133,30 @@ export const Header = () => {
                 }}
                 onCancel={() => setOpen(false)}
             />
+
+            <Dialog open={openInfo} onOpenChange={setOpenInfo}>
+                <DialogContent className="!w-140">
+                    <DialogHeader>
+                        <DialogTitle className="text-center">¿Necesitas Ayuda?</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="flex items-center justify-between  py-4">
+                        <div className="">
+                            <p><strong>Correo: </strong>achsystems2025@gmail.com</p>
+                            <p><strong>Whatsapp: </strong>+58 414-670-0191</p>
+                            <p><strong>Llamadas: </strong>+58 424-637-5061</p>
+                            <p><strong>Telegram: </strong>@achsystems</p>
+                        </div>
+                        <div className="">
+                            <img
+                                src={achLogo}
+                                alt="ACH Systems"
+                                className="h-20 w-auto object-contain"
+                            />
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

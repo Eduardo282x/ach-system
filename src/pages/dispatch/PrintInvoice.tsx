@@ -68,9 +68,9 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     <div key={index} className="flex items-start justify-between w-full my-4">
                         <div>
                             <p><strong>{product.quantity}</strong> x {product.name}</p>
-                            <p>P/U: {formatNumberWithDecimal(product.unitPrice)} Bs</p>
+                            <p>X {formatNumberWithDecimal(product.unitPrice)} Bs</p>
                         </div>
-                        <p><strong>Subtotal: </strong>{formatNumberWithDecimal(product.subtotal)} Bs</p>
+                        <p>{formatNumberWithDecimal(product.subtotal)} Bs</p>
                     </div>
                 ))}
 
