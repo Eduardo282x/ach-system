@@ -15,6 +15,7 @@ import { getHeaderDataWithActive } from "./header.data";
 import type { TypeRole } from "@/interfaces/users.interface";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import achLogo from "@/assets/ach.png";
+import { DispatchAlertDialog } from "../dispatch/Dispatch";
 
 const validRoles: TypeRole[] = ['ADMIN', 'SUPERVISOR', 'CAJERO'];
 
@@ -28,6 +29,8 @@ export const Header = () => {
 
     const [open, setOpen] = useState(false);
     const [openInfo, setOpenInfo] = useState(false);
+    const [openDispatchLeaveDialog, setOpenDispatchLeaveDialog] = useState(false);
+    const [pendingNavigateTo, setPendingNavigateTo] = useState<string | null>(null);
 
     const openDialog = () => {
         setOpen(true);
@@ -41,6 +44,32 @@ export const Header = () => {
         setOpen(false);
         useAuthStore.getState().clearSession();
         navigate('/login');
+    }
+
+    const confirmDispatchLeave = () => {
+        if (!pendingNavigateTo) {
+            setOpenDispatchLeaveDialog(false);
+            return;
+        }
+
+        navigate(pendingNavigateTo);
+        setPendingNavigateTo(null);
+        setOpenDispatchLeaveDialog(false);
+    }
+
+    const cancelDispatchLeave = () => {
+        setPendingNavigateTo(null);
+        setOpenDispatchLeaveDialog(false);
+    }
+
+    const goTo = (navigateTo: string) => {
+        if (pathname === '/despacho' && navigateTo !== '/despacho') {
+            setPendingNavigateTo(navigateTo);
+            setOpenDispatchLeaveDialog(true);
+            return;
+        }
+
+        navigate(navigateTo);
     }
 
     return (
@@ -80,7 +109,7 @@ export const Header = () => {
                                                     }
 
                                                     if (child.navigateTo) {
-                                                        navigate(child.navigateTo);
+                                                        goTo(child.navigateTo);
                                                     }
                                                 }}
                                             >
@@ -110,7 +139,7 @@ export const Header = () => {
                             <Button
                                 key={item.title}
                                 variant={item.active ? 'primary' : 'secondaryBorder'}
-                                onClick={() => item.navigateTo && navigate(item.navigateTo)}
+                                onClick={() => item.navigateTo && goTo(item.navigateTo)}
                             >
                                 <Icon />
                                 {item.title}
@@ -121,6 +150,12 @@ export const Header = () => {
                     return null;
                 })}
             </div>
+
+            <DispatchAlertDialog
+                open={openDispatchLeaveDialog}
+                onConfirm={confirmDispatchLeave}
+                onCancel={cancelDispatchLeave}
+            />
 
             <AlertDialogComponent
                 title="Cerrar Sesión"
@@ -135,7 +170,7 @@ export const Header = () => {
             />
 
             <Dialog open={openInfo} onOpenChange={setOpenInfo}>
-                <DialogContent className="!w-140">
+                <DialogContent className="w-140!">
                     <DialogHeader>
                         <DialogTitle className="text-center">¿Necesitas Ayuda?</DialogTitle>
                     </DialogHeader>

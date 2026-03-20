@@ -37,7 +37,9 @@ interface CardPayment {
 }
 
 interface Payments {
+    paymentTypeId: number;
     typePayment: string;
+    currency: string;
     reference: string;
     amount: number;
     amountBs: number;
@@ -186,6 +188,15 @@ export const Payment = ({ customer }: PaymentProps) => {
         const selectedType = typesPayment.find((type) => type.id.toString() === formData.typeSelected);
         if (!selectedType) return;
 
+        const isSelectedTypeCash = selectedType.name.toLowerCase().includes('efectivo');
+        const requiresReference = !isSelectedTypeCash;
+        const normalizedReference = formData.reference.trim();
+
+        if (requiresReference && !normalizedReference) {
+            toast.error('Debe ingresar la referencia para este método de pago');
+            return;
+        }
+
         let amountBs = 0
         let amountUSD = 0
 
@@ -205,15 +216,37 @@ export const Payment = ({ customer }: PaymentProps) => {
             amountBs = amount * (usdRate || 1);
         }
 
-        setPayments((prevPayments) => [
-            ...prevPayments,
-            {
-                typePayment: selectedType.name,
-                amountBs: amountBs,
-                amount: amountUSD,
-                reference: formData.reference,
-            },
-        ]);
+        setPayments((prevPayments) => {
+            const paymentIndex = prevPayments.findIndex((payment) => {
+                if (payment.paymentTypeId !== selectedType.id) return false;
+                if (!requiresReference) return true;
+                return payment.reference.trim() === normalizedReference;
+            });
+
+            if (paymentIndex === -1) {
+                return [
+                    ...prevPayments,
+                    {
+                        paymentTypeId: selectedType.id,
+                        typePayment: selectedType.name,
+                        currency: selectedType.currency,
+                        amountBs: amountBs,
+                        amount: amountUSD,
+                        reference: normalizedReference,
+                    },
+                ];
+            }
+
+            return prevPayments.map((payment, index) => {
+                if (index !== paymentIndex) return payment;
+
+                return {
+                    ...payment,
+                    amountBs: payment.amountBs + amountBs,
+                    amount: payment.amount + amountUSD,
+                };
+            });
+        });
 
         reset({
             typeSelected: '',
@@ -274,10 +307,9 @@ export const Payment = ({ customer }: PaymentProps) => {
                 quantity: product.quantity ?? 1,
             })),
             payments: payments.map((payment) => {
-                const type = typesPayment.find((type) => type.name === payment.typePayment);
                 return {
-                    paymentTypeId: type ? type.id : 0,
-                    amountReceived: type?.currency === 'BS' ? payment.amountBs : payment.amount,
+                    paymentTypeId: payment.paymentTypeId,
+                    amountReceived: payment.currency === 'BS' ? payment.amountBs : payment.amount,
                     amountChange: 0,
                 }
             }),
@@ -410,7 +442,15 @@ export const Payment = ({ customer }: PaymentProps) => {
                                     </div>
                                 </div>
 
-                                <Button type="submit" disabled={totalRestBs <= 0} variant="primary" className="mt-4 flex items-center w-full text-lg" size='lg'><IoAddCircleOutline className="size-6" /> Agregar Pago</Button>
+                                <Button
+                                    type="submit"
+                                    disabled={totalRestBs <= 0 || !typeSelected}
+                                    variant="primary"
+                                    className="mt-4 flex items-center w-full text-lg z-50"
+                                    size='lg'
+                                >
+                                    <IoAddCircleOutline className="size-6" /> Agregar Pago
+                                </Button>
                             </form>
                         </div>
                         <div className="w-3/4 bg-gray-100 h-full p-4">

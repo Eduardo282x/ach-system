@@ -11,6 +11,9 @@ import { useEffect, useState } from "react";
 import { useCashDrawersQuery, useOpenSessionMutation, useSessionsQuery } from "@/hooks/sessions.hook";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useSocket } from "@/services/socket.io";
+import type { ExchangeRate } from "@/interfaces/inventory.interface";
+import toast from "react-hot-toast";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
@@ -25,6 +28,7 @@ export const Footer = () => {
     const openSessionMutation = useOpenSessionMutation();
 
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
+    const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
     const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
@@ -70,6 +74,15 @@ export const Footer = () => {
     const updateExchangeRates = async () => {
         await exchangeRateAutomaticQuery.refetch();
     }
+
+    useSocket('exchangeRateUpdate', (data: { data: ExchangeRate[], message: string }) => {
+        toast.success(data.message, {
+            position: "top-right",
+            duration: 3000,
+        });
+
+        setExchangeRates(data.data);
+    });
 
     const onChangeCashDrawerSession = (value: string) => {
         const selectedCashier = data?.sessions.find(session => session.sessionId.toString() === value);
@@ -126,27 +139,57 @@ export const Footer = () => {
                         Actualizar tasas
                     </TooltipContent>
                 </Tooltip>
-                {/* <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span onClick={() => handleDefault(bcvRate ?? null)} className={`cursor-pointer rounded-md px-4 py-1 rounded-full ${bcvRate?.isDefault ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Colocar como predeterminado
-                    </TooltipContent>
-                </Tooltip> */}
-                <span className={`cursor-pointer rounded-md px-4 py-1 rounded-full bg-gray-200 text-gray-600`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
+                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-600`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
                 <span>|</span>
-                <span className={`cursor-pointer rounded-md px-4 py-1 rounded-full bg-gray-200 text-gray-600`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
-                {/* <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span onClick={() => handleDefault(euroRate ?? null)} className={`cursor-pointer rounded-md px-4 py-1 rounded-full ${euroRate?.isDefault ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Colocar como predeterminado
-                    </TooltipContent>
-                </Tooltip> */}
+                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-600`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
             </div>
 
+            <Dialog open={open} onOpenChange={validateToCloseDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            <p className='text-center text-blue-800 -mt-4 font-semibold text-xl'>Apertura de caja</p>
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="w-full">
+                        <div className="flex flex-col gap-2 my-4">
+                            <p className='font-semibold'>Seleccionar caja</p>
+                            <div className='flex items-center gap-2'>
+                                <Select defaultValue={cashDrawerSelected?.toString()} onValueChange={(value) => setCashDrawerSelected(Number(value))}>
+                                    <SelectTrigger className="w-full bg-white">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent align="start">
+                                        <SelectGroup>
+                                            {cashDrawers.data?.cashDrawers.map((cashDrawer) => (
+                                                <SelectItem key={cashDrawer.id} value={cashDrawer.id.toString()}>{cashDrawer.name}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2 my-4">
+                            <p className='font-semibold'>Balance inicial (Bs)</p>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                value={balance}
+                                onChange={(event) => setBalance(Number(event.target.value))}
+                                placeholder="Ingrese el balance inicial"
+                            />
+                            <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
+                        </div>
+
+                        <Button variant='primary' className="mt-2 w-full" onClick={openSession} disabled={balance <= 0 || cashDrawerSelected === null}>
+                            Aceptar
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            
             <Dialog open={open} onOpenChange={validateToCloseDialog}>
                 <DialogContent>
                     <DialogHeader>

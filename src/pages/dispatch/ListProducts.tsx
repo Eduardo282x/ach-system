@@ -54,7 +54,7 @@ export const ListProducts = () => {
             return newList;
         });
         setSearchTerm('');
-        setClear(true);
+        setClear((prev) => !prev);
     }
 
     const calculateSubtotal = (product: Product, quantity: number | undefined, currency: string) => {
@@ -153,7 +153,7 @@ export const ListProducts = () => {
                                     <p><span className='font-semibold'>Cantidad:</span> {product.stock}</p>
                                 </div>
                                 <div>
-                                    <p className='text-gray-500 w-32'>#{product.barcode}</p>
+                                    <p className='text-gray-500 w-32'>{product.barcode}</p>
                                 </div>
                             </div>
                         )) : (

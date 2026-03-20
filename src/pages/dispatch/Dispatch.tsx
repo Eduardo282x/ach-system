@@ -1,16 +1,24 @@
 import { SearchClients } from './SearchClients'
 import { InfoCashDrawer } from './InfoCashDrawer'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ListProducts } from './ListProducts';
 import type { Client } from '@/interfaces/customer.interface';
 import { Payment } from './Payment';
 import { useTypesPaymentsQuery } from '@/hooks/dispatch.hook';
+import { useDispatchStore } from '@/store/dispatch.store';
+import { AlertDialogComponent } from '@/components/dialog/AlertDialogComponent';
 
 export const Dispatch = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const disabled = selectedClient == null;
     useTypesPaymentsQuery();
+    const { setProductList } = useDispatchStore(state => state)
 
+    useEffect(() => {
+        return () => {
+            setProductList([]); // Limpiar la lista de productos al salir del componente
+        }
+    }, [setProductList]);
 
     return (
         <div className='w-full'>
@@ -20,8 +28,6 @@ export const Dispatch = () => {
                 <InfoCashDrawer />
                 <Payment customer={selectedClient} />
             </div>
-
-
 
             <div className={`w-full transition-opacity ${disabled ? 'opacity-70' : 'opacity-100'} relative`} aria-disabled={disabled}>
                 {disabled && (
@@ -35,5 +41,25 @@ export const Dispatch = () => {
                 <ListProducts />
             </div>
         </div>
+    )
+}
+
+
+interface DispatchAlertDialogProps {
+    open: boolean;
+    onConfirm: () => void;
+    onCancel: () => void;
+}
+
+export const DispatchAlertDialog = ({ open, onConfirm, onCancel }: DispatchAlertDialogProps) => {
+    return (
+        <AlertDialogComponent
+            title="¿Estás seguro de que deseas salir?"
+            description="Se perderán los cambios no guardados."
+            open={open}
+            close={onCancel}
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+        />
     )
 }

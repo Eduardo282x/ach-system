@@ -3,6 +3,7 @@ import { useAuthStore } from "@/store/auth.store";
 import axios from "axios";
 
 export const api = axios.create({
+    // baseURL: `https://qjf5hfj3-3000.use2.devtunnels.ms/api`,
     baseURL: `${import.meta.env.VITE_API_URL}/api`,
 });
 

@@ -5,6 +5,10 @@ import { Footer } from "./Footer";
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { useAuthStore } from "@/store/auth.store";
 import { useExchangeRateTodayQuery } from "@/hooks/inventory.hook";
+import { useSocket } from "@/services/socket.io";
+import toast from "react-hot-toast";
+import type { DailyReminder } from "@/interfaces/base.interface";
+import { CustomSnackbarMessage } from "@/components/dialog/AlertDialogComponent";
 
 export const Layout = () => {
     const navigate = useNavigate();
@@ -19,6 +23,19 @@ export const Layout = () => {
             navigate('/login');
         }
     }, [token, isTokenExpired, clearSession, navigate]);
+
+    useSocket('daily-reminder', (data: DailyReminder) => {
+        toast(() => (
+            <CustomSnackbarMessage contentMessage={data}/>
+        ), {
+            position: "top-right",
+            duration: 3000,
+            className: "shadow-xl !p-0",
+            style: {
+                maxWidth: "none",
+            }
+        });
+    });
 
     return (
         <div className="w-screen h-full flex flex-col overflow-hidden">

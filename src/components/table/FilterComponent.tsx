@@ -18,11 +18,9 @@ export const FilterComponent = ({ placeholder, loading, onChange, clearValue }: 
     };
 
     useEffect(() => {
-        if(clearValue){
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setValue('');
-        }
-    },[clearValue])
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setValue('');
+    }, [clearValue])
 
     useEffect(() => {
         const timeout = setTimeout(() => {

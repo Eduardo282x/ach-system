@@ -63,7 +63,7 @@ export const CashClosing = () => {
             <div className='w-3/4 mx-auto bg-white rounded-xl p-4 mb-4'>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <p className='text-2xl font-semibold mb-4'>Cierre de Caja</p>
-                    <Button variant='export' onClick={handleExportExcel}><RiFileExcel2Line /> Exportar</Button>
+                    <Button variant='export' disabled={!resumen || resumen.totalInvoice === 0} onClick={handleExportExcel}><RiFileExcel2Line /> Exportar</Button>
                 </div>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <DatePicker onChange={handleChangeDate} />

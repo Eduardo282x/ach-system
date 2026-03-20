@@ -24,7 +24,7 @@ export interface HeaderInterface {
 
 export const headerData: HeaderInterface[] = [
     {
-        title: 'Dashboard',
+        title: 'Control',
         icon: LuLayoutDashboard,
         navigateTo: '/',
         type: 'button',
@@ -42,7 +42,7 @@ export const headerData: HeaderInterface[] = [
         children: []
     },
     {
-        title: 'Inventario Historial',
+        title: 'Salidas',
         icon: GoHistory,
         navigateTo: '/historial-inventario',
         type: 'button',
