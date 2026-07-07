@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { getResumenSalesExcelApi } from "@/services/dispatch.service";
 import { Loading } from "@/components/loader/Loading";
+import { useAuthStore } from "@/store/auth.store";
+import type { TypeRole } from "@/interfaces/users.interface";
 
 export const CashClosing = () => {
 
@@ -18,6 +20,7 @@ export const CashClosing = () => {
     const { data: resumen, isLoading } = useResumenSalesQuery(filter);
 
     const cashDrawerSessions = useSessionsQuery({ status: 'OPEN' });
+    const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
         label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
@@ -68,25 +71,27 @@ export const CashClosing = () => {
                 <div className="flex items-center justify-between mb-4 w-full">
                     <DatePicker onChange={handleChangeDate} />
 
-                    <div className="flex flex-col gap-2">
-                        <Label>Caja</Label>
-                        <Select
-                            value={filter.sessionId?.toString() ?? 'all'}
-                            onValueChange={handleCashDrawerSessionChange}
-                        >
-                            <SelectTrigger className="w-60">
-                                <SelectValue placeholder="Seleccione un cajero" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="all">Todos</SelectItem>
-                                    {cashierSessionOptions.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {userRole !== 'CAJERO' && (
+                        <div className="flex flex-col gap-2">
+                            <Label>Caja</Label>
+                            <Select
+                                value={filter.sessionId?.toString() ?? 'all'}
+                                onValueChange={handleCashDrawerSessionChange}
+                            >
+                                <SelectTrigger className="w-60">
+                                    <SelectValue placeholder="Seleccione un cajero" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="all">Todos</SelectItem>
+                                        {cashierSessionOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
 
                 {isLoading && <div className="flex flex-col items-center gap-2 py-10">

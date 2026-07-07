@@ -74,7 +74,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/cierre-caja',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
         children: []
     },
     {

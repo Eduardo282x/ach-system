@@ -189,8 +189,8 @@ export const ListProducts = () => {
                                 />
                                 <Button variant='success' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) + 1)}>+</Button>
                             </div>
-                            <p className='w-32 shrink-0 text-right'>{formatNumberWithDecimal(product.price)} $</p>
-                            <p className='w-32 shrink-0 text-right'>{formatNumberWithDecimal(calculateSubtotal(product, product.quantity, product.currency))} $</p>
+                            <p className='w-32 shrink-0 text-right'>{formatNumberWithDecimal(product.price)} {translateCurrency(product.currency)}</p>
+                            <p className='w-32 shrink-0 text-right'>{formatNumberWithDecimal(calculateSubtotal(product, product.quantity, product.currency))} {translateCurrency(product.currency)}</p>
                             <p className='w-32 shrink-0 text-right'>{calculatePriceBs(product)} Bs</p>
                             <p className='w-32 shrink-0 text-right'>{formatNumberWithDecimal(calculateSubtotal(product, product.quantity, 'BS'))} Bs</p>
                             <div className='w-32 shrink-0 text-center'>

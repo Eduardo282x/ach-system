@@ -1,4 +1,5 @@
 import type { Cashier, User } from "@/interfaces/auth.interface";
+import type { TypeRole } from "@/interfaces/users.interface";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -14,6 +15,8 @@ interface AuthStore {
 	clearSession: () => void;
 	isTokenExpired: () => boolean;
 }
+
+export const validRoles: TypeRole[] = ['ADMIN', 'SUPERVISOR', 'CAJERO'];
 
 const parseJwtPayload = (token: string): { exp?: number } | null => {
 	try {

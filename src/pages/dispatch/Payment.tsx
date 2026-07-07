@@ -29,6 +29,7 @@ import { PrintInvoice } from "./PrintInvoice";
 import { useReactToPrint } from 'react-to-print';
 import type { Client } from "@/interfaces/customer.interface";
 import { flushSync } from "react-dom";
+import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 interface CardPayment {
     name: string;
     value: string;
@@ -39,10 +40,11 @@ interface CardPayment {
 interface Payments {
     paymentTypeId: number;
     typePayment: string;
-    currency: string;
+    currency: ExchangeRateType;
     reference: string;
     amount: number;
     amountBs: number;
+    change: number;
 }
 
 type variantCardPayment = 'primary' | 'secondary' | 'tertiary' | 'quaternary';
@@ -57,6 +59,20 @@ interface PaymentProps {
     customer?: Client | null;
 }
 
+const PAYMENT_EPSILON = 0.0001;
+
+const normalizeIntegerInput = (value: string) => value.replace(/[^0-9]/g, '');
+const normalizeDecimalInput = (value: string) => {
+    const sanitized = value.replace(/[^0-9.]/g, '');
+    const [integerPart, ...decimalParts] = sanitized.split('.');
+
+    if (decimalParts.length === 0) {
+        return integerPart;
+    }
+
+    return `${integerPart}.${decimalParts.join('')}`;
+};
+
 export const Payment = ({ customer }: PaymentProps) => {
     const { total, totalUSD, productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
     const { cashDrawerSession, cashier, user } = useAuthStore((state) => state);
@@ -66,12 +82,14 @@ export const Payment = ({ customer }: PaymentProps) => {
     const componentRef = useRef<HTMLDivElement>(null);
 
     const [open, setOpen] = useState<boolean>(false);
+    const [openChangeDialog, setOpenChangeDialog] = useState<boolean>(false);
+    const [changeDeliveredUSDInput, setChangeDeliveredUSDInput] = useState<string>('0');
 
     const typesPaymentState = useDispatchStore((state) => state.typesPayments);
     const typesPayment = useMemo(() => Array.isArray(typesPaymentState) ? typesPaymentState : [], [typesPaymentState]);
     const [payments, setPayments] = useState<Payments[]>([]);
 
-    const { control, handleSubmit, reset } = useForm<PaymentForm>({
+    const { setValue, control, handleSubmit, reset } = useForm<PaymentForm>({
         defaultValues: {
             typeSelected: '',
             reference: '',
@@ -102,16 +120,53 @@ export const Payment = ({ customer }: PaymentProps) => {
         return 1;
     }, [exchangeRates, total, totalUSD]);
 
-    const totalPayedBs = useMemo(() => {
-        return payments.reduce((acc, payment) => acc + payment.amountBs, 0);
-    }, [payments]);
+    const currentUsdRate = usdRate || 1;
 
-    const paymentProgress = total > 0 ? Math.min(totalPayedBs / total, 1) : 0;
-    const totalPayedUSD = totalUSD * paymentProgress;
-    const totalRestBs = Math.max(total - totalPayedBs, 0);
-    const totalRestUSD = Math.max(totalUSD - totalPayedUSD, 0);
-    const changeBs = Math.max(totalPayedBs - total, 0);
-    const changeUSD = total > 0 ? (changeBs / total) * totalUSD : 0;
+    const {
+        totalPayedBs,
+        totalPayedUSD,
+        totalRestBs,
+        totalRestUSD,
+        changeBs,
+        changeUSD,
+    } = useMemo(() => {
+        const paidBsRaw = payments.reduce((acc, payment) => acc + payment.amountBs, 0);
+        const restBs = Math.max(total - paidBsRaw, 0);
+        const restUSD = restBs / currentUsdRate;
+        const changeBsValue = Math.max(paidBsRaw - total, 0);
+        const changeUSDValue = changeBsValue / currentUsdRate;
+
+        return {
+            totalPayedBs: paidBsRaw,
+            totalPayedUSD: paidBsRaw / currentUsdRate,
+            totalRestBs: restBs,
+            totalRestUSD: restUSD,
+            changeBs: changeBsValue,
+            changeUSD: changeUSDValue,
+        };
+    }, [currentUsdRate, payments, total]);
+
+    const isPaymentComplete = useMemo(() => {
+        return totalRestBs <= PAYMENT_EPSILON;
+    }, [totalRestBs]);
+
+    const requiredChangeUSD = useMemo(() => {
+        return changeUSD > PAYMENT_EPSILON ? changeUSD : 0;
+    }, [changeUSD]);
+
+    const changeDeliveredUSD = useMemo(() => {
+        const parsedValue = Number(changeDeliveredUSDInput);
+        if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+            return 0;
+        }
+
+        return parsedValue;
+    }, [changeDeliveredUSDInput]);
+
+    const changeDeliveredBs = useMemo(() => {
+        const remainingChangeUSD = Math.max(requiredChangeUSD - changeDeliveredUSD, 0);
+        return remainingChangeUSD * currentUsdRate;
+    }, [changeDeliveredUSD, currentUsdRate, requiredChangeUSD]);
 
     const variantsStyles: Record<variantCardPayment, string> = {
         primary: 'bg-blue-100',
@@ -200,20 +255,12 @@ export const Payment = ({ customer }: PaymentProps) => {
         let amountBs = 0
         let amountUSD = 0
 
-        const restBsBefore = Math.max(total - totalPayedBs, 0);
-        const restUSDBefore = Math.max(totalUSD - totalPayedUSD, 0);
-
         if (selectedType.currency == 'BS') {
             amountBs = amount;
-            if (restBsBefore > 0) {
-                const proportionalUSD = (amountBs / restBsBefore) * restUSDBefore;
-                amountUSD = Math.min(proportionalUSD, restUSDBefore);
-            } else {
-                amountUSD = 0;
-            }
+            amountUSD = amountBs / currentUsdRate;
         } else {
             amountUSD = amount;
-            amountBs = amount * (usdRate || 1);
+            amountBs = amount * currentUsdRate;
         }
 
         setPayments((prevPayments) => {
@@ -233,6 +280,7 @@ export const Payment = ({ customer }: PaymentProps) => {
                         amountBs: amountBs,
                         amount: amountUSD,
                         reference: normalizedReference,
+                        change: 0
                     },
                 ];
             }
@@ -266,7 +314,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         }
     });
 
-    const completePayment = () => {
+    const submitInvoice = (paymentsToSend: Payments[] = payments) => {
         if (!customer?.id) {
             toast.error('Debe seleccionar un cliente para continuar');
             return;
@@ -277,15 +325,18 @@ export const Payment = ({ customer }: PaymentProps) => {
             return;
         }
 
-        if (!payments.length) {
+        if (!paymentsToSend.length) {
             toast.error('Debe registrar al menos un pago');
             return;
         }
 
-        // if (totalRestBs > -1) {
-        //     toast.error('El pago aún no cubre el total de la compra');
-        //     return;
-        // }
+        if (!isPaymentComplete) {
+            toast.error('El pago aún no cubre el total de la compra');
+            return;
+        }
+
+        console.log(exchangeRates);
+        
 
         const usdRateValue = exchangeRates.find((rate) => rate.currency === 'USD')?.id ?? usdRate;
         const eurRateValue = exchangeRates.find((rate) => rate.currency === 'EUR')?.id ?? 0;
@@ -306,11 +357,11 @@ export const Payment = ({ customer }: PaymentProps) => {
                 productId: product.id,
                 quantity: product.quantity ?? 1,
             })),
-            payments: payments.map((payment) => {
+            payments: paymentsToSend.map((payment) => {
                 return {
                     paymentTypeId: payment.paymentTypeId,
                     amountReceived: payment.currency === 'BS' ? payment.amountBs : payment.amount,
-                    amountChange: 0,
+                    amountChange: payment.change,
                 }
             }),
         }
@@ -339,6 +390,95 @@ export const Payment = ({ customer }: PaymentProps) => {
                 toast.error('Ocurrió un error al registrar la factura');
             },
         });
+    }
+
+    const completePayment = () => {
+        const hasChange = changeBs > PAYMENT_EPSILON || changeUSD > PAYMENT_EPSILON;
+
+        if (hasChange) {
+            setChangeDeliveredUSDInput('0');
+            setOpenChangeDialog(true);
+            return;
+        }
+
+        submitInvoice();
+    }
+
+    const confirmChangeAndCompletePayment = () => {
+        if (changeDeliveredUSD > requiredChangeUSD + PAYMENT_EPSILON) {
+            toast.error('El vuelto en USD no puede ser mayor al vuelto total requerido');
+            return;
+        }
+
+        const cashUSD = typesPayment.find((item) => item.currency === 'USD' && item.name.toLocaleLowerCase().includes('efectivo'));
+        const cashBS = typesPayment.find((item) => item.currency === 'BS' && item.name.toLocaleLowerCase().includes('efectivo'));
+
+        if (!cashUSD && changeDeliveredUSD > PAYMENT_EPSILON) {
+            toast.error('No existe un método de pago en efectivo USD para registrar el vuelto');
+            return;
+        }
+
+        if (!cashBS && changeDeliveredBs > PAYMENT_EPSILON) {
+            toast.error('No existe un método de pago en efectivo Bs para registrar el vuelto');
+            return;
+        }
+
+        const nextPayments = [...payments];
+
+        if (cashUSD) {
+            const usdIndex = nextPayments.findIndex((payment) => payment.paymentTypeId === cashUSD.id);
+            if (usdIndex >= 0) {
+                nextPayments[usdIndex] = {
+                    ...nextPayments[usdIndex],
+                    change: Number(changeDeliveredUSD),
+                };
+            } else {
+                nextPayments.push({
+                    paymentTypeId: cashUSD.id,
+                    typePayment: cashUSD.name,
+                    currency: 'USD',
+                    reference: '',
+                    amount: 0,
+                    amountBs: 0,
+                    change: Number(changeDeliveredUSD),
+                });
+            }
+        }
+
+        if (cashBS) {
+            const bsIndex = nextPayments.findIndex((payment) => payment.paymentTypeId === cashBS.id);
+            if (bsIndex >= 0) {
+                nextPayments[bsIndex] = {
+                    ...nextPayments[bsIndex],
+                    change: Number(changeDeliveredBs),
+                };
+            } else {
+                nextPayments.push({
+                    paymentTypeId: cashBS.id,
+                    typePayment: cashBS.name,
+                    currency: 'BS',
+                    reference: '',
+                    amount: 0,
+                    amountBs: 0,
+                    change: Number(changeDeliveredBs),
+                });
+            }
+        }
+
+        setPayments(nextPayments);
+
+        setOpenChangeDialog(false);
+        submitInvoice(nextPayments);
+    }
+
+    const calculateTotalRest = () => {
+        const selectedType = typesPayment.find((type) => type.id.toString() === typeSelected);
+
+        if (selectedType && selectedType.currency === 'USD') {
+            setValue('amount', Math.ceil(totalRestUSD).toString());
+        } else {
+            setValue('amount', totalRestBs.toFixed(2).toString());
+        }
     }
 
     return (
@@ -432,19 +572,35 @@ export const Payment = ({ customer }: PaymentProps) => {
 
                                     <div className="space-y-2">
                                         <Label>Monto a pagar:</Label>
-                                        <Controller
-                                            control={control}
-                                            name="amount"
-                                            render={({ field }) => (
-                                                <Input type="number" step="0.01" value={field.value} onChange={field.onChange} placeholder="Ingrese el monto a pagar" />
-                                            )}
-                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Controller
+                                                control={control}
+                                                name="amount"
+                                                render={({ field }) => (
+                                                    <Input
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        value={field.value}
+                                                        onChange={(event) => field.onChange(normalizeIntegerInput(event.target.value))}
+                                                        placeholder="Ingrese el monto a pagar"
+                                                    />
+                                                )}
+                                            />
+                                            <Button
+                                                disabled={!typeSelected || isPaymentComplete}
+                                                variant="violet"
+                                                type="button"
+                                                onClick={calculateTotalRest}
+                                            >
+                                                Máximo
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <Button
                                     type="submit"
-                                    disabled={totalRestBs <= 0 || !typeSelected}
+                                    disabled={isPaymentComplete || !typeSelected}
                                     variant="primary"
                                     className="mt-4 flex items-center w-full text-lg z-50"
                                     size='lg'
@@ -492,10 +648,72 @@ export const Payment = ({ customer }: PaymentProps) => {
 
                     <DialogFooter>
                         <div className="flex justify-end gap-2">
-                            <Button variant="violet" disabled={createInvoiceMutation.isPending} className="text-lg flex items-center gap-3" size='lg' onClick={completePayment}><IoMdCheckmarkCircleOutline className="size-6" /> {createInvoiceMutation.isPending ? 'Procesando...' : 'Finalizar Venta'}</Button>
+                            <Button
+                                variant="violet"
+                                disabled={createInvoiceMutation.isPending || !isPaymentComplete}
+                                className="text-lg flex items-center gap-3"
+                                size='lg'
+                                onClick={completePayment}>
+                                <IoMdCheckmarkCircleOutline className="size-6" />
+                                {createInvoiceMutation.isPending ? 'Procesando...' : 'Finalizar Venta'}
+                            </Button>
                         </div>
                     </DialogFooter>
 
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={openChangeDialog} onOpenChange={setOpenChangeDialog}>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Confirmar vuelto</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="rounded-md bg-gray-100 p-3 text-sm">
+                            <p className="font-semibold text-gray-800">Dinero recibido</p>
+                            <p>{formatNumberWithDecimal(totalPayedBs)} Bs</p>
+                            <p>{formatNumberWithDecimal(totalPayedUSD)} $</p>
+                        </div>
+
+                        <div className="rounded-md bg-red-50 p-3 text-sm">
+                            <p className="font-semibold text-red-800">Vuelto total a entregar</p>
+                            <p>{formatNumberWithDecimal(changeBs)} Bs</p>
+                            <p>{formatNumberWithDecimal(changeUSD)} $</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Vuelto a entregar en USD</Label>
+                            <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={changeDeliveredUSDInput}
+                                onChange={(event) => setChangeDeliveredUSDInput(normalizeDecimalInput(event.target.value))}
+                                placeholder="Ingrese monto en USD"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Vuelto a entregar en Bs (calculado)</Label>
+                            <Input value={formatNumberWithDecimal(changeDeliveredBs)} readOnly disabled />
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" type="button" onClick={() => setOpenChangeDialog(false)}>
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="primary"
+                                onClick={confirmChangeAndCompletePayment}
+                                disabled={createInvoiceMutation.isPending}
+                            >
+                                Confirmar y finalizar
+                            </Button>
+                        </div>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

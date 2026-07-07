@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatDateString, formatNumberWithDecimal } from "@/helpers/formatters";
+import { formatDateString, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
 import { useExchangeRateAutomaticQuery } from "@/hooks/inventory.hook";
 import { useAuthStore } from "@/store/auth.store";
 import { useInventoryStore } from "@/store/inventory.store";
@@ -33,6 +33,7 @@ export const Footer = () => {
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
     const [euroRate, setEuroRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined);
+    const [exchangeDate, setExchangeDate] = useState(exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
 
     useEffect(() => {
         const bcvRate = exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined;
@@ -40,6 +41,7 @@ export const Footer = () => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setBcvRate(bcvRate);
         setEuroRate(euroRate);
+        setExchangeDate(exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
     }, [exchangeRates])
 
     const cashierSessionOptions = data ? data.sessions.map((cashDrawerSession) => ({
@@ -50,10 +52,17 @@ export const Footer = () => {
     useEffect(() => {
         if (data && data.sessions.length > 0 && user?.role == 'CAJERO') {
             const activeSession = data.sessions.find(session => session.user.id === user?.id);
+            console.log(activeSession);
+            console.log(data);
             if (!activeSession) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setOpen(true);
+            } else {
+                useAuthStore.getState().setCashDrawerSession(activeSession.sessionId.toString());
             }
+        } else if (user?.role === 'CAJERO') {
+            const selectedCashier = data?.sessions.find(session => session.user.id === user?.id);
+            console.log(selectedCashier);
         }
     }, [data, user])
 
@@ -130,7 +139,7 @@ export const Footer = () => {
                     </SelectContent>
                 </Select>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mb-1 relative ">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button variant='ghost' onClick={updateExchangeRates} disabled={exchangeRateAutomaticQuery.isFetching}><IoMdSync /></Button>
@@ -139,9 +148,10 @@ export const Footer = () => {
                         Actualizar tasas
                     </TooltipContent>
                 </Tooltip>
-                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-600`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
+                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
                 <span>|</span>
-                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-600`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
+                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
+                <span className={`absolute -bottom-2.5 right-0 text-gray-800 px-4 text-xs w-100 text-right`}>Fecha de Actualización: {exchangeDate ? `${formatDateString(exchangeDate)} Hora: ${formatOnlyTime(exchangeDate)}` : '--'}</span>
             </div>
 
             <Dialog open={open} onOpenChange={validateToCloseDialog}>
@@ -189,7 +199,7 @@ export const Footer = () => {
                     </div>
                 </DialogContent>
             </Dialog>
-            
+
             <Dialog open={open} onOpenChange={validateToCloseDialog}>
                 <DialogContent>
                     <DialogHeader>

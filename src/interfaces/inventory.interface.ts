@@ -46,12 +46,13 @@ export interface ExchangeRateContent {
     exchangeRate: ExchangeRate[];
 }
 export interface ExchangeRate {
-    name: string;
     id: number;
+    name: string;
     rate: number;
     currency: ExchangeRateType;
     isDefault: boolean;
     createdAt: Date;
+    date: Date;
 }
 
 export interface ExchangeRateBody {

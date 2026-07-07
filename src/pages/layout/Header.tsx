@@ -10,14 +10,13 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { useState } from "react";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
-import { useAuthStore } from "@/store/auth.store";
+import { useAuthStore, validRoles } from "@/store/auth.store";
 import { getHeaderDataWithActive } from "./header.data";
 import type { TypeRole } from "@/interfaces/users.interface";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import achLogo from "@/assets/ach.png";
 import { DispatchAlertDialog } from "../dispatch/Dispatch";
 
-const validRoles: TypeRole[] = ['ADMIN', 'SUPERVISOR', 'CAJERO'];
 
 export const Header = () => {
     const navigate = useNavigate();
