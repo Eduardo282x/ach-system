@@ -7,20 +7,20 @@ export const inventoryHistoryColumns: ColumnDef<HistoryInventory>[] = [
         header: 'Código',
         key: 'product.barcode',
         element: (row) => row.product.barcode,
-        width: '12rem',
+        width: '8rem',
         visible: true,
     },
     {
         header: 'Producto',
         key: 'product.name',
-        width: '30rem',
+        width: '10rem',
         element: (row) => `${row.product.name} ${row.product.presentation ? `- ${row.product.presentation}` : ''}`,
         visible: true,
     },
     {
         header: 'Cantidad',
         key: 'quantity',
-        width: '8rem',
+        width: '2rem',
         element: (row) => row.quantity.toString(),
         class: (row) => `${styleClassQuantity(row.quantity)} rounded-full px-2 text-center`,
         visible: true,
@@ -28,7 +28,7 @@ export const inventoryHistoryColumns: ColumnDef<HistoryInventory>[] = [
     {
         header: 'Precio',
         key: 'product.price',
-        width: '8rem',
+        width: '2rem',
         element: (row) => `${formatNumberWithDecimal(row.product.price)} ${translateCurrency(row.product.currency)}`,
         visible: false,
     },
@@ -53,7 +53,7 @@ export const inventoryHistoryColumns: ColumnDef<HistoryInventory>[] = [
         key: 'createdAt',
         width: '8rem',
         element: (row) => formatDateWithTime(row.createdAt),
-        visible: false,
+        visible: true,
     },
 ];
 

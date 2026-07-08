@@ -90,10 +90,10 @@ const getStatusLabel = (status: string) => {
 
 const getStatusColor = (status: string) => {
     switch (status) {
-        case "PAID": return "border-2 border-green-600 text-green-600 bg-green-50";
-        case "PENDING": return "border-2 border-yellow-600 text-yellow-600 bg-yellow-50";
-        case "CANCELLED": return "border-2 border-red-600 text-red-600 bg-red-50";
-        default: return "border-2 border-gray-600 text-gray-600 bg-gray-50";
+        case "PAID": return "text-green-800 bg-green-100";
+        case "PENDING": return "text-yellow-800 bg-yellow-100";
+        case "CANCELLED": return "text-red-800 bg-red-100";
+        default: return "text-gray-800 bg-gray-100";
     }
 };
 
