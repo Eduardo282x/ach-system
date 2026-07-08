@@ -5,39 +5,57 @@ import { SelectColumnsComponent, TableComponent } from "@/components/table/Table
 import PageTransitionComponent from "@/components/PageTransition";
 import { useUsersStore } from "@/store/users.store";
 import { useDeleteUserMutation, useUsersQuery } from "@/hooks/users.hook";
+import { useCashDrawersQuery } from "@/hooks/sessions.hook";
 import { FaArrowLeft } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import { useState } from "react";
 import type { User } from "@/interfaces/users.interface";
+import type { CashDrawer } from "@/interfaces/sessions.interface";
 import { UsersForm, type UsersFormMode } from "./UsersForm";
+import { CashDrawerForm, type CashDrawerFormMode } from "./CashDrawerForm";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
-import { BsBox } from "react-icons/bs";
-import { CashDrawers } from "../sessions/CashDrawers";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cashDrawerColumns } from "../sessions/cashDrawer.data";
 
 export const Users = () => {
     const {
         filter,
         columns,
         toggle,
+        activeTab,
+        formType,
         setFilter,
         setColumns,
         openForm,
         closeForm,
+        setActiveTab,
+        setFormType,
     } = useUsersStore((state) => state);
 
     const { data, isLoading } = useUsersQuery(filter);
     const users = data?.users ?? [];
 
+    const { data: cashDrawersData, isLoading: isLoadingCashDrawers } = useCashDrawersQuery();
+    const cashDrawers = cashDrawersData?.cashDrawers ?? [];
+
+    const [cashDrawerFilter, setCashDrawerFilter] = useState("");
+
+    const filteredCashDrawers = cashDrawers.filter((cd) =>
+        cd.name.toLowerCase().includes(cashDrawerFilter.toLowerCase())
+    );
+
     const [userSelected, setUserSelected] = useState<User | null>(null);
+    const [cashDrawerSelected, setCashDrawerSelected] = useState<CashDrawer | null>(null);
 
     const [formMode, setFormMode] = useState<UsersFormMode>("create");
+    const [cashDrawerFormMode, setCashDrawerFormMode] = useState<CashDrawerFormMode>("create");
     const [openDialog, setOpenDialog] = useState(false);
-    const [openCashDrawer, setOpenCashDrawer] = useState(false);
 
     const deleteUserMutation = useDeleteUserMutation();
 
-    const getActionTable = (action: string, data: User) => {
+    const handleUserAction = (action: string, data: User) => {
         if (action === "edit") {
+            setFormType("user");
             setFormMode("edit");
             setUserSelected(data);
             openForm();
@@ -50,6 +68,15 @@ export const Users = () => {
         }
     };
 
+    const handleCashDrawerAction = (action: string, data: CashDrawer) => {
+        if (action === "edit") {
+            setFormType("cashDrawer");
+            setCashDrawerFormMode("edit");
+            setCashDrawerSelected(data);
+            openForm();
+        }
+    };
+
     const deleteUser = () => {
         if (userSelected) {
             deleteUserMutation.mutate(userSelected.id);
@@ -57,61 +84,91 @@ export const Users = () => {
         setOpenDialog(false);
     };
 
-    const openCreateForm = () => {
+    const openCreateUserForm = () => {
+        setFormType("user");
         setFormMode("create");
         setUserSelected(null);
         openForm();
     };
 
-    const handleOpenCashDrawers = () => {
-        setOpenCashDrawer(true)
+    const openCreateCashDrawerForm = () => {
+        setFormType("cashDrawer");
+        setCashDrawerFormMode("create");
+        setCashDrawerSelected(null);
         openForm();
-    }
-
-    const handleCloseCashDrawer = () => {
-        closeForm();
-        setTimeout(() => {
-            setOpenCashDrawer(false)
-        }, 500);
-    }
+    };
 
     const handleCloseForm = () => {
+        setFormType("user");
         setFormMode("create");
         setUserSelected(null);
+        setCashDrawerFormMode("create");
+        setCashDrawerSelected(null);
         closeForm();
+    };
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value as "usuarios" | "cajas");
     };
 
     return (
         <div className="w-full">
             <PageTransitionComponent toggle={toggle}>
                 <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-2xl font-semibold mb-2 ml-2">Cajeros/Usuarios</p>
-                        <Button variant="primary" onClick={handleOpenCashDrawers}><BsBox /> Ver Cajas</Button>
+                    <div className="flex items-center gap-4 mb-2 ml-2">
+                        <Tabs value={activeTab} onValueChange={handleTabChange}>
+                            <TabsList>
+                                <TabsTrigger value="usuarios">Usuarios</TabsTrigger>
+                                <TabsTrigger value="cajas">Cajas</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <p className="text-2xl font-semibold">
+                            {activeTab === "usuarios" ? "Cajeros/Usuarios" : "Cajas"}
+                        </p>
                     </div>
 
-                    <div className="rounded-xl bg-white p-4">
-                        <div className="w-full flex items-center justify-between mb-4">
-                            <div className="w-96">
-                            <FilterComponent placeholder="Buscar cajero..." onChange={setFilter} />
+                    {activeTab === "usuarios" ? (
+                        <div className="rounded-xl bg-white p-4">
+                            <div className="w-full flex items-center justify-between mb-4">
+                                <div className="w-96">
+                                    <FilterComponent placeholder="Buscar cajero..." onChange={setFilter} />
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <SelectColumnsComponent columns={columns} onChange={setColumns} />
+                                    <Button variant="primary" onClick={openCreateUserForm}><IoMdAdd /> Agregar Cajero</Button>
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                <SelectColumnsComponent columns={columns} onChange={setColumns} />
-                                <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Cajero</Button>
-                            </div>
+                            <TableComponent
+                                onChange={handleUserAction}
+                                columns={columns.filter((column) => column.visible)}
+                                data={isLoading ? [] : users}
+                            />
                         </div>
+                    ) : (
+                        <div className="rounded-xl bg-white p-4">
+                            <div className="w-full flex items-center justify-between mb-4">
+                                <div className="w-96">
+                                    <FilterComponent placeholder="Buscar caja..." onChange={setCashDrawerFilter} />
+                                </div>
 
-                        <TableComponent
-                            onChange={getActionTable}
-                            columns={columns.filter((column) => column.visible)}
-                            data={isLoading ? [] : users}
-                        />
-                    </div>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="primary" onClick={openCreateCashDrawerForm}><IoMdAdd /> Agregar Caja</Button>
+                                </div>
+                            </div>
+
+                            <TableComponent
+                                onChange={handleCashDrawerAction}
+                                columns={cashDrawerColumns}
+                                data={isLoadingCashDrawers ? [] : filteredCashDrawers}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div>
-                    {!openCashDrawer ? (
+                    {formType === "user" ? (
                         <>
                             <p className="text-2xl font-semibold mb-2 ml-2">
                                 <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
@@ -121,7 +178,14 @@ export const Users = () => {
                             <UsersForm mode={formMode} user={userSelected} closeForm={handleCloseForm} />
                         </>
                     ) : (
-                        <CashDrawers close={handleCloseCashDrawer}/>
+                        <>
+                            <p className="text-2xl font-semibold mb-2 ml-2">
+                                <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
+                                {cashDrawerFormMode === "edit" ? "Editar Caja" : "Agregar Caja"}
+                            </p>
+
+                            <CashDrawerForm mode={cashDrawerFormMode} cashDrawer={cashDrawerSelected} closeForm={handleCloseForm} />
+                        </>
                     )}
                 </div>
             </PageTransitionComponent>
