@@ -5,14 +5,14 @@ import type { HistoryInventory, MovementType } from "@/interfaces/inventory.inte
 export const inventoryHistoryColumns: ColumnDef<HistoryInventory>[] = [
     {
         header: 'Código',
-        key: 'product',
+        key: 'product.barcode',
         element: (row) => row.product.barcode,
         width: '12rem',
         visible: true,
     },
     {
         header: 'Producto',
-        key: 'product',
+        key: 'product.name',
         width: '30rem',
         element: (row) => `${row.product.name} ${row.product.presentation ? `- ${row.product.presentation}` : ''}`,
         visible: true,
@@ -27,7 +27,7 @@ export const inventoryHistoryColumns: ColumnDef<HistoryInventory>[] = [
     },
     {
         header: 'Precio',
-        key: 'product',
+        key: 'product.price',
         width: '8rem',
         element: (row) => `${formatNumberWithDecimal(row.product.price)} ${translateCurrency(row.product.currency)}`,
         visible: false,
@@ -41,7 +41,7 @@ export const inventoryHistoryColumns: ColumnDef<HistoryInventory>[] = [
         visible: true,
     },
     {
-        header: 'Razon',
+        header: 'Razón',
         key: 'reason',
         width: '8rem',
         element: (row) => row.reason,

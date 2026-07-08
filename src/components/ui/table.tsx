@@ -2,11 +2,15 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+interface TableProps extends React.ComponentProps<"table"> {
+  noMaxHeight?: boolean
+}
+
+function Table({ className, noMaxHeight, ...props }: TableProps) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full rounded-md overflow-auto h-104 max-h-104"
+      className={`relative w-full rounded-md overflow-auto ${noMaxHeight ? 'h-104 max-h-104' : ""}`}
     >
       <table
         data-slot="table"

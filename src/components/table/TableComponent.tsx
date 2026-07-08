@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type JSX } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 import {
@@ -14,9 +14,10 @@ import type { Pagination } from "@/interfaces/base.interface";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
 import { Loading } from "../loader/Loading";
+import { IoIosArrowDown } from "react-icons/io";
 
 export interface ColumnDef<T> {
-    key: keyof T;
+    key: string;
     header: string;
     width?: string;
     element: (row: T) => string | JSX.Element;
@@ -36,11 +37,37 @@ interface TableComponentProps<T> {
     pagination?: Pagination
     totalElements?: number
     ignorePagination?: boolean;
+    isExpansible?: boolean;
+    automaticHeight?: boolean;
     isLoading?: boolean;
     onChange: (action: string, data: T) => void;
+    renderRow?: (item: T, index: number) => React.ReactNode;
 }
 
-export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, pagination, totalElements, isLoading }: TableComponentProps<T>) => {
+const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
+    switch (variant) {
+        case 'primary':
+            return 'text-blue-600';
+        case 'error':
+            return 'text-red-600';
+        case 'outline':
+            return 'text-gray-600';
+        default:
+            return '';
+    }
+}
+
+export const TableComponent = <T,>({
+    columns,
+    data,
+    onChange,
+    ignorePagination,
+    pagination,
+    totalElements,
+    isLoading,
+    isExpansible,
+    renderRow,
+    automaticHeight }: TableComponentProps<T>) => {
     const [size, setSize] = useState(pagination?.size || 100);
 
     const getRowKey = useCallback((row: T, rowIndex: number) => {
@@ -51,24 +78,11 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
         return String(rowIndex);
     }, []);
 
-    const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
-        switch (variant) {
-            case 'primary':
-                return 'text-blue-600';
-            case 'error':
-                return 'text-red-600';
-            case 'outline':
-                return 'text-gray-600';
-            default:
-                return '';
-        }
-    }
-
     const tableRows = useMemo(() => {
         return data.map((row, rowIndex) => (
             <TableRow key={getRowKey(row, rowIndex)} className="bg-muted">
-                {columns.map((column) => (
-                    <TableCell key={column.key.toString()}>
+                {columns.map((column, idx) => (
+                    <TableCell key={idx}>
                         {column.icons ? (
                             <div className="flex items-center gap-4">
                                 {column.icons(row).map((icon) => (
@@ -85,7 +99,7 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
                                 ))}
                             </div>
                         ) : (
-                            <p className={column.class ? column.class(row) : ''}>{column.element(row)}</p>
+                            <div className={column.class ? column.class(row) : ''}>{column.element(row)}</div>
                         )}
                     </TableCell>
                 ))}
@@ -96,12 +110,17 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
     return (
         <div>
             <div className="rounded-md border hidden lg:block shadow-md">
-                <Table className="relative">
+                <Table noMaxHeight={!automaticHeight} className="relative">
                     <TableHeader className={`shadow-md`}>
                         <TableRow>
                             {columns.map((column) => (
                                 <TableHead key={column.key.toString()} style={{ width: column.width }}>{column.header}</TableHead>
                             ))}
+                            {isExpansible && (
+                                <TableHead className="cursor-pointer bg-white z-50">
+                                    Abrir
+                                </TableHead>
+                            )}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -120,7 +139,16 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
                                 </TableCell>
                             </TableRow>
                         )}
-                        {tableRows}
+                        {isExpansible ? data.map((item, key) => (
+                            <ExpansibleRow
+                                key={key}
+                                index={key}
+                                columns={columns}
+                                data={item}
+                                onChange={onChange}
+                                renderRow={renderRow}
+                            />
+                        )) : tableRows}
                     </TableBody>
                 </Table>
             </div>
@@ -156,6 +184,83 @@ export const TableComponent = <T,>({ columns, data, onChange, ignorePagination, 
                 </div>
             )}
         </div>
+    )
+}
+
+interface TableRowNormalProps<T> {
+    index: number;
+    columns: ColumnDef<T>[];
+    data: T;
+    colSpanColumns?: boolean;
+    onChange: (action: string, data: T) => void;
+    renderRow?: (item: T, index: number) => React.ReactNode;
+}
+
+const ExpansibleRow = <T,>({ index, columns, data, onChange, renderRow }: TableRowNormalProps<T>) => {
+    const [open, setOpen] = useState<boolean>(false);
+    const rowRef = useRef<HTMLTableRowElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (rowRef.current && !rowRef.current.contains(event.target as Node)) {
+                // setOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    return (
+        <>
+            <TableRow
+                key={`main-${index}`}
+                ref={rowRef}
+                onClick={() => setOpen(!open)}
+                className="cursor-pointer transition-all"
+            >
+                {columns.map((column: ColumnDef<T>, idx: number) => (
+                    <TableCell key={idx}>
+                        {column.icons ? (
+                            <div className="flex items-center gap-4">
+                                {column.icons(data).map((icon) => (
+                                    <Tooltip key={icon.action}>
+                                        <TooltipTrigger asChild>
+                                            <Button size='icon' variant='ghost' onClick={() => onChange(icon.action, data)}>
+                                                <icon.icon className={`${styleVariant(icon.variant)} text-lg`} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{icon.label}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={column.class ? column.class(data) : ''}>{column.element(data)}</div>
+                        )}
+                    </TableCell>
+                ))}
+                <TableCell>
+                    <IoIosArrowDown
+                        className={`transition-transform text-xl ${open ? 'rotate-180' : 'rotate-0'}`}
+                    />
+                </TableCell>
+            </TableRow>
+
+            {/* Fila expandida */}
+            <TableRow key={`expand-${index}`} className="bg-muted">
+                <TableCell colSpan={columns.length + 1} className="p-0">
+                    <div
+                        className={`transition-all duration-300 ease-in-out w-full ${open ? 'h-auto px-4 py-2' : '!h-0'} interpolate overflow-hidden`}
+                    >
+                        <div>{renderRow && renderRow(data, index)}</div>
+                    </div>
+                </TableCell>
+            </TableRow>
+        </>
     )
 }
 

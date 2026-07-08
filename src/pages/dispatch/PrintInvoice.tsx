@@ -16,7 +16,7 @@ interface InvoicePayment {
     amountUSD: number;
 }
 
-interface InvoiceData {
+export interface InvoiceData {
     invoiceNumber?: number | string;
     date: string;
     time: string;
@@ -53,7 +53,7 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                         <p><strong>Despacho: </strong>#{data.invoiceNumber ?? '--'}</p>
                         <p><strong>Fecha: </strong>{data.date}</p>
                         <p><strong>Cliente: </strong>{data.customer.fullName}</p>
-                        <p><strong>Telefono: </strong>{data.customer.phone}</p>
+                        <p><strong>Teléfono: </strong>{data.customer.phone}</p>
                     </div>
                     <div className="text-right">
                         <p><strong>Cajero: </strong>{data.cashier}</p>

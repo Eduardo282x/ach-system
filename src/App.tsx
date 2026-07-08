@@ -17,6 +17,7 @@ import { ExchangeRate } from './pages/exchangeRate/ExchangeRate';
 import { HistoryInventory } from './pages/inventory/HistoryInventory';
 import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 import { CashClosing } from './pages/cashClosing/CashClosing';
+import { Invoices } from './pages/invoices/Invoices';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -73,6 +74,10 @@ function App() {
               {
                 path: '/clientes',
                 element: <Customers />
+              },
+              {
+                path: '/facturas',
+                element: <Invoices />
               },
               {
                 path: '*',

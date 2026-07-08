@@ -70,6 +70,7 @@ export const ExchangeRate = () => {
                 </form>
 
                 <TableComponent
+                    automaticHeight={true}
                     onChange={() => { }}
                     ignorePagination={true}
                     columns={exchangeRateColumns}

@@ -31,16 +31,11 @@ export const Login = () => {
         }
         setLoading(false);
 
-        if (result.data.user.role === "CAJERO") {
-            setTimeout(() => {
-                navigate("/despacho");
-            }, 1500);
-            return;
-        } else {
-            setTimeout(() => {
-                navigate("/inventory");
-            }, 1500);
-        }
+        const goTo = result.data.user.role === "CAJERO" ? "/despacho" : "/inventory";
+        
+        setTimeout(() => {
+                navigate(goTo);
+            }, 1000);
     }
 
     return (

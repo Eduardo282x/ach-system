@@ -103,6 +103,7 @@ export const Inventory = () => {
                             columns={columns.filter(column => column.visible)}
                             data={products}
                             isLoading={isLoading}
+                            ignorePagination={false}
                         />
                     </div>
                 </div>

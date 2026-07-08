@@ -1,4 +1,5 @@
 import type { ExchangeRateType } from "./inventory.interface";
+import type { CashDrawer } from "./sessions.interface";
 import type { TypeRole } from "./users.interface";
 
 export interface TypesPaymentContent {
@@ -149,10 +150,35 @@ export interface PaymentType {
 export interface Session {
     id: number;
     cashDrawerId: number;
+    cashDrawer: CashDrawer;
 }
 
 export interface User {
     id: number;
     name: string;
     role: TypeRole;
+}
+
+// Invoices List
+
+export interface InvoicesFilter {
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    sessionId?: number;
+    userId?: number;
+    page?: number;
+    size?: number;
+}
+
+export interface InvoicesPagination {
+    page: number;
+    size: number;
+    total: number;
+    totalPages: number;
+}
+
+export interface InvoicesResponse {
+    invoices: InvoiceResponse[];
+    pagination: InvoicesPagination;
 }
