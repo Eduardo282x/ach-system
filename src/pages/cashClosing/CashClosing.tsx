@@ -2,7 +2,7 @@ import { DatePicker } from "@/components/datePickerRange/DatePickerRange"
 import { useResumenSalesQuery } from "@/hooks/dispatch.hook";
 import { formatDate, formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
 import type { ResumenFilter } from "@/interfaces/distpatch.interface";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LuEqualApproximately } from "react-icons/lu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,11 +24,26 @@ export const CashClosing = () => {
     const { data: shiftsData } = useShiftsQuery();
     const shifts = shiftsData?.shifts ?? [];
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
+    const user = useAuthStore((state) => state.user);
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
         label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
         value: cashDrawerSession.sessionId.toString(),
     })) : [];
+
+    useEffect(() => {
+        if (userRole === 'CAJERO' && cashDrawerSessions.data?.sessions && user?.id) {
+            const mySession = cashDrawerSessions.data.sessions.find(
+                s => s.user.id === user.id
+            );
+            if (mySession && filter.sessionId !== mySession.sessionId) {
+                setFilter(prev => ({
+                    ...prev,
+                    sessionId: mySession.sessionId,
+                }));
+            }
+        }
+    }, [userRole, cashDrawerSessions.data, user]);
 
     const handleCashDrawerSessionChange = (sessionId: string) => {
         if (sessionId === 'all') {

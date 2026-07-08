@@ -145,8 +145,8 @@ export const ListProducts = () => {
                 </div>
                 {searchTerm !== '' && (
                     <div className='absolute top-10 w-full left-0 border-2 border-gray-300 rounded-md bg-white shadow-md'>
-                        {productFilter.length > 0 ? productFilter.map((product, index: number) => (
-                            <div key={index} onClick={() => handleSelectProduct(product)} className='text-sm flex items-center justify-between p-2 border-b last:border-0 hover:bg-gray-100 cursor-pointer'>
+                        {productFilter.length > 0 ? productFilter.map((product: Product, index: number) => (
+                            <div key={index} onClick={() => product.stock > 0 && handleSelectProduct(product)} className={`text-sm flex items-center justify-between p-2 border-b last:border-0 hover:bg-gray-100 relative ${product.stock === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
                                 <div className="">
                                     <p className='font-semibold'>{product.name} - {product.presentation}</p>
                                     <p><span className='font-semibold'>Precio:</span> {priceProduct(product)} | {calculatePriceBs(product)} Bs</p>
@@ -154,6 +154,15 @@ export const ListProducts = () => {
                                 </div>
                                 <div>
                                     <p className='text-gray-500 w-32'>{product.barcode}</p>
+                                </div>
+
+                                <div className="absolute top-0 right-0 flex items-center justify-center w-full h-full">
+                                    {product.stock === 0 && (
+                                        <div className="text-center">
+                                            <p className='text-red-500 font-semibold text-2xl'>Producto no disponible</p>
+                                            <p className='text-red-500 font-semibold text-xl'>Sin stock</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )) : (

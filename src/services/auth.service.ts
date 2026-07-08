@@ -19,3 +19,11 @@ export const authLoginApi = async (data: LoginForm) => {
     }
     return result;
 };
+
+export const logoutApi = async () => {
+    try {
+        await postDataApi("/auth/logout", {});
+    } catch (error) {
+        console.error("Error during logout:", error);
+    }
+}

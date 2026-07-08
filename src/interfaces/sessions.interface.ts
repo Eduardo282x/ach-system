@@ -17,7 +17,9 @@ export interface Session {
     eventAt: Date;
     status: EventType;
     openingBalance: string;
+    openingBalanceUsd: string;
     closingBalance: null | string;
+    closingBalanceUsd: null | string;
     totalSales: string;
     totalInBs: string;
     totalInUsd: string;
@@ -49,8 +51,10 @@ export interface CreateUpdateCashDrawer {
 //Body
 export interface OpenSession {
     openingBalance: number;
+    openingBalanceUsd: number;
     cashDrawerId: number;
 }
 export interface CloseSession {
     closingBalance: number;
+    closingBalanceUsd: number;
 }

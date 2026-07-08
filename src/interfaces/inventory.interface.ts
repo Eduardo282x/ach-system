@@ -13,7 +13,7 @@ export interface Product {
     price: string;
     currency: ExchangeRateType;
     quantity?: number;
-    stock?: number;
+    stock: number;
     subtotalBs?: number;
     subtotal?: number;
     isDetail?: boolean;

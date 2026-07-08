@@ -127,7 +127,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                 <p>Informacion del cliente</p>
 
                 <div className='absolute top-1 left-1'>
-                    <Button variant='primary' disabled={identify !== ''} onClick={openDialogClient}>
+                    <Button variant='primary' onClick={openDialogClient}>
                         Buscar cliente
                     </Button>
                 </div>
