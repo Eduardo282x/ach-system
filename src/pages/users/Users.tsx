@@ -11,8 +11,11 @@ import { IoMdAdd } from "react-icons/io";
 import { useState } from "react";
 import type { User } from "@/interfaces/users.interface";
 import type { CashDrawer } from "@/interfaces/sessions.interface";
+import type { Shift } from "@/interfaces/shift.interface";
 import { UsersForm, type UsersFormMode } from "./UsersForm";
 import { CashDrawerForm, type CashDrawerFormMode } from "./CashDrawerForm";
+import { ShiftForm, type ShiftFormMode } from "./ShiftForm";
+import { Shifts } from "./Shifts";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cashDrawerColumns } from "../sessions/cashDrawer.data";
@@ -46,9 +49,11 @@ export const Users = () => {
 
     const [userSelected, setUserSelected] = useState<User | null>(null);
     const [cashDrawerSelected, setCashDrawerSelected] = useState<CashDrawer | null>(null);
+    const [shiftSelected, setShiftSelected] = useState<Shift | null>(null);
 
     const [formMode, setFormMode] = useState<UsersFormMode>("create");
     const [cashDrawerFormMode, setCashDrawerFormMode] = useState<CashDrawerFormMode>("create");
+    const [shiftFormMode, setShiftFormMode] = useState<ShiftFormMode>("create");
     const [openDialog, setOpenDialog] = useState(false);
 
     const deleteUserMutation = useDeleteUserMutation();
@@ -98,12 +103,28 @@ export const Users = () => {
         openForm();
     };
 
+    const openCreateShiftForm = () => {
+        setFormType("shift");
+        setShiftFormMode("create");
+        setShiftSelected(null);
+        openForm();
+    };
+
+    const handleShiftAction = (shift: Shift) => {
+        setFormType("shift");
+        setShiftFormMode("edit");
+        setShiftSelected(shift);
+        openForm();
+    };
+
     const handleCloseForm = () => {
         setFormType("user");
         setFormMode("create");
         setUserSelected(null);
         setCashDrawerFormMode("create");
         setCashDrawerSelected(null);
+        setShiftFormMode("create");
+        setShiftSelected(null);
         closeForm();
     };
 
@@ -147,7 +168,7 @@ export const Users = () => {
                                 data={isLoading ? [] : users}
                             />
                         </div>
-                    ) : (
+                    ) : activeTab === "cajas" ? (
                         <div className="rounded-xl bg-white p-4">
                             <div className="w-full flex items-center justify-between mb-4">
                                 <div className="w-96">
@@ -165,6 +186,8 @@ export const Users = () => {
                                 data={isLoadingCashDrawers ? [] : filteredCashDrawers}
                             />
                         </div>
+                    ) : (
+                        <Shifts onEdit={handleShiftAction} onCreate={openCreateShiftForm} />
                     )}
                 </div>
 
@@ -178,7 +201,7 @@ export const Users = () => {
 
                             <UsersForm mode={formMode} user={userSelected} closeForm={handleCloseForm} />
                         </>
-                    ) : (
+                    ) : formType === "cashDrawer" ? (
                         <>
                             <p className="text-2xl font-semibold mb-2 ml-2">
                                 <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
@@ -186,6 +209,15 @@ export const Users = () => {
                             </p>
 
                             <CashDrawerForm mode={cashDrawerFormMode} cashDrawer={cashDrawerSelected} closeForm={handleCloseForm} />
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-2xl font-semibold mb-2 ml-2">
+                                <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
+                                {shiftFormMode === "edit" ? "Editar Turno" : "Agregar Turno"}
+                            </p>
+
+                            <ShiftForm mode={shiftFormMode} shift={shiftSelected} closeForm={handleCloseForm} />
                         </>
                     )}
                 </div>

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useInvoicesQuery } from "@/hooks/dispatch.hook";
 import { useUsersQuery } from "@/hooks/users.hook";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
+import { useShiftsQuery } from "@/hooks/shifts.hook";
 import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
 import { FilterComponent } from "@/components/table/FilterComponent";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
@@ -39,12 +40,14 @@ export const Invoices = () => {
     const { data: invoicesData, isLoading } = useInvoicesQuery(filter);
     const { data: usersData } = useUsersQuery("");
     const { data: sessionsData } = useSessionsQuery();
+    const { data: shiftsData } = useShiftsQuery();
 
     const invoices = useMemo(() => invoicesData?.invoices ?? [], [invoicesData]);
     const pagination = invoicesData?.pagination;
 
     const users = useMemo(() => usersData?.users ?? [], [usersData]);
     const sessions = useMemo(() => sessionsData?.sessions ?? [], [sessionsData]);
+    const shifts = useMemo(() => shiftsData?.shifts ?? [], [shiftsData]);
 
     const handleSearch = useCallback((value: string) => {
         setFilter((prev) => ({ ...prev, search: value || undefined, page: 1 }));
@@ -76,6 +79,14 @@ export const Invoices = () => {
         setFilter((prev) => ({
             ...prev,
             userId: value === "all" ? undefined : Number(value),
+            page: 1,
+        }));
+    }, []);
+
+    const handleShiftChange = useCallback((value: string) => {
+        setFilter((prev) => ({
+            ...prev,
+            shiftId: value === "all" ? undefined : Number(value),
             page: 1,
         }));
     }, []);
@@ -185,6 +196,22 @@ export const Invoices = () => {
                                     {users.map((user) => (
                                         <SelectItem key={user.id} value={String(user.id)}>
                                             {user.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <Select onValueChange={handleShiftChange}>
+                            <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Todos los turnos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="all">Todos los turnos</SelectItem>
+                                    {shifts.map((shift) => (
+                                        <SelectItem key={shift.id} value={String(shift.id)}>
+                                            {shift.name}
                                         </SelectItem>
                                     ))}
                                 </SelectGroup>

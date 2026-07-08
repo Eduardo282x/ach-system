@@ -41,6 +41,7 @@ export interface ProductsDispatchBody {
 export interface ResumenFilter {
     date: Date | string;
     sessionId?: number | undefined;
+    shiftId?: number | undefined;
 }
 
 export interface ResumenContent {
@@ -167,6 +168,7 @@ export interface InvoicesFilter {
     endDate?: string;
     sessionId?: number;
     userId?: number;
+    shiftId?: number;
     page?: number;
     size?: number;
 }

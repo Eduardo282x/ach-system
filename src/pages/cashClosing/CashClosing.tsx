@@ -7,6 +7,7 @@ import { LuEqualApproximately } from "react-icons/lu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
+import { useShiftsQuery } from "@/hooks/shifts.hook";
 import { Button } from "@/components/ui/button";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { getResumenSalesExcelApi } from "@/services/dispatch.service";
@@ -16,10 +17,12 @@ import type { TypeRole } from "@/interfaces/users.interface";
 
 export const CashClosing = () => {
 
-    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined });
+    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, shiftId: undefined });
     const { data: resumen, isLoading } = useResumenSalesQuery(filter);
 
     const cashDrawerSessions = useSessionsQuery({ status: 'OPEN' });
+    const { data: shiftsData } = useShiftsQuery();
+    const shifts = shiftsData?.shifts ?? [];
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
@@ -38,6 +41,20 @@ export const CashClosing = () => {
         setFilter((prev) => ({
             ...prev,
             sessionId: parseInt(sessionId),
+        }));
+    }
+
+    const handleShiftChange = (shiftId: string) => {
+        if (shiftId === 'all') {
+            setFilter((prev) => ({
+                ...prev,
+                shiftId: undefined,
+            }));
+            return;
+        }
+        setFilter((prev) => ({
+            ...prev,
+            shiftId: parseInt(shiftId),
         }));
     }
 
@@ -72,24 +89,46 @@ export const CashClosing = () => {
                     <DatePicker onChange={handleChangeDate} />
 
                     {userRole !== 'CAJERO' && (
-                        <div className="flex flex-col gap-2">
-                            <Label>Caja</Label>
-                            <Select
-                                value={filter.sessionId?.toString() ?? 'all'}
-                                onValueChange={handleCashDrawerSessionChange}
-                            >
-                                <SelectTrigger className="w-60">
-                                    <SelectValue placeholder="Seleccione un cajero" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="all">Todos</SelectItem>
-                                        {cashierSessionOptions.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                        <div className="flex items-center gap-4">
+                            <div className="flex flex-col gap-2">
+                                <Label>Caja</Label>
+                                <Select
+                                    value={filter.sessionId?.toString() ?? 'all'}
+                                    onValueChange={handleCashDrawerSessionChange}
+                                >
+                                    <SelectTrigger className="w-48">
+                                        <SelectValue placeholder="Seleccione un cajero" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="all">Todos</SelectItem>
+                                            {cashierSessionOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Turno</Label>
+                                <Select
+                                    value={filter.shiftId?.toString() ?? 'all'}
+                                    onValueChange={handleShiftChange}
+                                >
+                                    <SelectTrigger className="w-48">
+                                        <SelectValue placeholder="Seleccione un turno" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="all">Todos</SelectItem>
+                                            {shifts.map((shift) => (
+                                                <SelectItem key={shift.id} value={shift.id.toString()}>{shift.name}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     )}
                 </div>

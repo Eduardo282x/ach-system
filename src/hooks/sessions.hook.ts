@@ -61,6 +61,7 @@ export const useSessionsQuery = (filter?: Partial<SessionFilter>) => {
 		endDate: filter?.endDate ? String(filter.endDate) : "",
 		cashDrawerId: filter?.cashDrawerId ?? 0,
 		status: filter?.status ?? "",
+		shiftId: filter?.shiftId ?? 0,
 	};
 
 	return useQuery({

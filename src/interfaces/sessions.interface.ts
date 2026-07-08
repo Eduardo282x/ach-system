@@ -3,6 +3,7 @@ import type { DateRangeFilter } from "./base.interface";
 export interface SessionFilter extends DateRangeFilter {
     cashDrawerId: number;
     status: EventType;
+    shiftId?: number;
 }
 
 export interface SessionsContent {

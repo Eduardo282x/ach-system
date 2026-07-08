@@ -147,7 +147,7 @@ export const TableComponent = <T,>({
                     <TableBody>
                         {data.length === 0 && !isLoading && (
                             <TableRow>
-                                <TableCell className="h-full text-center py-32 bg-gray-200" colSpan={columns.length}>
+                                <TableCell className="h-full text-center py-32 bg-gray-200" colSpan={isExpansible ? columns.length + 1 : columns.length}>
                                     No hay datos disponibles
                                 </TableCell>
                             </TableRow>

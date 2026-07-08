@@ -4,7 +4,7 @@ import { usersColumns } from "@/pages/users/users.data";
 import { create } from "zustand";
 
 type TabType = "usuarios" | "cajas" | 'turnos';
-type FormType = "user" | "cashDrawer";
+type FormType = "user" | "cashDrawer" | "shift";
 
 interface UsersStore {
 	filter: string;

@@ -17,6 +17,9 @@ export const getResumenSalesApi = async (filter: ResumenFilter): Promise<Resumen
     if (filter && filter.sessionId) {
         params += `&sessionId=${filter.sessionId}` ;
     }
+    if (filter && filter.shiftId) {
+        params += `&shiftId=${filter.shiftId}`;
+    }
     const result = await getDataApi<ResumenContent>(`${salesUrl}/resumen${params}`);
     return result.data;
 }
@@ -27,6 +30,9 @@ export const getResumenSalesExcelApi = async (filter: ResumenFilter): Promise<Bl
 
     if (filter && filter.sessionId) {
         params += `&sessionId=${filter.sessionId}` ;
+    }
+    if (filter && filter.shiftId) {
+        params += `&shiftId=${filter.shiftId}`;
     }
     const result = await getDataFileApi(`${salesUrl}/resumen-excel${params}`);
     return result;
@@ -40,6 +46,7 @@ export const getInvoicesApi = async (filter: InvoicesFilter): Promise<InvoicesRe
     if (filter.endDate) params.append('endDate', filter.endDate);
     if (filter.sessionId) params.append('sessionId', String(filter.sessionId));
     if (filter.userId) params.append('userId', String(filter.userId));
+    if (filter.shiftId) params.append('shiftId', String(filter.shiftId));
     if (filter.page) params.append('page', String(filter.page));
     if (filter.size) params.append('size', String(filter.size));
 
