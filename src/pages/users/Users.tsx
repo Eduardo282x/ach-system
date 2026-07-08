@@ -108,7 +108,7 @@ export const Users = () => {
     };
 
     const handleTabChange = (value: string) => {
-        setActiveTab(value as "usuarios" | "cajas");
+        setActiveTab(value as "usuarios" | "cajas" | "turnos");
     };
 
     return (
@@ -120,10 +120,11 @@ export const Users = () => {
                             <TabsList>
                                 <TabsTrigger value="usuarios">Usuarios</TabsTrigger>
                                 <TabsTrigger value="cajas">Cajas</TabsTrigger>
+                                <TabsTrigger value="turnos">Turnos</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <p className="text-2xl font-semibold">
-                            {activeTab === "usuarios" ? "Cajeros/Usuarios" : "Cajas"}
+                        <p className="text-2xl font-semibold capitalize">
+                            {activeTab === "usuarios" ? "Cajeros/Usuarios" : activeTab}
                         </p>
                     </div>
 
