@@ -2,6 +2,7 @@ import type { User } from "./sessions.interface";
 
 export interface InventoryInterface {
     products: Product[];
+    pagination: PaginationContent;
 }
 
 export interface Product {

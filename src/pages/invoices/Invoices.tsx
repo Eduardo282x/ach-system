@@ -203,6 +203,8 @@ export const Invoices = () => {
                     data={invoices}
                     isLoading={isLoading}
                     isExpansible={true}
+                    pagination={pagination}
+                    totalElements={pagination?.total}
                     renderRow={(item, index) => (
                         <InvoiceDetail key={index} invoice={item} />
                     )}

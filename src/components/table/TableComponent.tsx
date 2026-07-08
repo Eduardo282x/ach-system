@@ -13,8 +13,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import type { Pagination } from "@/interfaces/base.interface";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
-import { Loading } from "../loader/Loading";
+import { TableSkeleton } from "./TableSkeleton";
 import { IoIosArrowDown } from "react-icons/io";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface ColumnDef<T> {
     key: string;
@@ -41,6 +42,7 @@ interface TableComponentProps<T> {
     automaticHeight?: boolean;
     isLoading?: boolean;
     onChange: (action: string, data: T) => void;
+    onPaginationChange?: (page: number, size: number) => void;
     renderRow?: (item: T, index: number) => React.ReactNode;
 }
 
@@ -67,8 +69,11 @@ export const TableComponent = <T,>({
     isLoading,
     isExpansible,
     renderRow,
-    automaticHeight }: TableComponentProps<T>) => {
+    automaticHeight,
+    onPaginationChange
+}: TableComponentProps<T>) => {
     const [size, setSize] = useState(pagination?.size || 100);
+    const [page, setPage] = useState(pagination?.page || 1);
 
     const getRowKey = useCallback((row: T, rowIndex: number) => {
         if (typeof row === "object" && row !== null && "id" in row) {
@@ -77,6 +82,22 @@ export const TableComponent = <T,>({
 
         return String(rowIndex);
     }, []);
+
+    const handlePageChange = (mode: 'increment' | 'decrement') => {
+        setPage((prevPage) => (mode === 'increment' ? prevPage + 1 : prevPage - 1));
+    }
+
+    useEffect(() => {
+        if (onPaginationChange) {
+            onPaginationChange(page, size);
+        }
+    }, [page]);
+
+    useEffect(() => {
+        if (onPaginationChange) {
+            onPaginationChange(1, size);
+        }
+    }, [size]);
 
     const tableRows = useMemo(() => {
         return data.map((row, rowIndex) => (
@@ -132,12 +153,7 @@ export const TableComponent = <T,>({
                             </TableRow>
                         )}
                         {isLoading && (
-                            <TableRow>
-                                <TableCell className="h-full text-center py-32 bg-gray-200" colSpan={columns.length}>
-                                    <Loading />
-                                    <p className="text-sm text-gray-700">Cargando...</p>
-                                </TableCell>
-                            </TableRow>
+                            <TableSkeleton columns={columns.length} rows={20} />
                         )}
                         {isExpansible ? data.map((item, key) => (
                             <ExpansibleRow
@@ -164,20 +180,48 @@ export const TableComponent = <T,>({
                     <div>
                         {pagination && totalElements && (
                             <div className="flex items-center gap-2 mt-4">
-                                <Label htmlFor="select-rows-per-page">Elementos por página</Label>
-                                <Select defaultValue={size.toString()} onValueChange={(value) => setSize(parseInt(value))}>
-                                    <SelectTrigger className="w-20" id="select-rows-per-page">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent align="start">
-                                        <SelectGroup>
-                                            <SelectItem value="100">100</SelectItem>
-                                            <SelectItem value="250">250</SelectItem>
-                                            <SelectItem value="500">500</SelectItem>
-                                            <SelectItem value="1000">1000</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            onClick={() => handlePageChange('decrement')}
+                                            variant="outline"
+                                            disabled={pagination.page === 1}
+                                        >
+                                            <ChevronLeft />
+                                        </Button>
+                                        {Array.from({ length: Math.ceil(totalElements / pagination.size) }, (_, i) => (
+                                            <Button
+                                                key={i}
+                                                variant={pagination.page === i + 1 ? "primary" : "outline"}
+                                                onClick={() => setPage(i + 1)}
+                                            >
+                                                {i + 1}
+                                            </Button>
+                                        ))}
+                                        <Button
+                                            onClick={() => handlePageChange('increment')}
+                                            variant="outline"
+                                            disabled={pagination.page * pagination.size >= totalElements}
+                                        >
+                                            <ChevronRight />
+                                        </Button>
+                                    </div>
+
+                                    <Label htmlFor="select-rows-per-page">Elementos por página</Label>
+                                    <Select defaultValue={size.toString()} onValueChange={(value) => setSize(parseInt(value))}>
+                                        <SelectTrigger className="w-20" id="select-rows-per-page">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent align="start">
+                                            <SelectGroup>
+                                                <SelectItem value="100">100</SelectItem>
+                                                <SelectItem value="250">250</SelectItem>
+                                                <SelectItem value="500">500</SelectItem>
+                                                <SelectItem value="1000">1000</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         )}
                     </div>

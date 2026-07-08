@@ -6,6 +6,7 @@ import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
 
 export const INVENTORY_QUERY_KEY = "inventory";
+export const INVENTORY_HISTORY_QUERY_KEY = "inventory-history";
 export const EXCHANGE_RATE_TODAY_QUERY_KEY = "exchange-rate-today";
 export const EXCHANGE_RATE_AUTOMATIC_QUERY_KEY = "exchange-rate-automatic";
 
@@ -68,12 +69,12 @@ const inventoryMatchesSearch = (product: Product, search: string) => {
 	);
 };
 
-export const useInventoryQueryLocal = (search: string) => {
+export const useInventoryQueryLocal = (search: string, filter: Pagination) => {
 	const normalizedSearch = search.trim();
 
 	const query = useQuery({
-		queryKey: [INVENTORY_QUERY_KEY],
-		queryFn: () => getInventoryApi(),
+		queryKey: [INVENTORY_QUERY_KEY, filter],
+		queryFn: () => getInventoryApi(normalizedSearch || undefined, filter),
 	});
 
 	const products = useMemo(() => {
@@ -90,6 +91,7 @@ export const useInventoryQueryLocal = (search: string) => {
 		...query,
 		data: {
 			products,
+			pagination: query.data?.pagination,
 		},
 	};
 };
@@ -105,7 +107,7 @@ export const useInventoryQuery = (search: string) => {
 
 export const useInventoryHistoryQuery = (filter: Pagination) => {
 	return useQuery({
-		queryKey: [INVENTORY_QUERY_KEY, filter],
+		queryKey: [INVENTORY_HISTORY_QUERY_KEY, filter],
 		queryFn: () => getInventoryHistoryApi(filter),
 	});
 };

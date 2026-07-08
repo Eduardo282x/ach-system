@@ -10,7 +10,7 @@ function Table({ className, noMaxHeight, ...props }: TableProps) {
   return (
     <div
       data-slot="table-container"
-      className={`relative w-full rounded-md overflow-auto ${noMaxHeight ? 'h-104 max-h-104' : ""}`}
+      className={`relative w-full rounded-md overflow-auto ${noMaxHeight ? 'h-98 max-h-98' : ""}`}
     >
       <table
         data-slot="table"

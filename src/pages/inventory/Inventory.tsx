@@ -14,16 +14,18 @@ import toast from 'react-hot-toast';
 
 export const Inventory = () => {
     const {
-        filter,
+        search,
+        pagination,
         columns,
         toggle,
-        setFilter,
+        setSearch,
+        setPagination,
         setColumns,
         openForm,
         closeForm
     } = useInventoryStore((state) => state);
 
-    const { data, isLoading } = useInventoryQueryLocal(filter);
+    const { data, isLoading } = useInventoryQueryLocal(search, pagination);
     const [productSelected, setProductSelected] = useState<Product | null>(null);
     const [formMode, setFormMode] = useState<ProductFormMode>("create");
     const products = data?.products ?? [];
@@ -60,6 +62,10 @@ export const Inventory = () => {
         }
     }
 
+    const changePagination = (page: number, size: number) => {
+        setPagination({ page, size });
+    }
+
     const deleteProduct = () => {
         if (productSelected) {
             deleteProductMutation.mutate(productSelected.id);
@@ -89,21 +95,23 @@ export const Inventory = () => {
                     <div className="rounded-xl bg-white p-4">
                         <div className="w-full flex items-center justify-between mb-4">
                             <div className="w-96">
-                                <FilterComponent placeholder="Buscar producto..." onChange={setFilter} loading={isLoading} />
+                                <FilterComponent placeholder="Buscar producto..." onChange={setSearch} loading={isLoading} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <SelectColumnsComponent columns={columns} onChange={setColumns} />
                                 <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
                             </div>
                         </div>
-                        
+
 
                         <TableComponent
                             onChange={getActionTable}
                             columns={columns.filter(column => column.visible)}
                             data={products}
                             isLoading={isLoading}
-                            ignorePagination={false}
+                            pagination={data?.pagination}
+                            totalElements={data?.pagination?.total}
+                            onPaginationChange={changePagination}
                         />
                     </div>
                 </div>

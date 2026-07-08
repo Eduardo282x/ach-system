@@ -4,14 +4,17 @@ import type { Pagination } from "@/interfaces/base.interface";
 
 const inventoryUrl = '/products';
 
-export const getInventoryApi = async (search?: string): Promise<InventoryInterface> => {
+export const getInventoryApi = async (search?: string, filter?: Pagination): Promise<InventoryInterface> => {
     let params = '';
     if (search) {
         params += `?search=${search}`;
     }
+    if (filter?.page) {
+        params += `${params ? '&' : '?'}page=${filter.page}&size=${filter.size}`;
+    }
     const response = await getDataApi<InventoryInterface>(`${inventoryUrl}${params}`);
     if (response.data == null) {
-        return { products: [] };
+        return { products: [], pagination: { total: 0, page: 1, size: filter?.size || 10 } };
     }
     return response.data;
 }
