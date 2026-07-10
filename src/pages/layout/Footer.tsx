@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateString, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
-import { useExchangeRateAutomaticQuery } from "@/hooks/inventory.hook";
 import { useAuthStore } from "@/store/auth.store";
 import { useInventoryStore } from "@/store/inventory.store";
 import { IoMdSync } from "react-icons/io";
@@ -14,10 +12,12 @@ import { Input } from "@/components/ui/input";
 import { useSocket } from "@/services/socket.io";
 import type { ExchangeRate } from "@/interfaces/inventory.interface";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
     const today = new Date();
+    const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
 
@@ -30,7 +30,7 @@ export const Footer = () => {
 
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
-    const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
+    // const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
     const [euroRate, setEuroRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined);
@@ -77,7 +77,8 @@ export const Footer = () => {
     };
 
     const updateExchangeRates = async () => {
-        await exchangeRateAutomaticQuery.refetch();
+        // await exchangeRateAutomaticQuery.refetch();
+        navigate('/tasas');
     }
 
     useSocket('exchangeRateUpdate', (data: { data: ExchangeRate[], message: string }) => {
@@ -137,14 +138,9 @@ export const Footer = () => {
                 </Select>
             </div>
             <div className="flex items-center gap-1 mb-1 relative ">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant='ghost' onClick={updateExchangeRates} disabled={exchangeRateAutomaticQuery.isFetching}><IoMdSync /></Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Actualizar tasas
-                    </TooltipContent>
-                </Tooltip>
+                {user?.role !== 'CAJERO' && (
+                    <Button variant='ghost' onClick={updateExchangeRates}><IoMdSync /></Button>
+                )}
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
                 <span>|</span>
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>

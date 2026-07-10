@@ -6,9 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Login } from './pages/auth/login/Login';
 import { useAxiosInterceptor } from './services/interceptors';
 import { Layout } from './pages/layout/Layout';
-import { Customers } from './pages/customers/Customers';
 import { Toaster } from "react-hot-toast";
-import { Dashboard } from './pages/dashboard/Dashboard';
 import { Inventory } from './pages/inventory/Inventory';
 import { Dispatch } from './pages/dispatch/Dispatch';
 import { queryClient } from './lib/query-client';
@@ -40,10 +38,6 @@ function App() {
             element: <Layout />,
             children: [
               {
-                path: '/',
-                element: <Dashboard />
-              },
-              {
                 path: '/inventario',
                 element: <Inventory />
               },
@@ -72,11 +66,7 @@ function App() {
                 element: <CashDrawerSession />
               },
               {
-                path: '/clientes',
-                element: <Customers />
-              },
-              {
-                path: '/facturas',
+                path: '/recibo',
                 element: <Invoices />
               },
               {

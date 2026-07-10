@@ -16,6 +16,7 @@ export const Layout = () => {
     const token = useAuthStore((state) => state.token);
     const clearSession = useAuthStore((state) => state.clearSession);
     const isTokenExpired = useAuthStore((state) => state.isTokenExpired);
+    const { user } = useAuthStore((state) => state);
 
     useEffect(() => {
         if (!token || isTokenExpired()) {
@@ -23,6 +24,12 @@ export const Layout = () => {
             navigate('/login');
         }
     }, [token, isTokenExpired, clearSession, navigate]);
+
+    useEffect(() => {
+        if (user?.role === 'CAJERO') {
+            navigate('/despacho');
+        }
+    }, [user]);
 
     useSocket('daily-reminder', (data: DailyReminder) => {
         toast(() => (

@@ -1,11 +1,9 @@
 import type { TypeRole } from "@/interfaces/users.interface";
 import type { ComponentType } from "react";
-import { GoHistory } from "react-icons/go";
 import { HiOutlineCurrencyDollar } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark } from "react-icons/md";
-import { PiUsersThree } from "react-icons/pi";
-import { LuLayoutDashboard, LuReceipt } from "react-icons/lu";
+import { LuReceipt } from "react-icons/lu";
 
 export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
 
@@ -23,33 +21,6 @@ export interface HeaderInterface {
 }
 
 export const headerData: HeaderInterface[] = [
-    {
-        title: 'Control',
-        icon: LuLayoutDashboard,
-        navigateTo: '/',
-        type: 'button',
-        active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
-        children: []
-    },
-    {
-        title: 'Clientes',
-        icon: PiUsersThree,
-        navigateTo: '/clientes',
-        type: 'button',
-        active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
-        children: []
-    },
-    {
-        title: 'Salidas',
-        icon: GoHistory,
-        navigateTo: '/historial-inventario',
-        type: 'button',
-        active: false,
-        auth: ['ADMIN'],
-        children: []
-    },
     {
         title: 'Inventario',
         icon: MdOutlineInventory2,
@@ -69,9 +40,9 @@ export const headerData: HeaderInterface[] = [
         children: []
     },
     {
-        title: 'Facturas',
+        title: 'Recibo',
         icon: LuReceipt,
-        navigateTo: '/facturas',
+        navigateTo: '/recibo',
         type: 'button',
         active: false,
         auth: ['ADMIN', 'SUPERVISOR'],
@@ -99,7 +70,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '/tasas',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'SUPERVISOR'],
                 children: []
             },
             {
@@ -107,7 +78,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '/cajeros',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'SUPERVISOR'],
                 children: []
             },
             {
