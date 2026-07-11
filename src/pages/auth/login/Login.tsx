@@ -10,6 +10,8 @@ import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 
+import gustavoLogo from "@/assets/gustavo.png";
+
 export const Login = () => {
     const [show, setShow] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -41,11 +43,13 @@ export const Login = () => {
     return (
         <div className="w-full h-full flex items-center justify-center bg-gray-200">
             {loading && (<ScreenLoader />)}
-            <form onSubmit={handleSubmit(onSubmit)} className="shadow-xl p-8 rounded-lg bg-white w-120 h-96 text-center flex flex-col justify-between">
-                <div>
+            <form onSubmit={handleSubmit(onSubmit)} className="shadow-xl p-8 rounded-lg bg-white w-140 text-center flex flex-col space-y-4 justify-between">
+                {/* <div>
                     <h1 className="text-3xl font-semibold">Sistema POS</h1>
                     <span className="text-sm text-gray-600">Facturación y Gestión</span>
-                </div>
+                </div> */}
+
+                <img src={gustavoLogo} alt="Logo" className="w-full h-60 object-contain" />
 
                 <Field>
                     <FieldLabel>Usuario</FieldLabel>
@@ -62,8 +66,8 @@ export const Login = () => {
                     </div>
                 </Field>
 
-                <Button className="w-full py-6 text-lg" variant="primary" type="submit">Iniciar Sesión</Button>
-                <span className="text-xs text-gray-600">Sistema de Gestión Local v2.0</span>
+                <Button className="w-full py-4 text-lg" variant="primary" type="submit">Iniciar Sesión</Button>
+                {/* <span className="text-xs text-gray-600">Sistema de Gestión Local v2.0</span> */}
             </form>
         </div>
     );

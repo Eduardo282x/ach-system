@@ -1,11 +1,9 @@
 import type { TypeRole } from "@/interfaces/users.interface";
 import type { ComponentType } from "react";
-import { GoHistory } from "react-icons/go";
 import { HiOutlineCurrencyDollar } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark } from "react-icons/md";
-import { PiUsersThree } from "react-icons/pi";
-import { LuLayoutDashboard, LuReceipt } from "react-icons/lu";
+import { LuReceipt } from "react-icons/lu";
 
 export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
 
@@ -24,39 +22,12 @@ export interface HeaderInterface {
 
 export const headerData: HeaderInterface[] = [
     {
-        title: 'Control',
-        icon: LuLayoutDashboard,
-        navigateTo: '/',
-        type: 'button',
-        active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
-        children: []
-    },
-    {
-        title: 'Clientes',
-        icon: PiUsersThree,
-        navigateTo: '/clientes',
-        type: 'button',
-        active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
-        children: []
-    },
-    {
-        title: 'Salidas',
-        icon: GoHistory,
-        navigateTo: '/historial-inventario',
-        type: 'button',
-        active: false,
-        auth: ['ADMIN'],
-        children: []
-    },
-    {
         title: 'Inventario',
         icon: MdOutlineInventory2,
         navigateTo: '/inventario',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN'],
         children: []
     },
     {
@@ -65,16 +36,16 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/despacho',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
     {
-        title: 'Facturas',
+        title: 'Recibo',
         icon: LuReceipt,
-        navigateTo: '/facturas',
+        navigateTo: '/recibo',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN'],
         children: []
     },
     {
@@ -83,7 +54,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/cierre-caja',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
     {
@@ -92,14 +63,14 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '',
         type: 'dropdown',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: [
             {
                 title: 'Tasa del dia',
                 navigateTo: '/tasas',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN'],
                 children: []
             },
             {
@@ -107,7 +78,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '/cajeros',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN'],
                 children: []
             },
             {
@@ -115,7 +86,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '/historial-cajeros',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'CAJERO'],
                 children: []
             },
             {
@@ -123,7 +94,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '',
                 type: 'separator',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'CAJERO'],
                 children: []
             },
             {
@@ -131,7 +102,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'CAJERO'],
                 children: [],
                 action: 'logout'
             }
@@ -144,7 +115,7 @@ export const headerData: HeaderInterface[] = [
         type: 'button',
         active: false,
         action: 'help',
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
 ]

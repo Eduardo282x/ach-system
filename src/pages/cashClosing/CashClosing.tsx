@@ -1,6 +1,6 @@
 import { DatePicker } from "@/components/datePickerRange/DatePickerRange"
 import { useResumenSalesQuery } from "@/hooks/dispatch.hook";
-import { formatDate, formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
+import { formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
 import type { ResumenFilter } from "@/interfaces/distpatch.interface";
 import { useEffect, useState } from "react";
 import { LuEqualApproximately } from "react-icons/lu";
@@ -8,9 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
 import { useShiftsQuery } from "@/hooks/shifts.hook";
-import { Button } from "@/components/ui/button";
-import { RiFileExcel2Line } from "react-icons/ri";
-import { getResumenSalesExcelApi } from "@/services/dispatch.service";
 import { Loading } from "@/components/loader/Loading";
 import { useAuthStore } from "@/store/auth.store";
 import type { TypeRole } from "@/interfaces/users.interface";
@@ -37,10 +34,10 @@ export const CashClosing = () => {
                 s => s.user.id === user.id
             );
             if (mySession && filter.sessionId !== mySession.sessionId) {
-                setFilter(prev => ({
-                    ...prev,
-                    sessionId: mySession.sessionId,
-                }));
+                // setFilter(prev => ({
+                //     ...prev,
+                //     sessionId: mySession.sessionId,
+                // }));
             }
         }
     }, [userRole, cashDrawerSessions.data, user]);
@@ -82,23 +79,11 @@ export const CashClosing = () => {
         })
     }
 
-    const handleExportExcel = async () => {
-        const blob = await getResumenSalesExcelApi(filter);
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `Resumen Cierre Caja ${formatDate(filter.date)}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode?.removeChild(link);
-    }
-
     return (
         <div className='w-full h-full'>
             <div className='w-3/4 mx-auto bg-white rounded-xl p-4 mb-4'>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <p className='text-2xl font-semibold mb-4'>Cierre de Caja</p>
-                    <Button variant='export' disabled={!resumen || resumen.totalInvoice === 0} onClick={handleExportExcel}><RiFileExcel2Line /> Exportar</Button>
                 </div>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <DatePicker onChange={handleChangeDate} />
