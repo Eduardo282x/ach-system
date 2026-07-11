@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { LuEqualApproximately } from "react-icons/lu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useSessionsQuery } from "@/hooks/sessions.hook";
+import { useCashDrawersQuery, useSessionsGroupQuery } from "@/hooks/sessions.hook";
 import { useShiftsQuery } from "@/hooks/shifts.hook";
 import { Loading } from "@/components/loader/Loading";
 import { useAuthStore } from "@/store/auth.store";
@@ -14,31 +14,38 @@ import type { TypeRole } from "@/interfaces/users.interface";
 
 export const CashClosing = () => {
 
-    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, shiftId: undefined });
+    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, cashDrawerId: undefined, shiftId: undefined });
     const { data: resumen, isLoading } = useResumenSalesQuery(filter);
 
-    const cashDrawerSessions = useSessionsQuery({ status: 'OPEN' });
+    const cashDrawerSessions = useSessionsGroupQuery({ date: filter.date, shiftId: filter.shiftId ?? 0 });
+
+    const { data } = useCashDrawersQuery();
+    const cashDrawersOptions = data?.cashDrawers ? data.cashDrawers.map((cashDrawer) => ({
+        label: cashDrawer.name,
+        value: cashDrawer.id.toString(),
+    })) : [];
+
     const { data: shiftsData } = useShiftsQuery();
     const shifts = shiftsData?.shifts ?? [];
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
     const user = useAuthStore((state) => state.user);
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
-        value: cashDrawerSession.sessionId.toString(),
+        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift.name}`,
+        value: cashDrawerSession.id.toString(),
     })) : [];
 
     useEffect(() => {
         if (userRole === 'CAJERO' && cashDrawerSessions.data?.sessions && user?.id) {
-            const mySession = cashDrawerSessions.data.sessions.find(
-                s => s.user.id === user.id
-            );
-            if (mySession && filter.sessionId !== mySession.sessionId) {
-                // setFilter(prev => ({
-                //     ...prev,
-                //     sessionId: mySession.sessionId,
-                // }));
-            }
+            // const mySession = cashDrawerSessions.data.sessions.find(
+            //     s => s.user.id === user.id
+            // );
+            // if (mySession && filter.sessionId !== mySession.sessionId) {
+            // setFilter(prev => ({
+            //     ...prev,
+            //     sessionId: mySession.sessionId,
+            // }));
+            // }
         }
     }, [userRole, cashDrawerSessions.data, user]);
 
@@ -70,6 +77,20 @@ export const CashClosing = () => {
         }));
     }
 
+    const handleCashDrawerChange = (cashDrawerId: string) => {
+        if (cashDrawerId === 'all') {
+            setFilter((prev) => ({
+                ...prev,
+                cashDrawerId: undefined,
+            }));
+            return;
+        }
+        setFilter((prev) => ({
+            ...prev,
+            cashDrawerId: parseInt(cashDrawerId),
+        }));
+    }
+
     const handleChangeDate = (date: Date | undefined) => {
         const parsedDate = formatOnlyDateStringFilter(date);
         if (!parsedDate) return;
@@ -91,7 +112,7 @@ export const CashClosing = () => {
                     {userRole !== 'CAJERO' && (
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col gap-2">
-                                <Label>Caja</Label>
+                                <Label>Session</Label>
                                 <Select
                                     value={filter.sessionId?.toString() ?? 'all'}
                                     onValueChange={handleCashDrawerSessionChange}
@@ -103,6 +124,26 @@ export const CashClosing = () => {
                                         <SelectGroup>
                                             <SelectItem value="all">Todos</SelectItem>
                                             {cashierSessionOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Caja</Label>
+                                <Select
+                                    value={filter.cashDrawerId?.toString() ?? 'all'}
+                                    onValueChange={handleCashDrawerChange}
+                                >
+                                    <SelectTrigger className="w-48">
+                                        <SelectValue placeholder="Seleccione una caja" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="all">Todos</SelectItem>
+                                            {cashDrawersOptions.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                                             ))}
                                         </SelectGroup>

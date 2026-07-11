@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { Product, ProductBody, ExchangeRateType } from "@/interfaces/inventory.interface";
 import { useCreateProductMutation, useUpdateProductMutation } from "@/hooks/inventory.hook";
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -142,6 +142,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
         name: 'barcode',
     })
 
+    const currencyValue = useWatch({
+        control,
+        name: 'currency',
+    })
+
     useEffect(() => {
         if (!barcodeValue) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -163,8 +168,8 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             <Field className="col-span-1">
                 <FieldLabel>Código</FieldLabel>
                 <div className="flex items-center gap-2">
-                    <Input {...register('barcode')} />
-                    <Button type="button" disabled={disableBtnGenerate} variant="primary" onClick={generateBarcode}>Generar</Button>
+                    <Input {...register('barcode')} disabled={isEdit} />
+                    <Button type="button" disabled={disableBtnGenerate || isEdit} variant="primary" onClick={generateBarcode}>Generar</Button>
                 </div>
             </Field>
             <Field className="col-span-1">
@@ -181,7 +186,10 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             </Field>
             <Field className="col-span-1">
                 <FieldLabel>Precio</FieldLabel>
-                <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} />
+                <div className="flex items-center gap-2">
+                    <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} />
+                    {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
+                </div>
             </Field>
             <Controller
                 name="currency"
