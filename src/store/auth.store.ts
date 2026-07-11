@@ -16,7 +16,7 @@ interface AuthStore {
 	isTokenExpired: () => boolean;
 }
 
-export const validRoles: TypeRole[] = ['ADMIN', 'SUPERVISOR', 'CAJERO'];
+export const validRoles: TypeRole[] = ['ADMIN', 'CAJERO'];
 
 const parseJwtPayload = (token: string): { exp?: number } | null => {
 	try {

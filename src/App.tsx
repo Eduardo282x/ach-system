@@ -16,6 +16,7 @@ import { HistoryInventory } from './pages/inventory/HistoryInventory';
 import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 import { CashClosing } from './pages/cashClosing/CashClosing';
 import { Invoices } from './pages/invoices/Invoices';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -39,35 +40,35 @@ function App() {
             children: [
               {
                 path: '/inventario',
-                element: <Inventory />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>
               },
               {
                 path: '/tasas',
-                element: <ExchangeRate />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><ExchangeRate /></ProtectedRoute>
               },
               {
                 path: '/historial-inventario',
-                element: <HistoryInventory />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
               },
               {
                 path: '/despacho',
-                element: <Dispatch />
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Dispatch /></ProtectedRoute>
               },
               {
                 path: '/cajeros',
-                element: <Users />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
               },
               {
                 path: '/cierre-caja',
-                element: <CashClosing />
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashClosing /></ProtectedRoute>
               },
               {
                 path: '/historial-cajeros',
-                element: <CashDrawerSession />
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashDrawerSession /></ProtectedRoute>
               },
               {
                 path: '/recibo',
-                element: <Invoices />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Invoices /></ProtectedRoute>
               },
               {
                 path: '*',
