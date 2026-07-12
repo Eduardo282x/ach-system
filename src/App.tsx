@@ -17,6 +17,8 @@ import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 import { CashClosing } from './pages/cashClosing/CashClosing';
 import { Invoices } from './pages/invoices/Invoices';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Dashboard } from './pages/dashboard/Dashboard';
+import { Customers } from './pages/customers/Customers';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -39,6 +41,10 @@ function App() {
             element: <Layout />,
             children: [
               {
+                path: '/',
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>
+              },
+              {
                 path: '/inventario',
                 element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>
               },
@@ -57,6 +63,10 @@ function App() {
               {
                 path: '/cajeros',
                 element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
+              },
+              {
+                path: '/clientes',
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Customers /></ProtectedRoute>
               },
               {
                 path: '/cierre-caja',

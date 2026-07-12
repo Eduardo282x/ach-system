@@ -20,6 +20,9 @@ export const getResumenSalesApi = async (filter: ResumenFilter): Promise<Resumen
     if (filter && filter.shiftId) {
         params += `&shiftId=${filter.shiftId}`;
     }
+    if (filter && filter.cashDrawerId) {
+        params += `&cashDrawerId=${filter.cashDrawerId}`;
+    }
     const result = await getDataApi<ResumenContent>(`${salesUrl}/resumen${params}`);
     return result.data;
 }

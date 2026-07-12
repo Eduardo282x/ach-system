@@ -41,6 +41,7 @@ export interface ProductsDispatchBody {
 export interface ResumenFilter {
     date: Date | string;
     sessionId?: number | undefined;
+    cashDrawerId?: number | undefined;
     shiftId?: number | undefined;
 }
 

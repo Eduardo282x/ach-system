@@ -1,8 +1,9 @@
-import type { CashDrawer, CloseSession, OpenSession, Session, SessionFilter } from "@/interfaces/sessions.interface";
+import type { CashDrawer, CloseSession, OpenSession, Session, SessionFilter, SessionGroupFilter } from "@/interfaces/sessions.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createCashDrawerApi, closeSessionApi, getCashDrawersApi, getSessionsApi, openSessionApi, updateCashDrawerApi } from "@/services/sessions.service";
+import { createCashDrawerApi, closeSessionApi, getCashDrawersApi, getSessionsApi, openSessionApi, updateCashDrawerApi, getSessionsGroupApi } from "@/services/sessions.service";
 
 export const SESSIONS_QUERY_KEY = "sessions";
+export const SESSIONS_GROUP_QUERY_KEY = "sessions-group";
 export const CASH_DRAWERS_QUERY_KEY = "cash-drawers";
 
 const upsertCashDrawerCache = (
@@ -67,6 +68,18 @@ export const useSessionsQuery = (filter?: Partial<SessionFilter>) => {
 	return useQuery({
 		queryKey: [SESSIONS_QUERY_KEY, normalizedFilter],
 		queryFn: () => getSessionsApi(filter),
+	});
+};
+
+export const useSessionsGroupQuery = (filter: SessionGroupFilter) => {
+	const normalizedFilter = {
+		date: filter.date ? String(filter.date) : "",
+		shiftId: filter?.shiftId ?? 0,
+	};
+
+	return useQuery({
+		queryKey: [SESSIONS_GROUP_QUERY_KEY, normalizedFilter],
+		queryFn: () => getSessionsGroupApi(filter),
 	});
 };
 
