@@ -10,7 +10,7 @@ import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 
-import gustavoLogo from "@/assets/gustavo.png";
+// import gustavoLogo from "@/assets/gustavo.png";
 
 export const Login = () => {
     const [show, setShow] = useState<boolean>(false);
@@ -44,12 +44,12 @@ export const Login = () => {
         <div className="w-full h-full flex items-center justify-center bg-gray-200">
             {loading && (<ScreenLoader />)}
             <form onSubmit={handleSubmit(onSubmit)} className="shadow-xl p-8 rounded-lg bg-white w-140 text-center flex flex-col space-y-4 justify-between">
-                {/* <div>
+                <div>
                     <h1 className="text-3xl font-semibold">Sistema POS</h1>
                     <span className="text-sm text-gray-600">Facturación y Gestión</span>
-                </div> */}
+                </div>
 
-                <img src={gustavoLogo} alt="Logo" className="w-full h-60 object-contain" />
+                {/* <img src={gustavoLogo} alt="Logo" className="w-full h-60 object-contain" /> */}
 
                 <Field>
                     <FieldLabel>Usuario</FieldLabel>
