@@ -5,8 +5,8 @@ export const InfoCashDrawer = () => {
     const today = new Date();
     const { data } = useSessionsQuery({ status: 'OPEN' });
 
-    const drawerLabel = data?.sessions[0].cashDrawer.name;
-    const cashier = data?.sessions[0].user.name;
+    const drawerLabel = data ? data?.sessions[0]?.cashDrawer?.name || '' : '';
+    const cashier = data ? data?.sessions[0]?.user?.name || '' : '';
 
     return (
         <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>

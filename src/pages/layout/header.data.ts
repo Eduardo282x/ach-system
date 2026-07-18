@@ -45,7 +45,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/recibo',
         type: 'button',
         active: false,
-        auth: ['ADMIN'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
     {

@@ -68,7 +68,7 @@ function App() {
               },
               {
                 path: '/recibo',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><Invoices /></ProtectedRoute>
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Invoices /></ProtectedRoute>
               },
               {
                 path: '*',
