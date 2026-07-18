@@ -102,6 +102,7 @@ export const useInventoryQuery = (search: string) => {
 	return useQuery({
 		queryKey: [INVENTORY_QUERY_KEY, normalizedSearch],
 		queryFn: () => getInventoryApi(normalizedSearch || undefined),
+		staleTime: 30_000,
 	});
 };
 
@@ -226,6 +227,41 @@ export const useUpdateProductMutation = () => {
 
 	return useMutation({
 		mutationFn: async ({ id, data }: { id: number; data: ProductBody }) => updateProductApi(id, data),
+		onMutate: async ({ id, data }) => {
+			const queries = queryClient.getQueriesData<{ products: Product[] }>({
+				queryKey: [INVENTORY_QUERY_KEY],
+			});
+
+			const previousQueries: Array<[{ queryKey: unknown[] }, { products: Product[] } | undefined]> = [];
+
+			queries.forEach(([queryKey, oldData]) => {
+				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+
+				if (!oldData) return;
+
+				const search = typeof queryKey[1] === "string" ? queryKey[1] : "";
+				const exists = oldData.products.some((item) => item.id === id);
+
+				if (exists) {
+					const partialProduct: Partial<Product> = { id, ...data } as Product;
+					const matches = productMatchesSearch(partialProduct as Product, search);
+					queryClient.setQueryData<{ products: Product[] }>(queryKey, {
+						products: matches
+							? oldData.products.map((item) => (item.id === id ? { ...item, ...data } : item))
+							: oldData.products.filter((item) => item.id !== id),
+					});
+				}
+			});
+
+			return { previousQueries };
+		},
+		onError: (_err, _variables, context) => {
+			if (context?.previousQueries) {
+				context.previousQueries.forEach(([queryKey, data]) => {
+					queryClient.setQueryData(queryKey, data);
+				});
+			}
+		},
 		onSuccess: (response) => {
 			if (response.data == null) {
 				return;
@@ -241,6 +277,32 @@ export const useDeleteProductMutation = () => {
 
 	return useMutation({
 		mutationFn: async (id: number) => deleteProductApi(id),
+		onMutate: async (id) => {
+			const queries = queryClient.getQueriesData<{ products: Product[] }>({
+				queryKey: [INVENTORY_QUERY_KEY],
+			});
+
+			const previousQueries: Array<[{ queryKey: unknown[] }, { products: Product[] } | undefined]> = [];
+
+			queries.forEach(([queryKey, oldData]) => {
+				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+
+				if (!oldData) return;
+
+				queryClient.setQueryData<{ products: Product[] }>(queryKey, {
+					products: oldData.products.filter((item) => item.id !== id),
+				});
+			});
+
+			return { previousQueries };
+		},
+		onError: (_err, _id, context) => {
+			if (context?.previousQueries) {
+				context.previousQueries.forEach(([queryKey, data]) => {
+					queryClient.setQueryData(queryKey, data);
+				});
+			}
+		},
 		onSuccess: (response, id) => {
 			if (!response.success) {
 				return;

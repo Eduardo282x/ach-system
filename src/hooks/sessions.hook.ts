@@ -124,6 +124,9 @@ export const useCloseSessionMutation = () => {
 			queryClient.invalidateQueries({
 				queryKey: [SESSIONS_QUERY_KEY],
 			});
+			queryClient.invalidateQueries({
+				queryKey: [SESSIONS_GROUP_QUERY_KEY],
+			});
 		},
 	});
 };

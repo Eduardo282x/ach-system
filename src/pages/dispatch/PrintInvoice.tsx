@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import { formatNumberWithDecimal, formatNumberWithDots } from "@/helpers/formatters";
+import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 
 interface InvoiceProduct {
     id: number;
@@ -11,6 +12,7 @@ interface InvoiceProduct {
 
 interface InvoicePayment {
     typePayment: string;
+    currency: ExchangeRateType;
     reference: string;
     amountBs: number;
     amountUSD: number;
@@ -45,17 +47,17 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
 
     return (
         <div ref={ref} className="w-full h-full relative">
-            <div className="p-4 w-96 scale-50 origin-top-left absolute top-0 left-0 text-base">
+            <div className="p-4 w-96 scale-50 origin-top-left absolute top-0 left-0 text-base overflow-hidden">
                 <p className='text-2xl font-bold text-center'>{import.meta.env.VITE_NAME}</p>
 
-                <div className='flex items-start justify-between w-full my-4 text-xl'>
-                    <div>
+                <div className='flex items-start justify-between w-full my-4 text-lg'>
+                    <div className="overflow-hidden wrap-break-words">
                         <p><strong>Despacho: </strong>#{data.invoiceNumber ?? '--'}</p>
                         <p><strong>Fecha: </strong>{data.date}</p>
                         <p><strong>Cliente: </strong>{data.customer.fullName}</p>
                         <p><strong>Teléfono: </strong>{data.customer.phone}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right overflow-hidden wrap-break-words">
                         <p><strong>Cajero: </strong>{data.cashier}</p>
                         <p><strong>Hora: </strong>{data.time}</p>
                         <p><strong>C.I: </strong>{formatNumberWithDots(data.customer.identify, '', '', true)}</p>
@@ -66,11 +68,11 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
 
                 {data.productsList.map((product, index) => (
                     <div key={index} className="flex items-start justify-between w-full my-4 text-xl">
-                        <div>
+                        <div className="overflow-hidden wrap-break-words min-w-0 w-full">
                             <p><strong>{product.quantity}</strong> x {product.name}</p>
                             <p>X {formatNumberWithDecimal(product.unitPrice)} Bs</p>
                         </div>
-                        <p>{formatNumberWithDecimal(product.subtotal)} Bs</p>
+                        <p className="w-[40%] text-right">{formatNumberWithDecimal(product.subtotal)} Bs</p>
                     </div>
                 ))}
 
@@ -93,13 +95,22 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     ) : (
                         data.payments.map((payment, index) => (
                             <div key={index} className="flex items-start justify-between w-full mt-2">
-                                <div>
+                                <div className="overflow-hidden wrap-break-words min-w-0">
                                     <p>{payment.typePayment}</p>
                                     <p className="text-sm">Ref: {payment.reference || '--'}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p>{formatNumberWithDecimal(payment.amountBs)} Bs</p>
-                                    <p className="text-xs">${formatNumberWithDecimal(payment.amountUSD)}</p>
+                                    {payment.currency === 'USD' ? (
+                                        <>
+                                            <p>${formatNumberWithDecimal(payment.amountUSD)}</p>
+                                            <p className="text-sm">{formatNumberWithDecimal(payment.amountBs)} Bs</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p>{formatNumberWithDecimal(payment.amountBs)} Bs</p>
+                                            <p className="text-sm">${formatNumberWithDecimal(payment.amountUSD)}</p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))

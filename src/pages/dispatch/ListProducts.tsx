@@ -12,23 +12,12 @@ export const ListProducts = () => {
     const searchContainerRef = useRef<HTMLDivElement | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [clear, setClear] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const { data } = useInventoryQuery(searchTerm);
+    const { data, isLoading } = useInventoryQuery(searchTerm);
     const { productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
 
-    const productFilter = (data?.products ?? []).filter((product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.barcode.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     const searchProducts = (term: string) => {
-        setLoading(true);
         setSearchTerm(term);
-
-        setTimeout(() => {
-            setLoading(false);
-        }, 1500);
     }
 
     const handleSelectProduct = (product: Product) => {
@@ -141,11 +130,11 @@ export const ListProducts = () => {
         <div className='w-full h-104 p-4 border-2 border-gray-300 rounded-md shadow-md'>
             <div className='relative' ref={searchContainerRef}>
                 <div className="w-full">
-                    <FilterComponent placeholder='Buscar producto...' onChange={searchProducts} loading={loading} clearValue={clear} />
+                    <FilterComponent placeholder='Buscar producto...' onChange={searchProducts} loading={isLoading} clearValue={clear} />
                 </div>
                 {searchTerm !== '' && (
                     <div className='absolute top-10 w-full left-0 border-2 border-gray-300 rounded-md bg-white shadow-md'>
-                        {productFilter.length > 0 ? productFilter.map((product: Product, index: number) => (
+                        {(data?.products ?? []).length > 0 ? (data?.products ?? []).map((product: Product, index: number) => (
                             <div key={index} onClick={() => product.stock > 0 && handleSelectProduct(product)} className={`text-sm flex items-center justify-between p-2 border-b last:border-0 hover:bg-gray-100 relative ${product.stock === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
                                 <div className="">
                                     <p className='font-semibold'>{product.name} - {product.presentation}</p>

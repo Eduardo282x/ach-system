@@ -225,6 +225,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             }),
             payments: payments.map((payment) => ({
                 typePayment: payment.typePayment,
+                currency: payment.currency,
                 reference: payment.reference,
                 amountBs: payment.amountBs,
                 amountUSD: payment.amount,

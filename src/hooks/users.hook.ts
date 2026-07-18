@@ -97,6 +97,35 @@ export const useUpdateUserMutation = () => {
 
 	return useMutation({
 		mutationFn: async ({ id, data }: { id: number; data: UserBody }) => updateUserApi(id, data),
+		onMutate: async ({ id, data }) => {
+			const queries = queryClient.getQueriesData<{ users: User[] }>({
+				queryKey: [USERS_QUERY_KEY],
+			});
+
+			const previousQueries: Array<[{ queryKey: unknown[] }, { users: User[] } | undefined]> = [];
+
+			queries.forEach(([queryKey, oldData]) => {
+				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+
+				if (!oldData) return;
+
+				const exists = oldData.users.some((item) => item.id === id);
+				if (exists) {
+					queryClient.setQueryData<{ users: User[] }>(queryKey, {
+						users: oldData.users.map((item) => (item.id === id ? { ...item, ...data } : item)),
+					});
+				}
+			});
+
+			return { previousQueries };
+		},
+		onError: (_err, _variables, context) => {
+			if (context?.previousQueries) {
+				context.previousQueries.forEach(([queryKey, data]) => {
+					queryClient.setQueryData(queryKey, data);
+				});
+			}
+		},
 		onSuccess: (response) => {
 			if (response.data == null) {
 				return;
@@ -112,6 +141,32 @@ export const useDeleteUserMutation = () => {
 
 	return useMutation({
 		mutationFn: async (id: number) => deleteUserApi(id),
+		onMutate: async (id) => {
+			const queries = queryClient.getQueriesData<{ users: User[] }>({
+				queryKey: [USERS_QUERY_KEY],
+			});
+
+			const previousQueries: Array<[{ queryKey: unknown[] }, { users: User[] } | undefined]> = [];
+
+			queries.forEach(([queryKey, oldData]) => {
+				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+
+				if (!oldData) return;
+
+				queryClient.setQueryData<{ users: User[] }>(queryKey, {
+					users: oldData.users.filter((item) => item.id !== id),
+				});
+			});
+
+			return { previousQueries };
+		},
+		onError: (_err, _id, context) => {
+			if (context?.previousQueries) {
+				context.previousQueries.forEach(([queryKey, data]) => {
+					queryClient.setQueryData(queryKey, data);
+				});
+			}
+		},
 		onSuccess: (_, id) => {
 			const queries = queryClient.getQueriesData<{ users: User[] }>({
 				queryKey: [USERS_QUERY_KEY],
