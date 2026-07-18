@@ -464,7 +464,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         if (selectedType && selectedType.currency === 'USD') {
             setValue('amount', Math.ceil(totalRestUSD).toString());
         } else {
-            setValue('amount', totalRestBs.toFixed(2).toString());
+            setValue('amount', (Math.ceil(totalRestBs * 100) / 100).toFixed(2).toString());
         }
     }
 
@@ -568,7 +568,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                                                         type="text"
                                                         inputMode="numeric"
                                                         value={field.value}
-                                                        onChange={(event) => field.onChange(normalizeIntegerInput(event.target.value))}
+                                                        onChange={(event) => field.onChange(normalizeDecimalInput(event.target.value))}
                                                         placeholder="Ingrese el monto a pagar"
                                                     />
                                                 )}

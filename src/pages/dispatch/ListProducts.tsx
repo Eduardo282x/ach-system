@@ -69,7 +69,7 @@ export const ListProducts = () => {
     }
 
     const changeQuantity = (productEdit: Product, quantity: number) => {
-        if (quantity < 1) return;
+        if (quantity <= 0) return;
         if (productEdit.stock && quantity > productEdit.stock) return;
 
         setProductList((prevList) =>
@@ -191,6 +191,7 @@ export const ListProducts = () => {
                                 <Button variant='destructive' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) - 1)}>-</Button>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     value={product.quantity}
                                     max={product.stock}
                                     onChange={(e) => changeQuantity(product, Number(e.target.value))}

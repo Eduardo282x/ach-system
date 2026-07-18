@@ -1,15 +1,12 @@
 import { formatDate } from '@/helpers/formatters';
-import { useAuthStore } from '@/store/auth.store';
+import { useSessionsQuery } from '@/hooks/sessions.hook';
 
 export const InfoCashDrawer = () => {
     const today = new Date();
-    const { cashier } = useAuthStore((state) => state);
-    const cashierState = cashier as unknown;
-    const drawerLabel = typeof cashierState === 'object' && cashierState !== null && 'cashDrawer' in cashierState
-        ? String((cashierState as { cashDrawer?: string | number }).cashDrawer ?? '')
-        : typeof cashierState === 'string'
-            ? cashierState
-            : '';
+    const { data } = useSessionsQuery({ status: 'OPEN' });
+
+    const drawerLabel = data?.sessions[0].cashDrawer.name;
+    const cashier = data?.sessions[0].user.name;
 
     return (
         <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
@@ -25,12 +22,12 @@ export const InfoCashDrawer = () => {
 
                 <div className="rounded-md bg-white p-3 border border-gray-200">
                     <p className='font-semibold text-sm text-gray-600'>Cajero</p>
-                    <p className='text-base font-medium'>{cashier?.name || 'Sin cajero'}</p>
+                    <p className='text-base font-medium'>{cashier || 'Sin cajero'}</p>
                 </div>
 
                 <div className="rounded-md bg-white p-3 border border-gray-200">
                     <p className='font-semibold text-sm text-gray-600'>Caja</p>
-                    <p className='text-base font-medium'>{drawerLabel ? `Caja ${drawerLabel}` : 'Sin caja seleccionada'}</p>
+                    <p className='text-base font-medium'>{drawerLabel ? `${drawerLabel}` : 'Sin caja seleccionada'}</p>
                 </div>
             </div>
         </div>

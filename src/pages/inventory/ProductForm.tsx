@@ -182,7 +182,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             </Field>
             <Field className="col-span-1">
                 <FieldLabel>Cantidad</FieldLabel>
-                <Input type="number" {...register('stock', { valueAsNumber: true })} />
+                <Input type="number" step="0.01" {...register('stock', { valueAsNumber: true })} />
             </Field>
             <Field className="col-span-1">
                 <FieldLabel>Precio</FieldLabel>
