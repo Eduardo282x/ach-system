@@ -49,10 +49,10 @@ export const useUpdateShiftMutation = () => {
 				queryKey: [SHIFTS_QUERY_KEY],
 			});
 
-			const previousQueries: Array<[{ queryKey: unknown[] }, { shifts: Shift[] } | undefined]> = [];
+			const previousQueries: Array<[readonly unknown[], { shifts: Shift[] } | undefined]> = [];
 
 			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+				previousQueries.push([queryKey, oldData]);
 
 				if (!oldData) return;
 
@@ -106,10 +106,10 @@ export const useDeleteShiftMutation = () => {
 				queryKey: [SHIFTS_QUERY_KEY],
 			});
 
-			const previousQueries: Array<[{ queryKey: unknown[] }, { shifts: Shift[] } | undefined]> = [];
+			const previousQueries: Array<[readonly unknown[], { shifts: Shift[] } | undefined]> = [];
 
 			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+				previousQueries.push([queryKey, oldData]);
 
 				if (!oldData) return;
 

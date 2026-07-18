@@ -4,6 +4,7 @@ import { useUsersQuery } from "@/hooks/users.hook";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
 import { useShiftsQuery } from "@/hooks/shifts.hook";
 import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
+import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 import { FilterComponent } from "@/components/table/FilterComponent";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
 import {
@@ -148,6 +149,7 @@ export const Invoices = () => {
             })),
             payments: invoiceSelected.paymentDetails.map((p) => ({
                 typePayment: p.paymentType?.name ?? "--",
+                currency: p.currency as ExchangeRateType,
                 reference: "",
                 amountBs: p.currency === "BS" ? Number(p.amountReceived) : Number(p.amountNetBs),
                 amountUSD: p.currency === "USD" ? Number(p.amountReceived) : 0,

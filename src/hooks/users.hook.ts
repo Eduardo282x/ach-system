@@ -1,4 +1,4 @@
-import type { User, UserBody } from "@/interfaces/users.interface";
+import type { User, UserBody, TypeRole } from "@/interfaces/users.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createUserApi, deleteUserApi, getUsersApi, getUsersRolesApi, updateUserApi } from "@/services/users.service";
 
@@ -102,17 +102,17 @@ export const useUpdateUserMutation = () => {
 				queryKey: [USERS_QUERY_KEY],
 			});
 
-			const previousQueries: Array<[{ queryKey: unknown[] }, { users: User[] } | undefined]> = [];
+			const previousQueries: Array<[readonly unknown[], { users: User[] } | undefined]> = [];
 
 			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+				previousQueries.push([queryKey, oldData]);
 
 				if (!oldData) return;
 
 				const exists = oldData.users.some((item) => item.id === id);
 				if (exists) {
 					queryClient.setQueryData<{ users: User[] }>(queryKey, {
-						users: oldData.users.map((item) => (item.id === id ? { ...item, ...data } : item)),
+						users: oldData.users.map((item) => (item.id === id ? { ...item, ...data, role: data.role as TypeRole } : item)),
 					});
 				}
 			});
@@ -146,10 +146,10 @@ export const useDeleteUserMutation = () => {
 				queryKey: [USERS_QUERY_KEY],
 			});
 
-			const previousQueries: Array<[{ queryKey: unknown[] }, { users: User[] } | undefined]> = [];
+			const previousQueries: Array<[readonly unknown[], { users: User[] } | undefined]> = [];
 
 			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+				previousQueries.push([queryKey, oldData]);
 
 				if (!oldData) return;
 

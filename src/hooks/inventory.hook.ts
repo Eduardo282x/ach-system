@@ -1,4 +1,4 @@
-import type { ExchangeRateBody, Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { ExchangeRateBody, ExchangeRateType, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
@@ -232,10 +232,10 @@ export const useUpdateProductMutation = () => {
 				queryKey: [INVENTORY_QUERY_KEY],
 			});
 
-			const previousQueries: Array<[{ queryKey: unknown[] }, { products: Product[] } | undefined]> = [];
+			const previousQueries: Array<[readonly unknown[], { products: Product[] } | undefined]> = [];
 
 			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+				previousQueries.push([queryKey, oldData]);
 
 				if (!oldData) return;
 
@@ -243,11 +243,11 @@ export const useUpdateProductMutation = () => {
 				const exists = oldData.products.some((item) => item.id === id);
 
 				if (exists) {
-					const partialProduct: Partial<Product> = { id, ...data } as Product;
-					const matches = productMatchesSearch(partialProduct as Product, search);
+					const partialProduct = { id, ...data, price: String(data.price), currency: data.currency as ExchangeRateType } as Product;
+					const matches = productMatchesSearch(partialProduct, search);
 					queryClient.setQueryData<{ products: Product[] }>(queryKey, {
 						products: matches
-							? oldData.products.map((item) => (item.id === id ? { ...item, ...data } : item))
+							? oldData.products.map((item) => (item.id === id ? { ...item, ...data, price: String(data.price), currency: data.currency as ExchangeRateType } : item))
 							: oldData.products.filter((item) => item.id !== id),
 					});
 				}
@@ -282,10 +282,10 @@ export const useDeleteProductMutation = () => {
 				queryKey: [INVENTORY_QUERY_KEY],
 			});
 
-			const previousQueries: Array<[{ queryKey: unknown[] }, { products: Product[] } | undefined]> = [];
+			const previousQueries: Array<[readonly unknown[], { products: Product[] } | undefined]> = [];
 
 			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey as { queryKey: unknown[] }, oldData]);
+				previousQueries.push([queryKey, oldData]);
 
 				if (!oldData) return;
 

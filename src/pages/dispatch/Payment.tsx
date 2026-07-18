@@ -62,7 +62,6 @@ interface PaymentProps {
 
 const PAYMENT_EPSILON = 0.0001;
 
-const normalizeIntegerInput = (value: string) => value.replace(/[^0-9]/g, '');
 const normalizeDecimalInput = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');
     const [integerPart, ...decimalParts] = sanitized.split('.');
