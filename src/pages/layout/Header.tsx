@@ -79,7 +79,7 @@ export const Header = () => {
                 <div className="bg-blue-800 p-2 rounded-md">
                     <MdOutlineShoppingCart className="text-2xl text-white" />
                 </div>
-                <span className="text-xl font-bold">{import.meta.env.VITE_NAME}</span>
+            <span className="text-xl font-bold">{import.meta.env.VITE_NAME}</span>
             </div>
 
             <div className="flex items-center gap-2">
