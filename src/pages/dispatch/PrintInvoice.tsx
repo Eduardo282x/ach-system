@@ -45,10 +45,10 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
 
     return (
         <div ref={ref} className="w-full h-full relative">
-            <div className="p-4 w-96 scale-50 origin-top-left absolute top-0 left-0 text-sm">
-                <p className='text-xl font-bold text-center'>{import.meta.env.VITE_NAME}</p>
+            <div className="p-4 w-96 scale-50 origin-top-left absolute top-0 left-0 text-base">
+                <p className='text-2xl font-bold text-center'>{import.meta.env.VITE_NAME}</p>
 
-                <div className='flex items-start justify-between w-full my-4'>
+                <div className='flex items-start justify-between w-full my-4 text-xl'>
                     <div>
                         <p><strong>Despacho: </strong>#{data.invoiceNumber ?? '--'}</p>
                         <p><strong>Fecha: </strong>{data.date}</p>
@@ -65,7 +65,7 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                 <div className="w-full border-2 border-dashed border-black"></div>
 
                 {data.productsList.map((product, index) => (
-                    <div key={index} className="flex items-start justify-between w-full my-4">
+                    <div key={index} className="flex items-start justify-between w-full my-4 text-xl">
                         <div>
                             <p><strong>{product.quantity}</strong> x {product.name}</p>
                             <p>X {formatNumberWithDecimal(product.unitPrice)} Bs</p>
@@ -78,15 +78,15 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
 
                 <div>
                     <div className="flex items-start justify-between w-full my-4">
-                        <p className="font-bold text-lg">Total a Pagar:</p>
+                        <p className="font-bold text-2xl">Total a Pagar:</p>
                         <div className="text-right">
-                            <p className="font-bold text-lg">{formatNumberWithDecimal(data.totals.totalBs)} Bs</p>
+                            <p className="font-bold text-2xl">{formatNumberWithDecimal(data.totals.totalBs)} Bs</p>
                             <p className="font-semibold">${formatNumberWithDecimal(data.totals.totalUSD)}</p>
                         </div>
                     </div>
                 </div>
 
-                <div>
+                <div className="text-xl">
                     <p className="font-bold">Métodos de pago:</p>
                     {data.payments.length === 0 ? (
                         <p>--</p>
@@ -95,7 +95,7 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                             <div key={index} className="flex items-start justify-between w-full mt-2">
                                 <div>
                                     <p>{payment.typePayment}</p>
-                                    <p className="text-xs">Ref: {payment.reference || '--'}</p>
+                                    <p className="text-sm">Ref: {payment.reference || '--'}</p>
                                 </div>
                                 <div className="text-right">
                                     <p>{formatNumberWithDecimal(payment.amountBs)} Bs</p>
