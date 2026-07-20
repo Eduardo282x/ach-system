@@ -57,8 +57,21 @@ export const ListProducts = () => {
         return calculate * exchangeRate;
     }
 
+    const handleQuantityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+        if (allowedKeys.includes(e.key)) return;
+
+        if (e.key >= '0' && e.key <= '9') return;
+
+        if ((e.key === '.' || e.key === ',') && !e.currentTarget.value.includes('.') && !e.currentTarget.value.includes(',')) {
+            return;
+        }
+
+        e.preventDefault();
+    };
+
     const changeQuantity = (productEdit: Product, quantity: number) => {
-        if (quantity <= 0) return;
+        if (isNaN(quantity) || quantity < 0) return;
         if (productEdit.stock && quantity > productEdit.stock) return;
 
         setProductList((prevList) =>
@@ -179,11 +192,13 @@ export const ListProducts = () => {
                             <div className='w-32 shrink-0 flex items-center gap-1'>
                                 <Button variant='destructive' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) - 1)}>-</Button>
                                 <input
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
                                     value={product.quantity}
-                                    max={product.stock}
-                                    onChange={(e) => changeQuantity(product, Number(e.target.value))}
+                                    onKeyDown={handleQuantityKeyDown}
+                                    onChange={(e) => {
+                                        const normalized = e.target.value.replace(',', '.');
+                                        changeQuantity(product, Number(normalized));
+                                    }}
                                     className="w-12 text-center border-2 border-gray-300 rounded-md p-1"
                                 />
                                 <Button variant='success' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) + 1)}>+</Button>
