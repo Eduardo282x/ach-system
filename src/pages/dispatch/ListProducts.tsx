@@ -15,6 +15,7 @@ export const ListProducts = () => {
     const { data, isLoading } = useInventoryQuery(searchTerm);
     const { productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
+    const [quantityInputs, setQuantityInputs] = useState<Record<number, string>>({});
 
     const searchProducts = (term: string) => {
         setSearchTerm(term);
@@ -59,11 +60,13 @@ export const ListProducts = () => {
 
     const handleQuantityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
-        if (allowedKeys.includes(e.key)) return;
+        const decimalKeys = ['.', ',', 'Decimal', 'NumpadDecimal'];
+        const isShortcut = e.ctrlKey || e.metaKey || e.altKey;
 
+        if (allowedKeys.includes(e.key) || isShortcut) return;
         if (e.key >= '0' && e.key <= '9') return;
 
-        if ((e.key === '.' || e.key === ',') && !e.currentTarget.value.includes('.') && !e.currentTarget.value.includes(',')) {
+        if (decimalKeys.includes(e.key) && !e.currentTarget.value.includes('.') && !e.currentTarget.value.includes(',')) {
             return;
         }
 
@@ -87,6 +90,23 @@ export const ListProducts = () => {
                     product
             )
         );
+    }
+
+    const updateQuantityInput = (productId: number, value: string) => {
+        setQuantityInputs((prev) => ({ ...prev, [productId]: value }));
+    }
+
+    const handleQuantityBlur = (product: Product) => {
+        const inputValue = quantityInputs[product.id] ?? String(product.quantity ?? '');
+        const normalized = inputValue.replace(',', '.');
+        const parsed = Number(normalized);
+
+        if (inputValue.trim() === '' || isNaN(parsed) || parsed < 0) {
+            updateQuantityInput(product.id, String(product.quantity ?? 0));
+            return;
+        }
+
+        changeQuantity(product, parsed);
     }
 
     const removeProduct = (productId: number) => {
@@ -193,12 +213,21 @@ export const ListProducts = () => {
                                 <Button variant='destructive' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) - 1)}>-</Button>
                                 <input
                                     type="text"
-                                    value={product.quantity}
+                                    value={quantityInputs[product.id] ?? String(product.quantity ?? '')}
                                     onKeyDown={handleQuantityKeyDown}
                                     onChange={(e) => {
-                                        const normalized = e.target.value.replace(',', '.');
-                                        changeQuantity(product, Number(normalized));
+                                        const nextValue = e.target.value;
+                                        updateQuantityInput(product.id, nextValue);
+
+                                        const normalized = nextValue.replace(',', '.');
+                                        if (/^\d+(?:[.,]\d*)?$/.test(nextValue)) {
+                                            const parsed = Number(normalized);
+                                            if (!isNaN(parsed)) {
+                                                changeQuantity(product, parsed);
+                                            }
+                                        }
                                     }}
+                                    onBlur={() => handleQuantityBlur(product)}
                                     className="w-12 text-center border-2 border-gray-300 rounded-md p-1"
                                 />
                                 <Button variant='success' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) + 1)}>+</Button>
