@@ -22,6 +22,7 @@ import { TableComponent } from "@/components/table/TableComponent";
 import { EmptyInvoice } from "../invoices/invoices.data";
 import { InvoiceDetail } from "../invoices/Invoices";
 import { creditInvoiceColumns } from "./credit.data";
+import { PayCreditDialog } from "./PayCreditDialog";
 
 export const Credits = () => {
     const [filter, setFilter] = useState<InvoicesFilter>({
@@ -47,6 +48,7 @@ export const Credits = () => {
     }, []);
 
     const [invoiceSelected, setInvoiceSelected] = useState<InvoiceResponse | null>(null);
+    const [openPayDialog, setOpenPayDialog] = useState(false);
 
     const handleDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
         if (dateRange?.from && dateRange?.to) {
@@ -83,8 +85,7 @@ export const Credits = () => {
             setTimeout(() => handlePrint(), 100);
         }
         if (action === "pay") {
-            // Handle payment action
-            payInvoiceCreditMutation.mutate(data.id);
+            setOpenPayDialog(true);
         }
     }
 
@@ -176,6 +177,18 @@ export const Credits = () => {
             <div className="hidden">
                 <PrintInvoice ref={componentRef} data={invoicePrint} />
             </div>
+
+            <PayCreditDialog
+                open={openPayDialog}
+                invoice={invoiceSelected}
+                onConfirm={() => {
+                    if (invoiceSelected) {
+                        payInvoiceCreditMutation.mutate(invoiceSelected.id);
+                    }
+                    setOpenPayDialog(false);
+                }}
+                onCancel={() => setOpenPayDialog(false)}
+            />
         </div>
     );
 };
