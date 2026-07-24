@@ -17,6 +17,7 @@ import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 import { CashClosing } from './pages/cashClosing/CashClosing';
 import { Invoices } from './pages/invoices/Invoices';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Credits } from './pages/credits/Credits';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -57,6 +58,10 @@ function App() {
               {
                 path: '/cajeros',
                 element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
+              },
+              {
+                path: '/creditos',
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Credits /></ProtectedRoute>
               },
               {
                 path: '/cierre-caja',

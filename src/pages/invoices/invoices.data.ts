@@ -79,7 +79,7 @@ export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
     }
 ];
 
-const getStatusLabel = (status: string) => {
+export const getStatusLabel = (status: string) => {
     switch (status) {
         case "PAID": return "Pagada";
         case "PENDING": return "Pendiente";
@@ -88,7 +88,7 @@ const getStatusLabel = (status: string) => {
     }
 };
 
-const getStatusColor = (status: string) => {
+export const getStatusColor = (status: string) => {
     switch (status) {
         case "PAID": return "text-green-800 bg-green-100";
         case "PENDING": return "text-yellow-800 bg-yellow-100";

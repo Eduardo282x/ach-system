@@ -10,6 +10,11 @@ export interface SessionGroupFilter {
     date: Date | string;
     shiftId?: number;
 }
+export interface SessionGroupFilterRange {
+    startDate: string;
+    endDate: string;
+    shiftId?: number;
+}
 
 export interface SessionsContent {
     sessions: Session[];

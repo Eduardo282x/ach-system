@@ -1,4 +1,4 @@
-import type { CashDrawerContent, CloseSession, CreateUpdateCashDrawer, OpenSession, SessionFilter, SessionGroupFilter, SessionsContent, SessionsGroupContent } from "@/interfaces/sessions.interface";
+import type { CashDrawerContent, CloseSession, CreateUpdateCashDrawer, OpenSession, SessionFilter, SessionGroupFilter, SessionGroupFilterRange, SessionsContent, SessionsGroupContent } from "@/interfaces/sessions.interface";
 import { getDataApi, postDataApi, putDataApi } from "./api.service";
 
 const sessionsUrl = '/sessions';
@@ -33,6 +33,22 @@ export const getSessionsGroupApi = async (filter: SessionGroupFilter): Promise<S
         params += params ? `&shiftId=${filter.shiftId}` : `?shiftId=${filter.shiftId}`;
     }
     const response = await getDataApi<SessionsGroupContent>(`${sessionsUrl}/group${params}`);
+    console.log(response)
+    if (response.data == null) {
+        return { sessions: [] };
+    }
+    return response.data;
+}
+
+export const getSessionsGroupRangeApi = async (filter: SessionGroupFilterRange): Promise<SessionsGroupContent> => {
+    let params = '';
+    if (filter && filter.startDate && filter.endDate) {
+        params = `?startDate=${filter.startDate}&endDate=${filter.endDate}`;
+    }
+    if (filter && filter.shiftId) {
+        params += params ? `&shiftId=${filter.shiftId}` : `?shiftId=${filter.shiftId}`;
+    }
+    const response = await getDataApi<SessionsGroupContent>(`${sessionsUrl}/group-range${params}`);
     console.log(response)
     if (response.data == null) {
         return { sessions: [] };

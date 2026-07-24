@@ -4,6 +4,7 @@ import { HiOutlineCurrencyDollar } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark } from "react-icons/md";
 import { LuReceipt } from "react-icons/lu";
+import { MdPayments } from "react-icons/md";
 
 export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
 
@@ -46,6 +47,15 @@ export const headerData: HeaderInterface[] = [
         type: 'button',
         active: false,
         auth: ['ADMIN', 'CAJERO'],
+        children: []
+    },
+    {
+        title: 'Créditos',
+        icon: MdPayments,
+        navigateTo: '/creditos',
+        type: 'button',
+        active: false,
+        auth: ['ADMIN'],
         children: []
     },
     {

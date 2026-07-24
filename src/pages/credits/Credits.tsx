@@ -1,9 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useInvoicesQuery } from "@/hooks/dispatch.hook";
-import { useUsersQuery } from "@/hooks/users.hook";
-import { useSessionsGroupQueryRange } from "@/hooks/sessions.hook";
+import { useInvoicesQuery, usePayInvoiceCreditMutation } from "@/hooks/dispatch.hook";
 import { useShiftsQuery } from "@/hooks/shifts.hook";
-import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
+import type { InvoicesFilter, InvoiceResponse } from "@/interfaces/distpatch.interface";
 import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 import { FilterComponent } from "@/components/table/FilterComponent";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
@@ -17,41 +15,31 @@ import {
 } from "@/components/ui/select";
 
 import { formatDate, formatOnlyTime } from "@/helpers/formatters";
-import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
 import { PrintInvoice, type InvoiceData } from "../dispatch/PrintInvoice";
 import { useReactToPrint } from "react-to-print";
 import type { DateRange } from "react-day-picker";
-import { EmptyInvoice, invoiceColumns, invoiceDetailsColumns } from "./invoices.data";
 import { TableComponent } from "@/components/table/TableComponent";
+import { EmptyInvoice } from "../invoices/invoices.data";
+import { InvoiceDetail } from "../invoices/Invoices";
+import { creditInvoiceColumns } from "./credit.data";
 
-export const Invoices = () => {
+export const Credits = () => {
     const [filter, setFilter] = useState<InvoicesFilter>({
         page: 1,
         size: 100,
-        credit: false,
+        credit: true,
     });
-    // const [expandedRow, setExpandedRow] = useState<number | null>(null);
-    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-    const [selectedPaymentDetails, setSelectedPaymentDetails] = useState<PaymentDetail[]>([]);
-    const [selectedInvoiceTotals, setSelectedInvoiceTotals] = useState<{ totalAmountBs: string; totalAmountUsd: string }>({ totalAmountBs: "0", totalAmountUsd: "0" });
 
     const componentRef = useRef<HTMLDivElement>(null);
 
     const { data: invoicesData, isLoading } = useInvoicesQuery(filter);
-    const { data: usersData } = useUsersQuery("");
     const { data: shiftsData } = useShiftsQuery();
 
-    const cashDrawerSessions = useSessionsGroupQueryRange({ startDate: filter.startDate ?? '', endDate: filter.endDate ?? '', shiftId: filter.shiftId ?? 0 });
-
-    const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift.name}`,
-        value: cashDrawerSession.id.toString(),
-    })) : [];
+    const payInvoiceCreditMutation = usePayInvoiceCreditMutation();
 
     const invoices = useMemo(() => invoicesData?.invoices ?? [], [invoicesData]);
     const pagination = invoicesData?.pagination;
 
-    const users = useMemo(() => usersData?.users ?? [], [usersData]);
     const shifts = useMemo(() => shiftsData?.shifts ?? [], [shiftsData]);
 
     const handleSearch = useCallback((value: string) => {
@@ -72,22 +60,6 @@ export const Invoices = () => {
         }
     }, []);
 
-    const handleSessionChange = useCallback((value: string) => {
-        setFilter((prev) => ({
-            ...prev,
-            sessionId: value === "all" ? undefined : Number(value),
-            page: 1,
-        }));
-    }, []);
-
-    const handleUserChange = useCallback((value: string) => {
-        setFilter((prev) => ({
-            ...prev,
-            userId: value === "all" ? undefined : Number(value),
-            page: 1,
-        }));
-    }, []);
-
     const handleShiftChange = useCallback((value: string) => {
         setFilter((prev) => ({
             ...prev,
@@ -96,22 +68,9 @@ export const Invoices = () => {
         }));
     }, []);
 
-    const changePagination = (page: number, size: number) => {
-        setFilter((prev) => ({ ...prev, page, size }));
-    }
-
     // const toggleRow = useCallback((invoiceId: number) => {
     //     setExpandedRow((prev) => (prev === invoiceId ? null : invoiceId));
     // }, []);
-
-    const handleOpenPayments = useCallback((invoice: InvoiceResponse) => {
-        setSelectedPaymentDetails(invoice.paymentDetails);
-        setSelectedInvoiceTotals({
-            totalAmountBs: invoice.totalAmountBs,
-            totalAmountUsd: invoice.totalAmountUsd,
-        });
-        setPaymentDialogOpen(true);
-    }, []);
 
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
@@ -123,8 +82,9 @@ export const Invoices = () => {
         if (action === "print") {
             setTimeout(() => handlePrint(), 100);
         }
-        if (action === "viewPayments") {
-            handleOpenPayments(data);
+        if (action === "pay") {
+            // Handle payment action
+            payInvoiceCreditMutation.mutate(data.id);
         }
     }
 
@@ -176,38 +136,6 @@ export const Invoices = () => {
                             />
                         </div>
 
-                        <Select onValueChange={handleSessionChange}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Todas las sesiones" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="all">Todas las sesiones</SelectItem>
-                                    {cashierSessionOptions.map((session) => (
-                                        <SelectItem key={session.value} value={session.value}>
-                                            {session.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-
-                        <Select onValueChange={handleUserChange}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Todos los cajeros" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="all">Todos los cajeros</SelectItem>
-                                    {users.map((user) => (
-                                        <SelectItem key={user.id} value={String(user.id)}>
-                                            {user.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-
                         <Select onValueChange={handleShiftChange}>
                             <SelectTrigger className="w-48">
                                 <SelectValue placeholder="Todos los turnos" />
@@ -232,27 +160,17 @@ export const Invoices = () => {
                 {/* Table */}
                 <TableComponent
                     onChange={getActionTable}
-                    columns={invoiceColumns}
+                    columns={creditInvoiceColumns}
                     data={invoices}
                     isLoading={isLoading}
                     isExpansible={true}
                     pagination={pagination}
                     totalElements={pagination?.total}
-                    onPaginationChange={changePagination}
                     renderRow={(item, index) => (
                         <InvoiceDetail key={index} invoice={item} />
                     )}
                 />
             </div>
-
-            {/* Payment Details Dialog */}
-            <PaymentDetailsDialog
-                open={paymentDialogOpen}
-                onClose={() => setPaymentDialogOpen(false)}
-                paymentDetails={selectedPaymentDetails}
-                totalAmountBs={selectedInvoiceTotals.totalAmountBs}
-                totalAmountUsd={selectedInvoiceTotals.totalAmountUsd}
-            />
 
             {/* Hidden PrintInvoice */}
             <div className="hidden">
@@ -261,17 +179,3 @@ export const Invoices = () => {
         </div>
     );
 };
-
-export const InvoiceDetail = ({ invoice }: { invoice: InvoiceResponse }) => {
-    return (
-        <div className="h-full">
-            <TableComponent
-                columns={invoiceDetailsColumns}
-                data={invoice.items}
-                onChange={() => { }}
-                ignorePagination={true}
-                automaticHeight={true}
-            />
-        </div>
-    )
-}

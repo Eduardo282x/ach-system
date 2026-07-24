@@ -170,6 +170,7 @@ export interface InvoicesFilter {
     sessionId?: number;
     userId?: number;
     shiftId?: number;
+    credit?: boolean;
     page?: number;
     size?: number;
 }

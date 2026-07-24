@@ -17,6 +17,7 @@ import { TableSkeleton } from "./TableSkeleton";
 import { IoIosArrowDown } from "react-icons/io";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+type VariantType = 'primary' | 'error' | 'outline' | 'secondary';
 export interface ColumnDef<T> {
     key: string;
     header: string;
@@ -27,7 +28,7 @@ export interface ColumnDef<T> {
         icon: React.ComponentType<{ className?: string }>;
         action: string;
         label: string;
-        variant: 'primary' | 'error' | 'outline';
+        variant: VariantType;
     }[]
     visible: boolean;
 }
@@ -46,7 +47,7 @@ interface TableComponentProps<T> {
     renderRow?: (item: T, index: number) => React.ReactNode;
 }
 
-const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
+const styleVariant = (variant: VariantType) => {
     switch (variant) {
         case 'primary':
             return 'text-blue-600';
@@ -54,6 +55,8 @@ const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
             return 'text-red-600';
         case 'outline':
             return 'text-gray-600';
+        case 'secondary':
+            return 'text-green-600';
         default:
             return '';
     }

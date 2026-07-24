@@ -1,7 +1,7 @@
 import type { BaseResponse } from "@/interfaces/base.interface";
 import { formatOnlyDateStringFilter } from "@/helpers/formatters";
 import type { DispatchBody, InvoicesFilter, InvoicesResponse, InvoiceResponseContent, PaymentType, ResumenContent, ResumenFilter, TypesPaymentContent } from "@/interfaces/distpatch.interface";
-import { getDataApi, getDataFileApi, postDataApi } from "./api.service";
+import { getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 
 const salesUrl = '/sales';
 
@@ -15,7 +15,7 @@ export const getResumenSalesApi = async (filter: ResumenFilter): Promise<Resumen
     let params = `?date=${parsedDate ?? ''}`;
 
     if (filter && filter.sessionId) {
-        params += `&sessionId=${filter.sessionId}` ;
+        params += `&sessionId=${filter.sessionId}`;
     }
     if (filter && filter.shiftId) {
         params += `&shiftId=${filter.shiftId}`;
@@ -32,7 +32,7 @@ export const getResumenSalesExcelApi = async (filter: ResumenFilter): Promise<Bl
     let params = `?date=${parsedDate ?? ''}`;
 
     if (filter && filter.sessionId) {
-        params += `&sessionId=${filter.sessionId}` ;
+        params += `&sessionId=${filter.sessionId}`;
     }
     if (filter && filter.shiftId) {
         params += `&shiftId=${filter.shiftId}`;
@@ -52,6 +52,7 @@ export const getInvoicesApi = async (filter: InvoicesFilter): Promise<InvoicesRe
     if (filter.shiftId) params.append('shiftId', String(filter.shiftId));
     if (filter.page) params.append('page', String(filter.page));
     if (filter.size) params.append('size', String(filter.size));
+    if (filter.credit !== undefined) params.append('credit', String(filter.credit));
 
     const queryString = params.toString();
     const result = await getDataApi<InvoicesResponse>(`${salesUrl}/invoices${queryString ? `?${queryString}` : ''}`);
@@ -60,5 +61,10 @@ export const getInvoicesApi = async (filter: InvoicesFilter): Promise<InvoicesRe
 
 export const createInvoicesApi = async (data: DispatchBody): Promise<BaseResponse<InvoiceResponseContent | null>> => {
     const result = await postDataApi<DispatchBody, InvoiceResponseContent>(`${salesUrl}/invoices`, data);
+    return result;
+}
+
+export const payInvoiceCreditApi = async (invoiceId: number): Promise<BaseResponse<InvoiceResponseContent | null>> => {
+    const result = await putDataApi<null, InvoiceResponseContent>(`${salesUrl}/pay-invoice-credit/${invoiceId}`, null);
     return result;
 }

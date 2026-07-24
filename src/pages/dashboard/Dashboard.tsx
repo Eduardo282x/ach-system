@@ -85,7 +85,7 @@ export const Dashboard = () => {
                         </div>
 
                         <div className="bg-white rounded-xl p-4 border border-gray-200">
-                            <p className="text-sm text-gray-600">Total de facturas</p>
+                            <p className="text-sm text-gray-600">Total de Recibos</p>
                             <p className="text-2xl font-bold text-blue-800 mt-1">{dashboard.totalInvoices}</p>
                         </div>
                     </div>
@@ -118,7 +118,7 @@ export const Dashboard = () => {
                         </div>
 
                         <div className="bg-white rounded-xl p-4 border border-gray-200">
-                            <h3 className="text-lg font-bold mb-3 text-blue-800">Facturas</h3>
+                            <h3 className="text-lg font-bold mb-3 text-blue-800">Recibos</h3>
                             <div className="rounded-md overflow-hidden border border-gray-200 max-h-96 overflow-y-auto">
                                 <div className="grid grid-cols-5 bg-gray-100 p-2 text-sm font-semibold sticky top-0">
                                     <p>N°</p>
@@ -151,7 +151,7 @@ export const Dashboard = () => {
                                             <p className="font-medium">{customer.fullName}</p>
                                             <p className="text-xs text-gray-500">{formatNumberWithDots(customer.identify, "", "", true)}</p>
                                         </div>
-                                        <p className="text-sm font-semibold">{customer.totalInvoices} facturas</p>
+                                        <p className="text-sm font-semibold">{customer.totalInvoices} recibos</p>
                                     </div>
                                 ))}
                             </div>
@@ -164,7 +164,7 @@ export const Dashboard = () => {
                                     <div key={product.productId} className="flex items-center justify-between border-b border-gray-100 pb-2">
                                         <div>
                                             <p className="font-medium">{product.name}</p>
-                                            <p className="text-xs text-gray-500">{product.totalQuantitySold} unidades | {product.totalInvoices} facturas</p>
+                                            <p className="text-xs text-gray-500">{product.totalQuantitySold} unidades | {product.totalInvoices} recibos</p>
                                         </div>
                                         <p className="text-sm font-semibold">{formatNumberWithDecimal(product.totalAmountBs)} {translateCurrency("BS")}</p>
                                     </div>

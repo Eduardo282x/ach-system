@@ -1,6 +1,6 @@
 import type { BaseResponse } from "@/interfaces/base.interface";
 import type { DispatchBody, InvoicesFilter, InvoiceResponseContent, ResumenFilter } from "@/interfaces/distpatch.interface";
-import { createInvoicesApi, getInvoicesApi, getResumenSalesApi, getTypesPaymentApi } from "@/services/dispatch.service";
+import { createInvoicesApi, getInvoicesApi, getResumenSalesApi, getTypesPaymentApi, payInvoiceCreditApi } from "@/services/dispatch.service";
 import { useDispatchStore } from "@/store/dispatch.store";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -46,6 +46,19 @@ export const useCreateInvoiceMutation = () => {
 
     return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, DispatchBody>({
         mutationFn: async (data: DispatchBody) => createInvoicesApi(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+        },
+    });
+};
+
+export const usePayInvoiceCreditMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, number>({
+        mutationFn: async (invoiceId: number) => payInvoiceCreditApi(invoiceId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
             queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
