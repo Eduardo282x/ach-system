@@ -178,8 +178,11 @@ export const ListProducts = () => {
                                     <p className='text-gray-500 w-32'>{product.barcode}</p>
                                 </div>
 
-                                <div className="absolute top-0 right-0 flex items-center justify-center w-full h-full">
-                                    {product.stock === 0 && (
+                                <div className="absolute top-0 left-0 w-full h-full opacity-50 bg-gray-400 z-10" style={{ display: product.stock <= 0 ? 'block' : 'none' }}></div>
+
+
+                                <div className="absolute top-0 right-0 flex items-center justify-center w-full h-full z-20" style={{ display: product.stock <= 0 ? 'flex' : 'none' }}>
+                                    {product.stock <= 0 && (
                                         <div className="text-center">
                                             <p className='text-red-500 font-semibold text-2xl'>Producto no disponible</p>
                                             <p className='text-red-500 font-semibold text-xl'>Sin stock</p>

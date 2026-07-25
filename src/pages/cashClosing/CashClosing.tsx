@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { DatePicker } from "@/components/datePickerRange/DatePickerRange"
 import { useResumenSalesQuery } from "@/hooks/dispatch.hook";
 import { formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
@@ -11,6 +12,7 @@ import { useShiftsQuery } from "@/hooks/shifts.hook";
 import { Loading } from "@/components/loader/Loading";
 import { useAuthStore } from "@/store/auth.store";
 import type { TypeRole } from "@/interfaces/users.interface";
+import type { SessionsGroup } from "@/interfaces/sessions.interface";
 
 export const CashClosing = () => {
 
@@ -35,19 +37,31 @@ export const CashClosing = () => {
         value: cashDrawerSession.id.toString(),
     })) : [];
 
+    const getResumenAutomatic = (session: SessionsGroup) => {
+        setFilter((prev) => {
+            if (prev.shiftId === session.shiftId) {
+                return prev;
+            }
+            return {
+                ...prev,
+                shiftId: session.shiftId,
+            };
+        });
+    }
+
     useEffect(() => {
-        if (userRole === 'CAJERO' && cashDrawerSessions.data?.sessions && user?.id) {
-            // const mySession = cashDrawerSessions.data.sessions.find(
-            //     s => s.user.id === user.id
-            // );
-            // if (mySession && filter.sessionId !== mySession.sessionId) {
-            // setFilter(prev => ({
-            //     ...prev,
-            //     sessionId: mySession.sessionId,
-            // }));
-            // }
+        if (userRole !== 'CAJERO' || filter.shiftId != null || !cashDrawerSessions.data?.sessions || !user?.id) {
+            return;
         }
-    }, [userRole, cashDrawerSessions.data, user]);
+
+        const mySession = cashDrawerSessions.data.sessions.find(
+            (s) => s.user.id === user.id
+        );
+
+        if (mySession) {
+            getResumenAutomatic(mySession);
+        }
+    }, [userRole, cashDrawerSessions.data?.sessions, user?.id, filter.shiftId]);
 
     const handleCashDrawerSessionChange = (sessionId: string) => {
         if (sessionId === 'all') {

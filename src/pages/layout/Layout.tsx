@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Outlet, useNavigate } from "react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -11,6 +11,8 @@ import toast from "react-hot-toast";
 import type { DailyReminder } from "@/interfaces/base.interface";
 import { CustomSnackbarMessage } from "@/components/dialog/AlertDialogComponent";
 import { useQueryClient } from "@tanstack/react-query";
+import { ShiftWarningDialog } from "@/components/dialog/ShiftWarningDialog";
+import type { ShiftWarning } from "@/interfaces/shift-warning.interface";
 
 export const Layout = () => {
     const navigate = useNavigate();
@@ -19,6 +21,8 @@ export const Layout = () => {
     const token = useAuthStore((state) => state.token);
     const clearSession = useAuthStore((state) => state.clearSession);
     const isTokenExpired = useAuthStore((state) => state.isTokenExpired);
+
+    const [shiftWarning, setShiftWarning] = useState<ShiftWarning | null>(null);
 
     useEffect(() => {
         if (!token || isTokenExpired()) {
@@ -50,6 +54,19 @@ export const Layout = () => {
         queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
     });
 
+    useSocket('shift-warning', (data: ShiftWarning) => {
+        setShiftWarning(data);
+    });
+
+    const handleShiftWarningConfirm = useCallback(() => {
+        setShiftWarning(null);
+        navigate('/dashboard');
+    }, [navigate]);
+
+    const handleShiftWarningDismiss = useCallback(() => {
+        setShiftWarning(null);
+    }, []);
+
     return (
         <div className="w-screen h-full flex flex-col overflow-hidden">
             <TooltipProvider>
@@ -59,6 +76,17 @@ export const Layout = () => {
                 </div>
                 <Footer />
             </TooltipProvider>
+
+            {shiftWarning && (
+                <ShiftWarningDialog
+                    open={!!shiftWarning}
+                    type={shiftWarning.type}
+                    shiftName={shiftWarning.shiftName}
+                    endTime={shiftWarning.endTime}
+                    onConfirm={handleShiftWarningConfirm}
+                    onDismiss={handleShiftWarningDismiss}
+                />
+            )}
         </div>
     )
 }
