@@ -59,18 +59,23 @@ interface PaymentProps {
     customer?: Client | null;
 }
 
-const PAYMENT_EPSILON = 0.0001;
+const PAYMENT_EPSILON = 0.01;
 
-const normalizeIntegerInput = (value: string) => value.replace(/[^0-9]/g, '');
 const normalizeDecimalInput = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
-    const [integerPart, ...decimalParts] = sanitized.split('.');
+    let sanitized = value.replace(',', '.').replace(/[^0-9.]/g, '');
 
-    if (decimalParts.length === 0) {
-        return integerPart;
+    const firstDotIndex = sanitized.indexOf('.');
+    if (firstDotIndex !== -1) {
+        const integerPart = sanitized.slice(0, firstDotIndex).replace(/\./g, '');
+        const decimalPart = sanitized.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, 2);
+        sanitized = decimalPart.length > 0 ? `${integerPart}.${decimalPart}` : `${integerPart}.`;
     }
 
-    return `${integerPart}.${decimalParts.join('')}`;
+    if (sanitized.startsWith('.')) {
+        sanitized = `0${sanitized}`;
+    }
+
+    return sanitized;
 };
 
 export const Payment = ({ customer }: PaymentProps) => {
@@ -309,7 +314,7 @@ export const Payment = ({ customer }: PaymentProps) => {
 
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: 'Factura',
+        documentTitle: 'Recibo',
         onAfterPrint: () => {
         }
     });
@@ -321,7 +326,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         }
 
         if (!productList.length) {
-            toast.error('Debe agregar productos para generar la factura');
+            toast.error('Debe agregar productos para generar el recibo');
             return;
         }
 
@@ -344,7 +349,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         const sessionId = cashDrawerSession ? Number(cashDrawerSession) : 0;
 
         if (!sessionId) {
-            toast.error('No hay sesión/cajero seleccionado para registrar la factura');
+            toast.error('No hay sesión/cajero seleccionado para registrar el recibo');
             return;
         }
 
@@ -369,7 +374,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         createInvoiceMutation.mutate(dispatchData, {
             onSuccess: (response) => {
                 if (!response?.success) {
-                    toast.error(response?.message || 'No se pudo registrar la factura');
+                    toast.error(response?.message || 'No se pudo registrar el recibo');
                     return;
                 }
 
@@ -387,7 +392,7 @@ export const Payment = ({ customer }: PaymentProps) => {
                 setOpen(false);
             },
             onError: () => {
-                toast.error('Ocurrió un error al registrar la factura');
+                toast.error('Ocurrió un error al registrar el recibo');
             },
         });
     }
@@ -483,7 +488,7 @@ export const Payment = ({ customer }: PaymentProps) => {
 
     return (
         <div className='w-[20%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
-            {/* Imprimir factura */}
+            {/* Imprimir recibos */}
             <div className='hidden'>
                 <PrintInvoice ref={componentRef} data={invoiceData} />
             </div>
@@ -580,8 +585,9 @@ export const Payment = ({ customer }: PaymentProps) => {
                                                     <Input
                                                         type="text"
                                                         inputMode="numeric"
+                                                        step="0.01"
                                                         value={field.value}
-                                                        onChange={(event) => field.onChange(normalizeIntegerInput(event.target.value))}
+                                                        onChange={(event) => field.onChange(normalizeDecimalInput(event.target.value))}
                                                         placeholder="Ingrese el monto a pagar"
                                                     />
                                                 )}

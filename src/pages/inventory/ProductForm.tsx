@@ -8,8 +8,9 @@ import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { generateBarcodeApi } from "@/services/inventory.service";
 import { translateCurrency } from "@/helpers/formatters";
+import { Textarea } from "@/components/ui/textarea"
 
-export type ProductFormMode = "create" | "edit" | "addDetail";
+export type ProductFormMode = "create" | "edit";
 
 interface ProductFormProps {
     mode: ProductFormMode;
@@ -21,10 +22,8 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
     const createProductMutation = useCreateProductMutation();
     const updateProductMutation = useUpdateProductMutation();
     const [disableBtnGenerate, setDisableBtnGenerate] = useState(false);
-    const isAddDetail = mode === "addDetail";
+
     const isEdit = mode === "edit" && product != null;
-    const isEditChild = isEdit && product.parentId != null;
-    const showUnitsDetail = !isAddDetail && !isEditChild;
 
     const { register, handleSubmit, control, reset, setValue } = useForm<ProductBody>({
         defaultValues: {
@@ -34,9 +33,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             price: 0,
             currency: '',
             stock: 0,
-            isDetail: false,
-            parentId: null,
-            unitsDetail: 0,
+            serialNumber: '',
+            lote: '',
+            brand: '',
+            type: '',
+            description: ''
         }
     });
 
@@ -44,9 +45,6 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
         if (isEdit && product) {
             const body: ProductBody = {
                 ...data,
-                parentId: isEditChild ? product.parentId : null,
-                isDetail: isEditChild,
-                unitsDetail: isEditChild ? null : Math.max(1, data.unitsDetail ?? 1),
             };
 
             const response = await updateProductMutation.mutateAsync({
@@ -62,9 +60,6 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
 
         const body: ProductBody = {
             ...data,
-            parentId: isAddDetail && product ? product.id : null,
-            isDetail: isAddDetail,
-            unitsDetail: isAddDetail ? null : Math.max(1, data.unitsDetail ?? 1),
         };
 
         const response = await createProductMutation.mutateAsync(body);
@@ -78,9 +73,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 price: 0,
                 currency: '',
                 stock: 0,
-                isDetail: false,
-                parentId: null,
-                unitsDetail: null,
+                serialNumber: '',
+                lote: '',
+                brand: '',
+                type: '',
+                description: ''
             });
         }
     }
@@ -94,24 +91,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 price: typeof product.price === "number" ? product.price : Number(product.price),
                 currency: product.currency,
                 stock: product.stock,
-                isDetail: product.isDetail,
-                parentId: product.parentId,
-                unitsDetail: product.unitsDetail,
-            });
-            return;
-        }
-
-        if (mode === "addDetail" && product) {
-            reset({
-                name: product.name,
-                presentation: '',
-                barcode: '',
-                price: 0,
-                currency: product.currency,
-                stock: 0,
-                isDetail: true,
-                parentId: product.id,
-                unitsDetail: null,
+                serialNumber: product.serialNumber,
+                lote: product.lote,
+                brand: product.brand,
+                type: product.type,
+                description: product.description,
             });
             return;
         }
@@ -123,9 +107,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             price: 0,
             currency: '',
             stock: 0,
-            isDetail: false,
-            parentId: null,
-            unitsDetail: null,
+            serialNumber: '',
+            lote: '',
+            brand: '',
+            type: '',
+            description: '',
         });
     }, [mode, product, reset])
 
@@ -149,45 +135,62 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
         }
     }, [barcodeValue])
 
+    const RequiredField = () => {
+        return <span className="text-red-500">*</span>
+    }
+
+    const OptionalField = () => {
+        return <span className="text-gray-500 text-sm font-normal">(Opcional)</span>
+    }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="w-1/2 mx-auto mt-8 h-full grid grid-cols-2 gap-4 px-8 py-4 bg-white rounded-xl shadow-md">
-
-            {product && isAddDetail && (
-                <Field className="col-span-2">
-                    <FieldLabel>Producto Padre</FieldLabel>
-                    <Input disabled={true} value={`${product.barcode} - ${product.name} - ${product.price}${translateCurrency(product.currency)}`} />
-                </Field>
-            )}
-
-            <Field className="col-span-1">
-                <FieldLabel>Código</FieldLabel>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-3/4 mx-auto mt-8 h-full grid grid-cols-3 gap-4 px-8 py-4 bg-white rounded-xl shadow-md">
+            <Field>
+                <FieldLabel>Código {RequiredField()}</FieldLabel>
                 <div className="flex items-center gap-2">
                     <Input {...register('barcode')} />
                     <Button type="button" disabled={disableBtnGenerate} variant="primary" onClick={generateBarcode}>Generar</Button>
                 </div>
             </Field>
-            <Field className="col-span-1">
-                <FieldLabel>Nombre</FieldLabel>
+            <Field>
+                <FieldLabel>Nombre {RequiredField()}</FieldLabel>
                 <Input {...register('name')} />
             </Field>
-            <Field className="col-span-1">
-                <FieldLabel>Presentación <span className="text-gray-500 text-sm font-normal">(Opcional)</span></FieldLabel>
+            <Field>
+                <FieldLabel>Presentación {OptionalField()}</FieldLabel>
                 <Input {...register('presentation')} />
             </Field>
-            <Field className="col-span-1">
-                <FieldLabel>Cantidad</FieldLabel>
+            <div className="col-span-4 grid grid-cols-4 gap-4">
+                <Field>
+                    <FieldLabel>N° Serie {OptionalField()}</FieldLabel>
+                    <Input {...register('serialNumber')} />
+                </Field>
+                <Field>
+                    <FieldLabel>N° Lote {OptionalField()}</FieldLabel>
+                    <Input {...register('lote')} />
+                </Field>
+                <Field>
+                    <FieldLabel>Marca {RequiredField()}</FieldLabel>
+                    <Input {...register('brand')} />
+                </Field>
+                <Field>
+                    <FieldLabel>Tipo {RequiredField()}</FieldLabel>
+                    <Input {...register('type')} />
+                </Field>
+            </div>
+            <Field>
+                <FieldLabel>Cantidad {RequiredField()}</FieldLabel>
                 <Input type="number" {...register('stock', { valueAsNumber: true })} />
             </Field>
-            <Field className="col-span-1">
-                <FieldLabel>Precio</FieldLabel>
+            <Field>
+                <FieldLabel>Precio {RequiredField()}</FieldLabel>
                 <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} />
             </Field>
             <Controller
                 name="currency"
                 control={control}
                 render={({ field }) => (
-                    <Field className="col-span-1">
+                    <Field>
                         <FieldLabel>Moneda</FieldLabel>
                         <Select
                             name={field.name}
@@ -207,17 +210,16 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                     </Field>
                 )}>
             </Controller>
-            {showUnitsDetail && (
-                <Field className="col-span-1">
-                    <FieldLabel>Cantidad Detallada</FieldLabel>
-                    <Input type="number" min={1} {...register('unitsDetail', { valueAsNumber: true, min: 1 })} />
-                </Field>
-            )}
+
+            <Field className="col-span-4">
+                <FieldLabel>Descripción {OptionalField()}</FieldLabel>
+                <Textarea  {...register('description')} />
+            </Field>
 
             <Button
                 variant="primary"
                 type="submit"
-                className="col-span-2"
+                className="col-span-4"
                 disabled={createProductMutation.isPending || updateProductMutation.isPending}
             >
                 Guardar Producto

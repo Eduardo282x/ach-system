@@ -48,6 +48,7 @@ export interface CreateUpdateCashDrawer {
 //Body
 export interface OpenSession {
     openingBalance: number;
+    openingBalanceUsd: number;
     cashDrawerId: number;
 }
 export interface CloseSession {

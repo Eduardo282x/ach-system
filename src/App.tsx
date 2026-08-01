@@ -76,7 +76,7 @@ function App() {
                 element: <Customers />
               },
               {
-                path: '/facturas',
+                path: '/recibos',
                 element: <Invoices />
               },
               {

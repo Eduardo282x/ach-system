@@ -16,9 +16,11 @@ export interface Product {
     stock?: number;
     subtotalBs?: number;
     subtotal?: number;
-    isDetail?: boolean;
-    parentId?: number | null;
-    unitsDetail?: number | null;
+    serialNumber: string;
+    lote: string;
+    brand: string;
+    type: string;
+    description: string;
     createdAt?: Date;
     updatedAt?: Date;
     exchangeRates?: { [key: string]: number };
@@ -33,9 +35,11 @@ export interface ProductBody {
     price: number;
     currency: string;
     stock: number;
-    isDetail: boolean;
-    parentId: number | null | undefined;
-    unitsDetail: number | null;
+    serialNumber: string;
+    lote: string;
+    brand: string;
+    type: string;
+    description: string;
 }
 
 export interface ProductBreakdown {

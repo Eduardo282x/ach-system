@@ -69,9 +69,9 @@ export const headerData: HeaderInterface[] = [
         children: []
     },
     {
-        title: 'Facturas',
+        title: 'Recibos',
         icon: LuReceipt,
-        navigateTo: '/facturas',
+        navigateTo: '/recibos',
         type: 'button',
         active: false,
         auth: ['ADMIN', 'SUPERVISOR'],

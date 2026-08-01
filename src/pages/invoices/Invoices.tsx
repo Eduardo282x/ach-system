@@ -99,7 +99,7 @@ export const Invoices = () => {
 
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: "Factura",
+        documentTitle: "Recibo",
     });
 
     const getActionTable = async (action: string, data: InvoiceResponse) => {
@@ -147,14 +147,14 @@ export const Invoices = () => {
 
     return (
         <div className="w-full">
-            <p className="text-2xl font-semibold mb-2 ml-2">Facturas</p>
+            <p className="text-2xl font-semibold mb-2 ml-2">Recibos</p>
             <div className="rounded-xl bg-white p-4">
                 {/* Filters */}
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
                         <div className="w-72">
                             <FilterComponent
-                                placeholder="Buscar por # factura, cliente o cedula..."
+                                placeholder="Buscar por # recibo, cliente o cedula..."
                                 onChange={handleSearch}
                             />
                         </div>
@@ -216,7 +216,7 @@ export const Invoices = () => {
                         <p className="text-sm text-muted-foreground">
                             Mostrando {(pagination.page - 1) * pagination.size + 1} -{" "}
                             {Math.min(pagination.page * pagination.size, pagination.total)} de{" "}
-                            {pagination.total} facturas
+                            {pagination.total} recibos
                         </p>
                         <div className="flex items-center gap-2">
                             <Button

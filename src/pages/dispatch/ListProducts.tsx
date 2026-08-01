@@ -137,6 +137,10 @@ export const ListProducts = () => {
         setTotalUSD(totalUSD);
     }, [productList, setTotal, setTotalUSD, exchangeRates]);
 
+    const resolvePresentation = (product: Product) => {
+        return product.presentation ? product.presentation : product.brand;
+    }
+
     return (
         <div className='w-full h-104 p-4 border-2 border-gray-300 rounded-md shadow-md'>
             <div className='relative' ref={searchContainerRef}>
@@ -148,7 +152,7 @@ export const ListProducts = () => {
                         {productFilter.length > 0 ? productFilter.map((product, index: number) => (
                             <div key={index} onClick={() => handleSelectProduct(product)} className='text-sm flex items-center justify-between p-2 border-b last:border-0 hover:bg-gray-100 cursor-pointer'>
                                 <div className="">
-                                    <p className='font-semibold'>{product.name} - {product.presentation}</p>
+                                    <p className='font-semibold'>{product.name} - {resolvePresentation(product)}</p>
                                     <p><span className='font-semibold'>Precio:</span> {priceProduct(product)} | {calculatePriceBs(product)} Bs</p>
                                     <p><span className='font-semibold'>Cantidad:</span> {product.stock}</p>
                                 </div>
@@ -177,7 +181,7 @@ export const ListProducts = () => {
                     {productList.map((product, index: number) => (
                         <div key={index} className='flex items-center gap-3 p-2 border-b-2 text-sm'>
                             <p className='w-40 shrink-0 truncate'>{product.barcode}</p>
-                            <p className='min-w-0 flex-1 truncate'>{product.name} - {product.presentation}</p>
+                            <p className='min-w-0 flex-1 truncate'>{product.name} - {resolvePresentation(product)}</p>
                             <div className='w-32 shrink-0 flex items-center gap-1'>
                                 <Button variant='destructive' size='icon-sm' onClick={() => changeQuantity(product, (product.quantity ?? 0) - 1)}>-</Button>
                                 <input
