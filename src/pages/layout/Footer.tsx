@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateString, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
-import { useExchangeRateAutomaticQuery } from "@/hooks/inventory.hook";
 import { useAuthStore } from "@/store/auth.store";
 import { useInventoryStore } from "@/store/inventory.store";
 import { IoMdSync } from "react-icons/io";
@@ -14,23 +12,27 @@ import { Input } from "@/components/ui/input";
 import { useSocket } from "@/services/socket.io";
 import type { ExchangeRate } from "@/interfaces/inventory.interface";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
     const today = new Date();
+    const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
+    const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
 
     const [open, setOpen] = useState<boolean>(false);
     const [cashDrawerSelected, setCashDrawerSelected] = useState<number | null>(null);
     const [balance, setBalance] = useState<number>(0);
     const [balanceUsd, setBalanceUsd] = useState<number>(0);
+    const [balanceUsd, setBalanceUsd] = useState<number>(0);
     const cashDrawers = useCashDrawersQuery();
     const openSessionMutation = useOpenSessionMutation();
 
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
-    const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
+    // const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
     const [euroRate, setEuroRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined);
@@ -53,6 +55,8 @@ export const Footer = () => {
     useEffect(() => {
         if (user?.role === 'CAJERO' && !isLoading) {
             const activeSession = data?.sessions.find(session => session.user.id === user?.id);
+        if (user?.role === 'CAJERO' && !isLoading) {
+            const activeSession = data?.sessions.find(session => session.user.id === user?.id);
             if (!activeSession) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setOpen(true);
@@ -60,6 +64,7 @@ export const Footer = () => {
                 useAuthStore.getState().setCashDrawerSession(activeSession.sessionId.toString());
             }
         }
+    }, [data, user, isLoading])
     }, [data, user, isLoading])
 
     const translateRole = (role: string) => {
@@ -77,7 +82,8 @@ export const Footer = () => {
     };
 
     const updateExchangeRates = async () => {
-        await exchangeRateAutomaticQuery.refetch();
+        // await exchangeRateAutomaticQuery.refetch();
+        navigate('/tasas');
     }
 
     useSocket('exchangeRateUpdate', (data: { data: ExchangeRate[], message: string }) => {
@@ -98,7 +104,7 @@ export const Footer = () => {
     }
 
     const validateToCloseDialog = () => {
-        if (cashDrawerSelected === null || balance <= 0) {
+        if (cashDrawerSelected === null || balance <= 0 || balanceUsd <= 0) {
             return;
         }
         setOpen(false);
@@ -108,6 +114,7 @@ export const Footer = () => {
         openSessionMutation.mutate({
             cashDrawerId: Number(cashDrawerSelected),
             openingBalance: balance,
+            openingBalanceUsd: balanceUsd,
             openingBalanceUsd: balanceUsd,
         })
         setOpen(false);
@@ -137,65 +144,14 @@ export const Footer = () => {
                 </Select>
             </div>
             <div className="flex items-center gap-1 mb-1 relative ">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant='ghost' onClick={updateExchangeRates} disabled={exchangeRateAutomaticQuery.isFetching}><IoMdSync /></Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Actualizar tasas
-                    </TooltipContent>
-                </Tooltip>
+                {user?.role !== 'CAJERO' && (
+                    <Button variant='ghost' onClick={updateExchangeRates}><IoMdSync /></Button>
+                )}
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
                 <span>|</span>
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
                 <span className={`absolute -bottom-2.5 right-0 text-gray-800 px-4 text-xs w-120 text-right`}>Fecha de Actualización: {exchangeDate ? `${formatDateString(exchangeDate)} Hora: ${formatOnlyTime(exchangeDate)}` : '--'}</span>
             </div>
-
-            <Dialog open={open} onOpenChange={validateToCloseDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            <p className='text-center text-blue-800 -mt-4 font-semibold text-xl'>Apertura de caja</p>
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    <div className="w-full">
-                        <div className="flex flex-col gap-2 my-4">
-                            <p className='font-semibold'>Seleccionar caja</p>
-                            <div className='flex items-center gap-2'>
-                                <Select defaultValue={cashDrawerSelected?.toString()} onValueChange={(value) => setCashDrawerSelected(Number(value))}>
-                                    <SelectTrigger className="w-full bg-white">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent align="start">
-                                        <SelectGroup>
-                                            {cashDrawers.data?.cashDrawers.map((cashDrawer) => (
-                                                <SelectItem key={cashDrawer.id} value={cashDrawer.id.toString()}>{cashDrawer.name}</SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2 my-4">
-                            <p className='font-semibold'>Balance inicial (Bs)</p>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={balance}
-                                onChange={(event) => setBalance(Number(event.target.value))}
-                                placeholder="Ingrese el balance inicial"
-                            />
-                            <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
-                        </div>
-
-                        <Button variant='primary' className="mt-2 w-full" onClick={openSession} disabled={balance <= 0 || cashDrawerSelected === null}>
-                            Aceptar
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
 
             <Dialog open={open} onOpenChange={(open) => { if (!open) validateToCloseDialog(); }}>
                 <DialogContent>
@@ -234,6 +190,34 @@ export const Footer = () => {
                                 placeholder="Ingrese el balance inicial en Bs"
                             />
                             <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
+                        </div>
+
+                        <Button variant='primary' className="mt-2 w-full" onClick={openSession} disabled={balance <= 0 || cashDrawerSelected === null}>
+                            Aceptar
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={open} onOpenChange={(open) => { if (!open) validateToCloseDialog(); }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            <p className='text-center text-blue-800 -mt-4 font-semibold text-xl'>Apertura de caja</p>
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="w-full">
+                        <div className="flex flex-col gap-2 my-4">
+                            <p className='font-semibold'>Balance inicial (USD)</p>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                value={balance}
+                                onChange={(event) => setBalance(Number(event.target.value))}
+                                placeholder="Ingrese el balance inicial en Bs"
+                            />
+                            <span className="text-gray-500 text-sm">Esta es la cantidad de dolares con la que se inicia la caja.</span>
                         </div>
 
                         <div className="flex flex-col gap-2 my-4">

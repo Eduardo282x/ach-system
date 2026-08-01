@@ -16,6 +16,7 @@ import type { TypeRole } from "@/interfaces/users.interface";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import achLogo from "@/assets/ach.png";
 import { DispatchAlertDialog } from "../dispatch/Dispatch";
+import { logoutApi } from "@/services/auth.service";
 
 
 export const Header = () => {
@@ -39,7 +40,8 @@ export const Header = () => {
         setOpenInfo(true);
     }
 
-    const logout = () => {
+    const logout = async () => {
+        await logoutApi();
         setOpen(false);
         useAuthStore.getState().clearSession();
         navigate('/login');

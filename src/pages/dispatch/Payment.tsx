@@ -57,6 +57,7 @@ interface PaymentForm {
 
 interface PaymentProps {
     customer?: Client | null;
+    onCompleteSale?: () => void;
 }
 
 const PAYMENT_EPSILON = 0.01;
@@ -78,7 +79,7 @@ const normalizeDecimalInput = (value: string) => {
     return sanitized;
 };
 
-export const Payment = ({ customer }: PaymentProps) => {
+export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
     const { total, totalUSD, productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
     const { cashDrawerSession, cashier, user } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
@@ -363,10 +364,11 @@ export const Payment = ({ customer }: PaymentProps) => {
                 quantity: product.quantity ?? 1,
             })),
             payments: paymentsToSend.map((payment) => {
+                const raw = payment.currency === 'BS' ? payment.amountBs : payment.amount;
                 return {
                     paymentTypeId: payment.paymentTypeId,
-                    amountReceived: payment.currency === 'BS' ? payment.amountBs : payment.amount,
-                    amountChange: payment.change,
+                    amountReceived: Math.round(raw * 100) / 100,
+                    amountChange: Math.round((payment.change ?? 0) * 100) / 100,
                 }
             }),
         }
@@ -390,6 +392,7 @@ export const Payment = ({ customer }: PaymentProps) => {
                 setTotal(0);
                 setTotalUSD(0);
                 setOpen(false);
+                onCompleteSale?.();
             },
             onError: () => {
                 toast.error('Ocurrió un error al registrar el recibo');
@@ -400,7 +403,12 @@ export const Payment = ({ customer }: PaymentProps) => {
     const completePayment = () => {
         const hasChange = changeBs > PAYMENT_EPSILON || changeUSD > PAYMENT_EPSILON;
 
-        if (hasChange) {
+        const allPaymentsAreCash = payments.every((payment) => {
+            const type = typesPayment.find((t) => t.id === payment.paymentTypeId);
+            return type?.name.toLowerCase().includes('efectivo');
+        });
+
+        if (hasChange && allPaymentsAreCash) {
             setChangeDeliveredUSDInput('0');
             setOpenChangeDialog(true);
             return;
@@ -430,43 +438,22 @@ export const Payment = ({ customer }: PaymentProps) => {
 
         const nextPayments = [...payments];
 
-        if (cashUSD) {
-            const usdIndex = nextPayments.findIndex((payment) => payment.paymentTypeId === cashUSD.id);
-            if (usdIndex >= 0) {
-                nextPayments[usdIndex] = {
-                    ...nextPayments[usdIndex],
-                    change: Number(changeDeliveredUSD),
-                };
-            } else {
-                nextPayments.push({
-                    paymentTypeId: cashUSD.id,
-                    typePayment: cashUSD.name,
-                    currency: 'USD',
-                    reference: '',
-                    amount: 0,
-                    amountBs: 0,
-                    change: Number(changeDeliveredUSD),
-                });
-            }
-        }
+        const originalPaymentIndex = nextPayments.findIndex((p) => p.amount > 0);
 
-        if (cashBS) {
-            const bsIndex = nextPayments.findIndex((payment) => payment.paymentTypeId === cashBS.id);
-            if (bsIndex >= 0) {
-                nextPayments[bsIndex] = {
-                    ...nextPayments[bsIndex],
-                    change: Number(changeDeliveredBs),
+        if (originalPaymentIndex >= 0) {
+            const originalPayment = nextPayments[originalPaymentIndex];
+            const originalType = typesPayment.find((t) => t.id === originalPayment.paymentTypeId);
+
+            if (originalType?.currency === 'USD') {
+                nextPayments[originalPaymentIndex] = {
+                    ...originalPayment,
+                    change: Number(requiredChangeUSD),
                 };
-            } else {
-                nextPayments.push({
-                    paymentTypeId: cashBS.id,
-                    typePayment: cashBS.name,
-                    currency: 'BS',
-                    reference: '',
-                    amount: 0,
-                    amountBs: 0,
-                    change: Number(changeDeliveredBs),
-                });
+            } else if (originalType?.currency === 'BS') {
+                nextPayments[originalPaymentIndex] = {
+                    ...originalPayment,
+                    change: Number(changeBs),
+                };
             }
         }
 

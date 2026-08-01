@@ -6,9 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Login } from './pages/auth/login/Login';
 import { useAxiosInterceptor } from './services/interceptors';
 import { Layout } from './pages/layout/Layout';
-import { Customers } from './pages/customers/Customers';
 import { Toaster } from "react-hot-toast";
-import { Dashboard } from './pages/dashboard/Dashboard';
 import { Inventory } from './pages/inventory/Inventory';
 import { Dispatch } from './pages/dispatch/Dispatch';
 import { queryClient } from './lib/query-client';
@@ -18,6 +16,9 @@ import { HistoryInventory } from './pages/inventory/HistoryInventory';
 import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 import { CashClosing } from './pages/cashClosing/CashClosing';
 import { Invoices } from './pages/invoices/Invoices';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Dashboard } from './pages/dashboard/Dashboard';
+import { Customers } from './pages/customers/Customers';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -41,35 +42,39 @@ function App() {
             children: [
               {
                 path: '/',
-                element: <Dashboard />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>
               },
               {
                 path: '/inventario',
-                element: <Inventory />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>
               },
               {
                 path: '/tasas',
-                element: <ExchangeRate />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><ExchangeRate /></ProtectedRoute>
               },
               {
                 path: '/historial-inventario',
-                element: <HistoryInventory />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
               },
               {
                 path: '/despacho',
-                element: <Dispatch />
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Dispatch /></ProtectedRoute>
               },
               {
                 path: '/cajeros',
-                element: <Users />
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
+              },
+              {
+                path: '/clientes',
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Customers /></ProtectedRoute>
               },
               {
                 path: '/cierre-caja',
-                element: <CashClosing />
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashClosing /></ProtectedRoute>
               },
               {
                 path: '/historial-cajeros',
-                element: <CashDrawerSession />
+                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashDrawerSession /></ProtectedRoute>
               },
               {
                 path: '/clientes',

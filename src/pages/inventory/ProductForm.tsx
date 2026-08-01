@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { Product, ProductBody, ExchangeRateType } from "@/interfaces/inventory.interface";
 import { useCreateProductMutation, useUpdateProductMutation } from "@/hooks/inventory.hook";
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -128,6 +128,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
         name: 'barcode',
     })
 
+    const currencyValue = useWatch({
+        control,
+        name: 'currency',
+    })
+
     useEffect(() => {
         if (!barcodeValue) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -148,8 +153,8 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             <Field>
                 <FieldLabel>Código {RequiredField()}</FieldLabel>
                 <div className="flex items-center gap-2">
-                    <Input {...register('barcode')} />
-                    <Button type="button" disabled={disableBtnGenerate} variant="primary" onClick={generateBarcode}>Generar</Button>
+                    <Input {...register('barcode')} disabled={isEdit} />
+                    <Button type="button" disabled={disableBtnGenerate || isEdit} variant="primary" onClick={generateBarcode}>Generar</Button>
                 </div>
             </Field>
             <Field>

@@ -28,7 +28,7 @@ export function DatePickerRange({ display = 'block', onChange }: DatePickerRange
     }
 
     return (
-        <Field className={`max-w-60 ${display === 'flex' ? 'flex flex-row items-center gap-2' : 'block'}`}>
+        <Field className={`max-w-60 ${display === 'flex' ? 'flex flex-row items-center gap-2' : 'flex flex-col gap-1'}`}>
             <div className="w-32 text-blue-800">
                 <FieldLabel htmlFor="date-picker-range" className="w-32 font-semibold text-md">Rango de Fecha: </FieldLabel>
             </div>

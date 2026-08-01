@@ -21,7 +21,7 @@ export interface Role {
     role: TypeRole;
 }
 
-export type TypeRole = "ADMIN" | "CAJERO" | "SUPERVISOR";
+export type TypeRole = "ADMIN" | "CAJERO" ;
 
 
 //Body
