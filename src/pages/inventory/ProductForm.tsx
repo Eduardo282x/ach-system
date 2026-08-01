@@ -189,7 +189,10 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             </Field>
             <Field>
                 <FieldLabel>Precio {RequiredField()}</FieldLabel>
-                <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} />
+                <div className="flex items-center gap-2">
+                    <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} />
+                    {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
+                </div>
             </Field>
             <Controller
                 name="currency"

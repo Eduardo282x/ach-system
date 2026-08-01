@@ -20,12 +20,10 @@ export const Footer = () => {
     const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
-    const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
 
     const [open, setOpen] = useState<boolean>(false);
     const [cashDrawerSelected, setCashDrawerSelected] = useState<number | null>(null);
     const [balance, setBalance] = useState<number>(0);
-    const [balanceUsd, setBalanceUsd] = useState<number>(0);
     const [balanceUsd, setBalanceUsd] = useState<number>(0);
     const cashDrawers = useCashDrawersQuery();
     const openSessionMutation = useOpenSessionMutation();
@@ -55,8 +53,6 @@ export const Footer = () => {
     useEffect(() => {
         if (user?.role === 'CAJERO' && !isLoading) {
             const activeSession = data?.sessions.find(session => session.user.id === user?.id);
-        if (user?.role === 'CAJERO' && !isLoading) {
-            const activeSession = data?.sessions.find(session => session.user.id === user?.id);
             if (!activeSession) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setOpen(true);
@@ -64,7 +60,6 @@ export const Footer = () => {
                 useAuthStore.getState().setCashDrawerSession(activeSession.sessionId.toString());
             }
         }
-    }, [data, user, isLoading])
     }, [data, user, isLoading])
 
     const translateRole = (role: string) => {
@@ -115,7 +110,6 @@ export const Footer = () => {
             cashDrawerId: Number(cashDrawerSelected),
             openingBalance: balance,
             openingBalanceUsd: balanceUsd,
-            openingBalanceUsd: balanceUsd,
         })
         setOpen(false);
     }
@@ -127,21 +121,27 @@ export const Footer = () => {
             </div>
             <div className={`${isAdmin ? 'flex' : 'hidden'} items-center gap-2`}>
                 <Label>Cajero: </Label>
-                <Select
-                    value={cashDrawerSession}
-                    onValueChange={onChangeCashDrawerSession}
-                >
-                    <SelectTrigger className="w-60">
-                        <SelectValue placeholder="Seleccione un cajero" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {cashierSessionOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+                {cashierSessionOptions.length > 0 ? (
+                    <Select
+                        value={cashDrawerSession}
+                        onValueChange={onChangeCashDrawerSession}
+                    >
+                        <SelectTrigger className="w-60">
+                            <SelectValue placeholder="Seleccione un cajero" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {cashierSessionOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                ) : (
+                    <div className="w-60 flex items-center h-9 px-3 rounded-md border border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        No hay cajeros disponibles
+                    </div>
+                )}
             </div>
             <div className="flex items-center gap-1 mb-1 relative ">
                 {user?.role !== 'CAJERO' && (
@@ -190,34 +190,6 @@ export const Footer = () => {
                                 placeholder="Ingrese el balance inicial en Bs"
                             />
                             <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
-                        </div>
-
-                        <Button variant='primary' className="mt-2 w-full" onClick={openSession} disabled={balance <= 0 || cashDrawerSelected === null}>
-                            Aceptar
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={open} onOpenChange={(open) => { if (!open) validateToCloseDialog(); }}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            <p className='text-center text-blue-800 -mt-4 font-semibold text-xl'>Apertura de caja</p>
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    <div className="w-full">
-                        <div className="flex flex-col gap-2 my-4">
-                            <p className='font-semibold'>Balance inicial (USD)</p>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={balance}
-                                onChange={(event) => setBalance(Number(event.target.value))}
-                                placeholder="Ingrese el balance inicial en Bs"
-                            />
-                            <span className="text-gray-500 text-sm">Esta es la cantidad de dolares con la que se inicia la caja.</span>
                         </div>
 
                         <div className="flex flex-col gap-2 my-4">
