@@ -69,9 +69,9 @@ export const headerData: HeaderInterface[] = [
         children: []
     },
     {
-        title: 'Recibo',
+        title: 'Recibos',
         icon: LuReceipt,
-        navigateTo: '/recibo',
+        navigateTo: '/recibos',
         type: 'button',
         active: false,
         auth: ['ADMIN'],

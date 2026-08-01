@@ -124,7 +124,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
     return (
         <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             <div className='bg-white text-center text-xl font-semibold text-blue-800 py-2 relative'>
-                <p>Informacion del cliente</p>
+                <p>Información del cliente</p>
 
                 <div className='absolute top-1 left-1'>
                     <Button variant='primary' onClick={openDialogClient}>
@@ -135,14 +135,14 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="flex flex-col gap-1">
-                    <p className='font-semibold'>Cedula</p>
+                    <p className='font-semibold'>Cédula</p>
                     <Input
                         value={`${identifyPrefix}-${identify}`}
                         disabled
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <p className='font-semibold'>Nombre</p>
+                    <p className='font-semibold'>Nombre Apellido</p>
                     <Input
                         value={fullName}
                         disabled

@@ -202,7 +202,7 @@ export const CashClosing = () => {
                                 <p className="flex items-center gap-1" >{`${formatNumberWithDecimal(resumen.total.totalAmountBs)} ${translateCurrency('BS')}`} <LuEqualApproximately /> <span className="text-sm text-gray-500 font-medium">{`(${formatNumberWithDecimal(resumen.total.totalAmountUsd)} ${translateCurrency('USD')})`}</span></p>
                             </div>
                         </div>
-                        <p className="font-semibold">Total facturas: {resumen.totalInvoice}</p>
+                        <p className="font-semibold">Total recibos: {resumen.totalInvoice}</p>
 
                     </div>
                 )}

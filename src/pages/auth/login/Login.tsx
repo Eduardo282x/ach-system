@@ -46,7 +46,7 @@ export const Login = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="shadow-xl p-8 rounded-lg bg-white w-140 text-center flex flex-col space-y-4 justify-between">
                 <div>
                     <h1 className="text-3xl font-semibold">Sistema POS</h1>
-                    <span className="text-sm text-gray-600">Facturación y Gestión</span>
+                    <span className="text-sm text-gray-600">Recibos y Gestión</span>
                 </div>
 
                 {/* <img src={gustavoLogo} alt="Logo" className="w-full h-60 object-contain" /> */}
