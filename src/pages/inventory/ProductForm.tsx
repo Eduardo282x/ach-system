@@ -25,7 +25,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
 
     const isEdit = mode === "edit" && product != null;
 
-    const { register, handleSubmit, control, reset, setValue } = useForm<ProductBody>({
+    const { register, handleSubmit, control, reset, setValue, getValues } = useForm<ProductBody>({
         defaultValues: {
             name: '',
             presentation: '',
@@ -153,7 +153,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             <Field>
                 <FieldLabel>Código {RequiredField()}</FieldLabel>
                 <div className="flex items-center gap-2">
-                    <Input {...register('barcode')} disabled={isEdit} />
+                    <Input maxLength={16} {...register('barcode')} disabled={isEdit} />
                     <Button type="button" disabled={disableBtnGenerate || isEdit} variant="primary" onClick={generateBarcode}>Generar</Button>
                 </div>
             </Field>
@@ -185,12 +185,25 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             </div>
             <Field>
                 <FieldLabel>Cantidad {RequiredField()}</FieldLabel>
-                <Input type="number" {...register('stock', { valueAsNumber: true })} />
+                <Input
+                    type="number"
+                    {...register('stock', { valueAsNumber: true })}
+                    onFocus={() => {
+                        if (getValues('stock') === 0) setValue('stock', '')
+                    }}
+                />
             </Field>
             <Field>
                 <FieldLabel>Precio {RequiredField()}</FieldLabel>
                 <div className="flex items-center gap-2">
-                    <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} />
+                    <Input
+                        type="number"
+                        step="0.01"
+                        {...register('price', { valueAsNumber: true })}
+                        onFocus={() => {
+                            if (getValues('price') === 0) setValue('price', '')
+                        }}
+                    />
                     {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
                 </div>
             </Field>

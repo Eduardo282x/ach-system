@@ -34,7 +34,7 @@ export const Footer = () => {
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
     const [euroRate, setEuroRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined);
-    const [exchangeDate, setExchangeDate] = useState(exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
+    const [exchangeDate, setExchangeDate] = useState(exchangeRates && exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
 
     useEffect(() => {
         const bcvRate = exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined;
@@ -42,7 +42,7 @@ export const Footer = () => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setBcvRate(bcvRate);
         setEuroRate(euroRate);
-        setExchangeDate(exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
+        setExchangeDate(exchangeRates && exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
     }, [exchangeRates])
 
     const cashierSessionOptions = data ? data.sessions.map((cashDrawerSession) => ({

@@ -17,18 +17,20 @@ import { TableSkeleton } from "./TableSkeleton";
 import { IoIosArrowDown } from "react-icons/io";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+export interface ColumnIcons {
+    icon: React.ComponentType<{ className?: string }>;
+    action: string;
+    label: string;
+    variant: 'primary' | 'error' | 'outline';
+}
+
 export interface ColumnDef<T> {
     key: string;
     header: string;
     width?: string;
     element: (row: T) => string | JSX.Element;
     class?: (row: T) => string;
-    icons?: (row: T) => {
-        icon: React.ComponentType<{ className?: string }>;
-        action: string;
-        label: string;
-        variant: 'primary' | 'error' | 'outline';
-    }[]
+    icons?: (row: T) => ColumnIcons[]
     visible: boolean;
 }
 
