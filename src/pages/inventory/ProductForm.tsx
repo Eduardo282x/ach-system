@@ -189,7 +189,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                     type="number"
                     {...register('stock', { valueAsNumber: true })}
                     onFocus={() => {
-                        if (getValues('stock') === 0) setValue('stock', '')
+                        if (getValues('stock') === 0) setValue('stock', '' as unknown as number)
                     }}
                 />
             </Field>
@@ -201,7 +201,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                         step="0.01"
                         {...register('price', { valueAsNumber: true })}
                         onFocus={() => {
-                            if (getValues('price') === 0) setValue('price', '')
+                            if (getValues('price') === 0) setValue('price', '' as unknown as number)
                         }}
                     />
                     {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
