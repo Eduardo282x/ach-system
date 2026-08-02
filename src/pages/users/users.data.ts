@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@/components/table/TableComponent";
+import type { ColumnDef, ColumnIcons } from "@/components/table/TableComponent";
 import { formatDate } from "@/helpers/formatters";
 import type { User } from "@/interfaces/users.interface";
 import { GoPencil } from "react-icons/go";
@@ -46,22 +46,33 @@ export const usersColumns: ColumnDef<User>[] = [
         width: "8rem",
         element: () => "",
         visible: true,
-        icons: () =>  [
-            {
-                label: "Editar",
-                icon: GoPencil,
-                action: "edit",
-                variant: "primary",
-            },
-            {
-                label: "Eliminar",
-                icon: FaRegTrashCan,
-                action: "delete",
-                variant: "error",
-            },
-        ],
+        icons: (row) => setActionsIcons(row)
     },
 ];
+
+const setActionsIcons = (row: User): ColumnIcons[] => {
+    const actionDelete: ColumnIcons = {
+        label: "Eliminar",
+        icon: FaRegTrashCan,
+        action: "delete",
+        variant: "error",
+    };
+
+    const base: ColumnIcons[] = [
+        {
+            label: "Editar",
+            icon: GoPencil,
+            action: "edit",
+            variant: "primary",
+        },
+    ]
+
+    if (row.role !== 'ADMIN') {
+        base.push(actionDelete)
+    }
+
+    return base;
+}
 
 const translateRole = (role: string) => {
     const rol = role.toLowerCase();
