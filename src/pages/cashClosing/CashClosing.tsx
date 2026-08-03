@@ -7,17 +7,16 @@ import { LuEqualApproximately } from "react-icons/lu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCashDrawersQuery, useSessionsGroupQuery } from "@/hooks/sessions.hook";
-import { useShiftsQuery } from "@/hooks/shifts.hook";
 import { Loading } from "@/components/loader/Loading";
 import { useAuthStore } from "@/store/auth.store";
 import type { TypeRole } from "@/interfaces/users.interface";
 
 export const CashClosing = () => {
 
-    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, cashDrawerId: undefined, shiftId: undefined });
+    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, cashDrawerId: undefined });
     const { data: resumen, isLoading } = useResumenSalesQuery(filter);
 
-    const cashDrawerSessions = useSessionsGroupQuery({ date: filter.date, shiftId: filter.shiftId ?? 0 });
+    const cashDrawerSessions = useSessionsGroupQuery({ date: filter.date });
 
     const { data } = useCashDrawersQuery();
     const cashDrawersOptions = data?.cashDrawers ? data.cashDrawers.map((cashDrawer) => ({
@@ -25,13 +24,11 @@ export const CashClosing = () => {
         value: cashDrawer.id.toString(),
     })) : [];
 
-    const { data: shiftsData } = useShiftsQuery();
-    const shifts = shiftsData?.shifts ?? [];
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
     const user = useAuthStore((state) => state.user);
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift.name}`,
+        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
         value: cashDrawerSession.id.toString(),
     })) : [];
 
@@ -63,20 +60,6 @@ export const CashClosing = () => {
         }));
     }
 
-    const handleShiftChange = (shiftId: string) => {
-        if (shiftId === 'all') {
-            setFilter((prev) => ({
-                ...prev,
-                shiftId: undefined,
-            }));
-            return;
-        }
-        setFilter((prev) => ({
-            ...prev,
-            shiftId: parseInt(shiftId),
-        }));
-    }
-
     const handleCashDrawerChange = (cashDrawerId: string) => {
         if (cashDrawerId === 'all') {
             setFilter((prev) => ({
@@ -102,7 +85,7 @@ export const CashClosing = () => {
 
     return (
         <div className='w-full h-full'>
-            <div className='w-3/4 mx-auto bg-white rounded-xl p-4 mb-4'>
+            <div className='w-full bg-white rounded-xl p-4 mb-4'>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <p className='text-2xl font-semibold mb-4'>Cierre de Caja</p>
                 </div>
@@ -145,26 +128,6 @@ export const CashClosing = () => {
                                             <SelectItem value="all">Todos</SelectItem>
                                             {cashDrawersOptions.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                                <Label>Turno</Label>
-                                <Select
-                                    value={filter.shiftId?.toString() ?? 'all'}
-                                    onValueChange={handleShiftChange}
-                                >
-                                    <SelectTrigger className="w-48">
-                                        <SelectValue placeholder="Seleccione un turno" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="all">Todos</SelectItem>
-                                            {shifts.map((shift) => (
-                                                <SelectItem key={shift.id} value={shift.id.toString()}>{shift.name}</SelectItem>
                                             ))}
                                         </SelectGroup>
                                     </SelectContent>

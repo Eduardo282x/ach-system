@@ -110,7 +110,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
 
     const isCash = useMemo(() => {
         const selectedType = typesPayment.find((type) => type.id.toString() === typeSelected);
-        return selectedType?.name.toLowerCase().includes('efectivo') || false;
+        return selectedType?.name.toLowerCase().includes('efectivo') || selectedType?.name.toLowerCase().includes('divisas') || false;
     }, [typeSelected, typesPayment]);
 
     const usdRate = useMemo(() => {
@@ -249,7 +249,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         const selectedType = typesPayment.find((type) => type.id.toString() === formData.typeSelected);
         if (!selectedType) return;
 
-        const isSelectedTypeCash = selectedType.name.toLowerCase().includes('efectivo');
+        const isSelectedTypeCash = selectedType.name.toLowerCase().includes('efectivo') || selectedType.name.toLowerCase().includes('divisas');
         const requiresReference = !isSelectedTypeCash;
         const normalizedReference = formData.reference.trim();
 
@@ -341,9 +341,6 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             return;
         }
 
-        console.log(exchangeRates);
-        
-
         const usdRateValue = exchangeRates.find((rate) => rate.currency === 'USD')?.id ?? usdRate;
         const eurRateValue = exchangeRates.find((rate) => rate.currency === 'EUR')?.id ?? 0;
         // const sessionId = 3;
@@ -405,7 +402,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
 
         const allPaymentsAreCash = payments.every((payment) => {
             const type = typesPayment.find((t) => t.id === payment.paymentTypeId);
-            return type?.name.toLowerCase().includes('efectivo');
+            return type?.name.toLowerCase().includes('efectivo') || type?.name.toLowerCase().includes('divisas');
         });
 
         if (hasChange && allPaymentsAreCash) {
@@ -423,8 +420,8 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             return;
         }
 
-        const cashUSD = typesPayment.find((item) => item.currency === 'USD' && item.name.toLocaleLowerCase().includes('efectivo'));
-        const cashBS = typesPayment.find((item) => item.currency === 'BS' && item.name.toLocaleLowerCase().includes('efectivo'));
+        const cashUSD = typesPayment.find((item) => item.currency === 'USD' && (item.name.toLocaleLowerCase().includes('efectivo') || item.name.toLocaleLowerCase().includes('divisas')));
+        const cashBS = typesPayment.find((item) => item.currency === 'BS' && (item.name.toLocaleLowerCase().includes('efectivo') || item.name.toLocaleLowerCase().includes('divisas')));
 
         if (!cashUSD && changeDeliveredUSD > PAYMENT_EPSILON) {
             toast.error('No existe un método de pago en efectivo USD para registrar el vuelto');
