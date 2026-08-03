@@ -45,6 +45,19 @@ export const Dashboard = () => {
         }
     };
 
+    const styleStatus = (status: InvoiceStatus) => {
+        switch (status) {
+            case "PAID":
+                return "text-green-700 bg-green-100 w-20 py-0 flex justify-center text-sm font-medium rounded-full px-2";
+            case "PENDING":
+                return "text-yellow-700 bg-yellow-100 w-20 py-0 flex justify-center text-sm font-medium rounded-full px-2";
+            case "CANCELLED":
+                return "text-red-700 bg-red-100 w-20 py-0 flex justify-center text-sm font-medium rounded-full px-2";
+            default:
+                return status;
+        }
+    };
+
     return (
         <div className="w-full h-full p-4 space-y-4">
             <div className="bg-white rounded-xl p-4 flex items-center justify-between">
@@ -72,7 +85,7 @@ export const Dashboard = () => {
                             <p className="text-sm text-gray-600">Ingresos (pagos) realizados</p>
                             <p className="text-2xl font-bold text-blue-800 mt-1 flex items-end">
                                 {formatNumberWithDecimal(dashboard.ingresos.totalNetBs)} {translateCurrency("BS")}
-                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately/> {formatNumberWithDecimal(dashboard.ingresos.totalNetUsd)} {translateCurrency("USD")}</span>
+                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately /> {formatNumberWithDecimal(dashboard.ingresos.totalNetUsd)} {translateCurrency("USD")}</span>
                             </p>
                         </div>
 
@@ -80,7 +93,7 @@ export const Dashboard = () => {
                             <p className="text-sm text-gray-600">Total de venta</p>
                             <p className="text-2xl font-bold text-blue-800 mt-1 flex items-end">
                                 {formatNumberWithDecimal(dashboard.totalSales.amountBs)} {translateCurrency("BS")}
-                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately/> {formatNumberWithDecimal(dashboard.totalSales.amountUsd)} {translateCurrency("USD")}</span>
+                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately /> {formatNumberWithDecimal(dashboard.totalSales.amountUsd)} {translateCurrency("USD")}</span>
                             </p>
                         </div>
 
@@ -128,13 +141,15 @@ export const Dashboard = () => {
                                 </div>
                                 {dashboard.invoices.map((invoice) => (
                                     <div key={invoice.id} className="grid grid-cols-5 p-2 border-t border-gray-100 text-sm">
-                                        <p>{invoice.invoiceNumber}</p>
+                                        <p className="font-semibold">#{invoice.invoiceNumber}</p>
                                         <div className="col-span-2">
                                             <p>{invoice.customer.fullName}</p>
                                             <p className="text-xs text-gray-500">{formatDateWithTime(invoice.createdAt)}</p>
                                         </div>
                                         <p className="text-right">{formatNumberWithDecimal(invoice.totalAmountBs)} {translateCurrency("BS")}</p>
-                                        <p className="text-right">{translateStatus(invoice.status)}</p>
+                                        <div className="flex items-center justify-end">
+                                            <p className={`text-right h-6 ${styleStatus(invoice.status)}`}>{translateStatus(invoice.status)}</p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
