@@ -33,7 +33,7 @@ export const Login = () => {
         }
         setLoading(false);
 
-        const goTo = result.data.user.role === "CAJERO" ? "/despacho" : "/inventory";
+        const goTo = result.data.user.role === "CAJERO" ? "/despacho" : "/inventario";
         
         setTimeout(() => {
                 navigate(goTo);
