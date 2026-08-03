@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import type { Product, ProductBody, ExchangeRateType } from "@/interfaces/inventory.interface";
-import { useCreateProductMutation, useUpdateProductMutation } from "@/hooks/inventory.hook";
+import { useCreateProductMutation, useUpdateProductMutation, useSuggestionAttributesQuery } from "@/hooks/inventory.hook";
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { generateBarcodeApi } from "@/services/inventory.service";
@@ -21,6 +22,7 @@ interface ProductFormProps {
 export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
     const createProductMutation = useCreateProductMutation();
     const updateProductMutation = useUpdateProductMutation();
+    const { data: suggestions } = useSuggestionAttributesQuery();
     const [disableBtnGenerate, setDisableBtnGenerate] = useState(false);
 
     const isEdit = mode === "edit" && product != null;
@@ -31,7 +33,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             presentation: '',
             barcode: '',
             price: 0,
-            currency: '',
+            currency: 'USD',
             stock: 0,
             serialNumber: '',
             lote: '',
@@ -71,7 +73,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 presentation: '',
                 barcode: '',
                 price: 0,
-                currency: '',
+                currency: 'USD',
                 stock: 0,
                 serialNumber: '',
                 lote: '',
@@ -105,7 +107,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             presentation: '',
             barcode: '',
             price: 0,
-            currency: '',
+            currency: 'USD',
             stock: 0,
             serialNumber: '',
             lote: '',
@@ -174,14 +176,36 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                     <FieldLabel>N° Lote {OptionalField()}</FieldLabel>
                     <Input {...register('lote')} />
                 </Field>
-                <Field>
-                    <FieldLabel>Marca {RequiredField()}</FieldLabel>
-                    <Input {...register('brand')} />
-                </Field>
-                <Field>
-                    <FieldLabel>Tipo {RequiredField()}</FieldLabel>
-                    <Input {...register('type')} />
-                </Field>
+                <Controller
+                    name="brand"
+                    control={control}
+                    render={({ field }) => (
+                        <Field>
+                            <FieldLabel>Marca {RequiredField()}</FieldLabel>
+                            <AutocompleteInput
+                                options={suggestions?.brands ?? []}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Buscar marca..."
+                            />
+                        </Field>
+                    )}
+                />
+                <Controller
+                    name="type"
+                    control={control}
+                    render={({ field }) => (
+                        <Field>
+                            <FieldLabel>Tipo {RequiredField()}</FieldLabel>
+                            <AutocompleteInput
+                                options={suggestions?.types ?? []}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Buscar tipo..."
+                            />
+                        </Field>
+                    )}
+                />
             </div>
             <Field>
                 <FieldLabel>Cantidad {RequiredField()}</FieldLabel>

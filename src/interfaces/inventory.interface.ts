@@ -99,4 +99,7 @@ export type MovementType =
     'ADJUSTMENT' |
     'RETURN';
 
-// Duplicate Product interface removed. See above for the merged definition.
+export interface SuggestionAttributes {
+    brands: string[];
+    types: string[];
+}

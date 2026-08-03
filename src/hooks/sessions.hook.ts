@@ -62,7 +62,6 @@ export const useSessionsQuery = (filter?: Partial<SessionFilter>) => {
 		endDate: filter?.endDate ? String(filter.endDate) : "",
 		cashDrawerId: filter?.cashDrawerId ?? 0,
 		status: filter?.status ?? "",
-		shiftId: filter?.shiftId ?? 0,
 	};
 
 	return useQuery({
@@ -74,7 +73,6 @@ export const useSessionsQuery = (filter?: Partial<SessionFilter>) => {
 export const useSessionsGroupQuery = (filter: SessionGroupFilter) => {
 	const normalizedFilter = {
 		date: filter.date ? String(filter.date) : "",
-		shiftId: filter?.shiftId ?? 0,
 	};
 
 	return useQuery({

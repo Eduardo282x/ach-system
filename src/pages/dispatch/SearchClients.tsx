@@ -142,7 +142,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <p className='font-semibold'>Nombre Apellido</p>
+                    <p className='font-semibold'>Nombre y Apellido</p>
                     <Input
                         value={fullName}
                         disabled
@@ -195,7 +195,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                         </div>
 
                         <div className="flex flex-col gap-1 my-2">
-                            <p className='font-semibold'>Nombre</p>
+                            <p className='font-semibold'>Nombre y Apellido</p>
                             <Input
                                 value={fullName}
                                 onChange={(event) => setFullName(event.target.value)}
