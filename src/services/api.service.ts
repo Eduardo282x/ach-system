@@ -41,7 +41,7 @@ export const getDataFileApi = (endpoint: string) => {
     },).then((response) => {
         return response.data;
     }).catch(err => {
-        return err.response.data;
+        return err.response?.data ?? new Blob();
     })
 };
 

@@ -27,10 +27,10 @@ export const CashClosing = () => {
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
     const user = useAuthStore((state) => state.user);
 
-    const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
+    const cashierSessionOptions = cashDrawerSessions.data?.sessions?.map((cashDrawerSession) => ({
+        label: `${cashDrawerSession.cashDrawer?.name ?? 'N/A'} (${cashDrawerSession.user?.name ?? 'N/A'})`,
         value: cashDrawerSession.id.toString(),
-    })) : [];
+    })) ?? [];
 
     useEffect(() => {
         if (userRole === 'CAJERO' && cashDrawerSessions.data?.sessions && user?.id) {

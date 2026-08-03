@@ -28,7 +28,7 @@ export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
     {
         key: 'session',
         header: 'Caja',
-        element: (row) => row.session.cashDrawer.name ?? '--',
+        element: (row) => row.session?.cashDrawer?.name ?? '--',
         visible: true,
     },
     {

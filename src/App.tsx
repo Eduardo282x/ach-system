@@ -19,6 +19,7 @@ import { Invoices } from './pages/invoices/Invoices';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Customers } from './pages/customers/Customers';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -28,70 +29,68 @@ function AxiosInterceptorProvider() {
 function App() {
   return (
     <div className="w-screen h-screen bg-gray-100">
-      <QueryClientProvider client={queryClient}>
-        <AxiosInterceptorProvider />
-        <Toaster />
-        <RouterProvider router={createBrowserRouter([
-          {
-            path: '/login',
-            element: <Login />
-          },
-          {
-            path: '/',
-            element: <Layout />,
-            children: [
-              {
-                path: '/',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>
-              },
-              {
-                path: '/inventario',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>
-              },
-              {
-                path: '/tasas',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><ExchangeRate /></ProtectedRoute>
-              },
-              {
-                path: '/historial-inventario',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
-              },
-              {
-                path: '/despacho',
-                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Dispatch /></ProtectedRoute>
-              },
-              {
-                path: '/cajeros',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
-              },
-              {
-                path: '/clientes',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><Customers /></ProtectedRoute>
-              },
-              {
-                path: '/cierre-caja',
-                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashClosing /></ProtectedRoute>
-              },
-              {
-                path: '/historial-cajeros',
-                element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashDrawerSession /></ProtectedRoute>
-              },
-              {
-                path: '/clientes',
-                element: <Customers />
-              },
-              {
-                path: '/recibos',
-                element: <Invoices />
-              },
-              {
-                path: '*',
-                element: <Navigate to="/inventario" replace />
-              }
-            ]
-          }
-        ])}></RouterProvider>
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <AxiosInterceptorProvider />
+          <Toaster />
+          <RouterProvider router={createBrowserRouter([
+            {
+              path: '/login',
+              element: <Login />
+            },
+            {
+              path: '/',
+              element: <Layout />,
+              children: [
+                {
+                  path: '/',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>
+                },
+                {
+                  path: '/inventario',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>
+                },
+                {
+                  path: '/tasas',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><ExchangeRate /></ProtectedRoute>
+                },
+                {
+                  path: '/historial-inventario',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
+                },
+                {
+                  path: '/despacho',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Dispatch /></ProtectedRoute>
+                },
+                {
+                  path: '/cajeros',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
+                },
+                {
+                  path: '/clientes',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Customers /></ProtectedRoute>
+                },
+                {
+                  path: '/cierre-caja',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashClosing /></ProtectedRoute>
+                },
+                {
+                  path: '/historial-cajeros',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashDrawerSession /></ProtectedRoute>
+                },
+                {
+                  path: '/recibos',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Invoices /></ProtectedRoute>
+                },
+                {
+                  path: '*',
+                  element: <Navigate to="/inventario" replace />
+                }
+              ]
+            }
+          ])}></RouterProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </div>
   )
 }
