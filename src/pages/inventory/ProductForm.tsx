@@ -32,6 +32,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             name: '',
             presentation: '',
             barcode: '',
+            discountPrice: 0,
             price: 0,
             currency: 'USD',
             stock: 0,
@@ -44,11 +45,12 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
     });
 
     const onSubmit = async (data: ProductBody) => {
-        if (isEdit && product) {
-            const body: ProductBody = {
-                ...data,
-            };
+        const body: ProductBody = {
+            ...data,
+            discountPrice: data.discountPrice === 0 ? null : data.discountPrice,
+        };
 
+        if (isEdit && product) {
             const response = await updateProductMutation.mutateAsync({
                 id: product.id,
                 data: body,
@@ -60,10 +62,6 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             return;
         }
 
-        const body: ProductBody = {
-            ...data,
-        };
-
         const response = await createProductMutation.mutateAsync(body);
 
         if (response.data != null && response.success) {
@@ -73,6 +71,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 presentation: '',
                 barcode: '',
                 price: 0,
+                discountPrice: 0,
                 currency: 'USD',
                 stock: 0,
                 serialNumber: '',
@@ -91,6 +90,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 presentation: product.presentation,
                 barcode: product.barcode,
                 price: typeof product.price === "number" ? product.price : Number(product.price),
+                discountPrice: typeof product.discountPrice === "number" ? product.discountPrice : Number(product.discountPrice),
                 currency: product.currency,
                 stock: product.stock,
                 serialNumber: product.serialNumber,
@@ -107,6 +107,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             presentation: '',
             barcode: '',
             price: 0,
+            discountPrice: 0,
             currency: 'USD',
             stock: 0,
             serialNumber: '',
@@ -207,54 +208,70 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                     )}
                 />
             </div>
-            <Field>
-                <FieldLabel>Cantidad {RequiredField()}</FieldLabel>
-                <Input
-                    type="number"
-                    {...register('stock', { valueAsNumber: true })}
-                    onFocus={() => {
-                        if (getValues('stock') === 0) setValue('stock', '' as unknown as number)
-                    }}
-                />
-            </Field>
-            <Field>
-                <FieldLabel>Precio {RequiredField()}</FieldLabel>
-                <div className="flex items-center gap-2">
+            <div className="col-span-4 grid grid-cols-4 gap-4">
+                <Field>
+                    <FieldLabel>Cantidad {RequiredField()}</FieldLabel>
                     <Input
                         type="number"
-                        step="0.01"
-                        {...register('price', { valueAsNumber: true })}
+                        {...register('stock', { valueAsNumber: true })}
                         onFocus={() => {
-                            if (getValues('price') === 0) setValue('price', '' as unknown as number)
+                            if (getValues('stock') === 0) setValue('stock', '' as unknown as number)
                         }}
                     />
-                    {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
-                </div>
-            </Field>
-            <Controller
-                name="currency"
-                control={control}
-                render={({ field }) => (
-                    <Field>
-                        <FieldLabel>Moneda</FieldLabel>
-                        <Select
-                            name={field.name}
-                            value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccione una moneda" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="USD">Dolares</SelectItem>
-                                    <SelectItem value="EUR">Euros</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                )}>
-            </Controller>
+                </Field>
+                <Field>
+                    <FieldLabel>Precio {RequiredField()}</FieldLabel>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            type="number"
+                            step="0.01"
+                            {...register('price', { valueAsNumber: true })}
+                            onFocus={() => {
+                                if (getValues('price') === 0) setValue('price', '' as unknown as number)
+                            }}
+                        />
+                        {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
+                    </div>
+                </Field>
+                <Field>
+                    <FieldLabel>Precio Con Descuento {OptionalField()}</FieldLabel>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            type="number"
+                            step="0.01"
+                            {...register('discountPrice', { valueAsNumber: true })}
+                            onFocus={() => {
+                                if (getValues('discountPrice') === 0) setValue('discountPrice', '' as unknown as number)
+                            }}
+                        />
+                        {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
+                    </div>
+                </Field>
+                <Controller
+                    name="currency"
+                    control={control}
+                    render={({ field }) => (
+                        <Field>
+                            <FieldLabel>Moneda</FieldLabel>
+                            <Select
+                                name={field.name}
+                                value={field.value}
+                                onValueChange={field.onChange}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccione una moneda" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="USD">Dolares</SelectItem>
+                                        <SelectItem value="EUR">Euros</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                    )}>
+                </Controller>
+            </div>
 
             <Field className="col-span-4">
                 <FieldLabel>Descripción {OptionalField()}</FieldLabel>

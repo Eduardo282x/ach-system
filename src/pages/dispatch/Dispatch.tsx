@@ -13,13 +13,14 @@ export const Dispatch = () => {
     const [resetKey, setResetKey] = useState<number>(0);
     const disabled = selectedClient == null;
     useTypesPaymentsQuery();
-    const { setProductList } = useDispatchStore(state => state)
+    const { setProductList, setHasDiscount } = useDispatchStore(state => state)
 
     useEffect(() => {
         return () => {
             setProductList([]); // Limpiar la lista de productos al salir del componente
+            setHasDiscount(false);
         }
-    }, [setProductList]);
+    }, [setProductList, setHasDiscount]);
 
     const handleCompleteSale = useCallback(() => {
         setSelectedClient(null);
