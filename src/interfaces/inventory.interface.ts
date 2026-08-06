@@ -11,8 +11,10 @@ export interface Product {
     presentation: string;
     barcode: string;
     price: string;
+    discountPrice: string;
     currency: ExchangeRateType;
     quantity?: number;
+    unitPrice?: number;
     stock: number;
     subtotalBs?: number;
     subtotal?: number;
@@ -33,6 +35,7 @@ export interface ProductBody {
     presentation: string;
     barcode: string;
     price: number;
+    discountPrice: number | null;
     currency: string;
     stock: number;
     serialNumber: string;

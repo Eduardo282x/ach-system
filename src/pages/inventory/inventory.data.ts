@@ -59,7 +59,7 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         key: 'description',
         width: '12rem',
         element: (row) => `${(row.description ?? '').trim() === '' ? '-' : row.description}`,
-        visible: true,
+        visible: false,
     },
     {
         header: 'Cantidad',
@@ -73,6 +73,13 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         key: 'price',
         width: '8rem',
         element: (row) => `${formatNumberWithDecimal(row.price)} ${translateCurrency(row.currency)}`,
+        visible: true,
+    },
+    {
+        header: 'Precio Descuento',
+        key: 'discountPrice',
+        width: '8rem',
+        element: (row) => `${formatNumberWithDecimal(row.discountPrice ?? 0)} ${translateCurrency(row.currency)}`,
         visible: true,
     },
     {

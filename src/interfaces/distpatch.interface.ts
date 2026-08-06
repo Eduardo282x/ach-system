@@ -20,6 +20,7 @@ export interface DispatchBody {
     sessionId: number;
     exchangeRateUsdId: number;
     exchangeRateEurId: number;
+    hasDiscount: boolean;
 
     items: ProductsDispatchBody[];
     payments: PaymentBody[]
@@ -34,6 +35,7 @@ export interface PaymentBody {
 export interface ProductsDispatchBody {
     productId: number;
     quantity: number;
+    unitPrice: number;
 }
 
 //Resumen

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { formatDate, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
 import { useDispatchStore } from "@/store/dispatch.store";
 import { useInventoryStore } from "@/store/inventory.store";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { FiShoppingCart } from "react-icons/fi";
 import {
     Dialog,
@@ -29,7 +29,7 @@ import { PrintInvoice } from "./PrintInvoice";
 import { useReactToPrint } from 'react-to-print';
 import type { Client } from "@/interfaces/customer.interface";
 import { flushSync } from "react-dom";
-import type { ExchangeRateType } from "@/interfaces/inventory.interface";
+import type { ExchangeRateType, Product } from "@/interfaces/inventory.interface";
 interface CardPayment {
     name: string;
     value: string;
@@ -62,6 +62,14 @@ interface PaymentProps {
 
 const PAYMENT_EPSILON = 0.01;
 
+const effectiveUnitPrice = (product: Product, hasDiscount: boolean) => {
+    if (!hasDiscount) return Number(product.price);
+    if (product.unitPrice != null && product.unitPrice > 0) return product.unitPrice;
+    const discountPrice = Number(product.discountPrice);
+    if (discountPrice > 0) return discountPrice;
+    return Number(product.price);
+}
+
 const normalizeDecimalInput = (value: string) => {
     let sanitized = value.replace(',', '.').replace(/[^0-9.]/g, '');
 
@@ -80,7 +88,7 @@ const normalizeDecimalInput = (value: string) => {
 };
 
 export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
-    const { total, totalUSD, productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
+    const { total, totalUSD, hasDiscount, productList, setHasDiscount, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
     const { cashDrawerSession, cashier, user } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const createInvoiceMutation = useCreateInvoiceMutation();
@@ -102,6 +110,20 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             amount: '',
         },
     });
+
+    const usdPaymentTypes = useMemo(() => {
+        if (!hasDiscount) return typesPayment;
+        return typesPayment.filter((type) => type.currency === 'USD');
+    }, [hasDiscount, typesPayment]);
+
+    useEffect(() => {
+        if (hasDiscount) {
+            const usdType = typesPayment.find((type) => type.currency === 'USD');
+            if (usdType) {
+                setValue('typeSelected', usdType.id.toString());
+            }
+        }
+    }, [hasDiscount, typesPayment, setValue]);
 
     const typeSelected = useWatch({
         control,
@@ -211,12 +233,13 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                 totalBs: total,
                 totalUSD,
             },
+            hasDiscount,
             productsList: productList.map((product) => {
 
                 const findExchangeRate = exchangeRates.find((rate) => rate.currency === product.currency);
                 const exchangeRate = findExchangeRate ? findExchangeRate.rate : 1;
 
-                const unitPrice = Number(product.price) * exchangeRate;
+                const unitPrice = effectiveUnitPrice(product, hasDiscount) * exchangeRate;
 
                 const quantity = product.quantity ?? 0;
                 const subtotal = product.subtotalBs ?? quantity * unitPrice;
@@ -235,7 +258,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                 amountUSD: payment.amount,
             })),
         };
-    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, invoiceNumber, user?.name, exchangeRates]);
+    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, invoiceNumber, user?.name, exchangeRates, hasDiscount]);
 
     const openDialog = () => {
         setOpen(true);
@@ -270,6 +293,20 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         }
 
         setPayments((prevPayments) => {
+            const newPayment = {
+                paymentTypeId: selectedType.id,
+                typePayment: selectedType.name,
+                currency: selectedType.currency,
+                amountBs: amountBs,
+                amount: amountUSD,
+                reference: normalizedReference,
+                change: 0
+            };
+
+            if (hasDiscount) {
+                return [newPayment];
+            }
+
             const paymentIndex = prevPayments.findIndex((payment) => {
                 if (payment.paymentTypeId !== selectedType.id) return false;
                 if (!requiresReference) return true;
@@ -279,15 +316,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             if (paymentIndex === -1) {
                 return [
                     ...prevPayments,
-                    {
-                        paymentTypeId: selectedType.id,
-                        typePayment: selectedType.name,
-                        currency: selectedType.currency,
-                        amountBs: amountBs,
-                        amount: amountUSD,
-                        reference: normalizedReference,
-                        change: 0
-                    },
+                    newPayment,
                 ];
             }
 
@@ -336,6 +365,11 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             return;
         }
 
+        if (hasDiscount && (paymentsToSend.length !== 1 || paymentsToSend[0].currency !== 'USD')) {
+            toast.error('El descuento manual requiere un único método de pago en USD');
+            return;
+        }
+
         if (!isPaymentComplete) {
             toast.error('El pago aún no cubre el total de la compra');
             return;
@@ -356,9 +390,11 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             sessionId,
             exchangeRateUsdId: usdRateValue,
             exchangeRateEurId: eurRateValue,
+            hasDiscount,
             items: productList.map((product) => ({
                 productId: product.id,
                 quantity: product.quantity ?? 1,
+                unitPrice: effectiveUnitPrice(product, hasDiscount),
             })),
             payments: paymentsToSend.map((payment) => {
                 const raw = payment.currency === 'BS' ? payment.amountBs : payment.amount;
@@ -388,6 +424,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                 setProductList([]);
                 setTotal(0);
                 setTotalUSD(0);
+                setHasDiscount(false);
                 setOpen(false);
                 onCompleteSale?.();
             },
@@ -503,6 +540,12 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                         </DialogTitle>
 
                     </DialogHeader>
+                    {hasDiscount && (
+                        <div className="flex items-center gap-2 rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+                            <FaRegCreditCard />
+                            <p>Descuento manual aplicado. El pago se realizará únicamente en USD.</p>
+                        </div>
+                    )}
                     <div className="grid grid-cols-4 gap-4">
                         {cardsPayment.map((card) => (
                             <div key={card.name} className={`px-4 py-2 rounded-md ${variantsStyles[card.variant]} ${variantsStylesText[card.variant]}`}>
@@ -530,13 +573,13 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                                             control={control}
                                             name="typeSelected"
                                             render={({ field }) => (
-                                                <Select value={field.value} onValueChange={field.onChange}>
+                                                <Select value={field.value} onValueChange={field.onChange} disabled={hasDiscount}>
                                                     <SelectTrigger className="w-full">
                                                         <SelectValue placeholder="Seleccione un método de pago" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectGroup>
-                                                            {typesPayment && typesPayment.map((option) => (
+                                                            {usdPaymentTypes && usdPaymentTypes.map((option) => (
                                                                 <SelectItem key={option.id} value={option.id.toString()}>{option.name}</SelectItem>
                                                             ))}
                                                         </SelectGroup>
