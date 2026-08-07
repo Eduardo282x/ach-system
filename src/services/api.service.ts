@@ -71,6 +71,24 @@ export const deleteDataApi = async <R>(endpoint: string, data: number | string):
     };
 };
 
+export const deleteQueryDataApi = async <R>(endpoint: string): Promise<BaseResponse<R | null>> => {
+    try {
+        const response = await api.delete<BaseResponse<R>>(`${endpoint}`);
+        return response.data;
+    } catch (error: unknown) {
+        return getApiError(error);
+    };
+};
+
+export const deleteDataBodyApi = async <T, R>(endpoint: string, data: T): Promise<BaseResponse<R | null>> => {
+    try {
+        const response = await api.delete<BaseResponse<R>>(`${endpoint}`, { data });
+        return response.data;
+    } catch (error: unknown) {
+        return getApiError(error);
+    };
+};
+
 // Interceptors
 api.interceptors.request.use(
     (config) => {

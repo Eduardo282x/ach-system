@@ -9,7 +9,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import { ProductForm, type ProductFormMode } from "./ProductForm";
 import type { Product } from "@/interfaces/inventory.interface";
 import { useState } from "react";
-import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
+import { AlertDialogComponentAdminPassword } from "@/components/dialog/AlertDialogComponent";
 import toast from 'react-hot-toast';
 
 export const Inventory = () => {
@@ -66,9 +66,9 @@ export const Inventory = () => {
         setPagination({ page, size });
     }
 
-    const deleteProduct = () => {
+    const deleteProduct = (password: string) => {
         if (productSelected) {
-            deleteProductMutation.mutate(productSelected.id);
+            deleteProductMutation.mutate({ id: productSelected.id, password });
         }
         setOpenDialog(false);
     }
@@ -126,13 +126,13 @@ export const Inventory = () => {
                 </div>
             </PageTransitionComponent>
 
-            <AlertDialogComponent
+            <AlertDialogComponentAdminPassword
                 title="Eliminar Producto"
                 description="¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer."
                 open={openDialog}
                 close={() => setOpenDialog(false)}
-                onConfirm={() => {
-                    deleteProduct();
+                onConfirm={(password) => {
+                    deleteProduct(password);
                 }}
                 onCancel={() => setOpenDialog(false)}
             />

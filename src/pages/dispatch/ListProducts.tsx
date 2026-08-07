@@ -1,12 +1,14 @@
 import { FilterComponent } from '@/components/table/FilterComponent'
+import { AlertDialogComponentPasswordSimple } from '@/components/dialog/AlertDialogComponent';
 import { Button } from '@/components/ui/button';
 import { formatNumberWithDecimal, translateCurrency } from '@/helpers/formatters';
-import { useInventoryQuery } from '@/hooks/inventory.hook';
+import { useInventoryQuery, useValidatePasswordAdminMutation } from '@/hooks/inventory.hook';
 import type { Product } from '@/interfaces/inventory.interface';
 import { useDispatchStore } from '@/store/dispatch.store';
 import { useInventoryStore } from '@/store/inventory.store';
 import { useEffect, useRef, useState } from 'react';
 import { FaRegTrashCan } from 'react-icons/fa6';
+import toast from 'react-hot-toast';
 
 export const ListProducts = () => {
     const searchContainerRef = useRef<HTMLDivElement | null>(null);
@@ -16,6 +18,9 @@ export const ListProducts = () => {
     const { productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const [quantityInputs, setQuantityInputs] = useState<Record<number, string>>({});
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [openDialog, setOpenDialog] = useState(false);
+    const validatePasswordMutation = useValidatePasswordAdminMutation();
 
     const searchProducts = (term: string) => {
         setSearchTerm(term);
@@ -109,8 +114,29 @@ export const ListProducts = () => {
         changeQuantity(product, parsed);
     }
 
-    const removeProduct = (productId: number) => {
-        setProductList((prevList) => prevList.filter((product) => product.id !== productId));
+    const handleDeleteProductClick = (product: Product) => {
+        setProductToDelete(product);
+        setOpenDialog(true);
+    }
+
+    const handleConfirmDelete = async (password: string) => {
+        if (!productToDelete) return;
+
+        const valid = await validatePasswordMutation.mutateAsync(password);
+        if (!valid) return;
+
+        setProductList((prevList) => prevList.filter((product) => product.id !== productToDelete.id));
+        setOpenDialog(false);
+        setProductToDelete(null);
+        toast.success('Producto eliminado de la lista', {
+            duration: 1500,
+            position: 'top-right'
+        });
+    }
+
+    const handleCancelDelete = () => {
+        setOpenDialog(false);
+        setProductToDelete(null);
     }
 
     useEffect(() => {
@@ -240,7 +266,7 @@ export const ListProducts = () => {
                             <p className='w-32 shrink-0 text-right'>{calculatePriceBs(product)} Bs</p>
                             <p className='w-32 shrink-0 text-right'>{formatNumberWithDecimal(calculateSubtotal(product, product.quantity, 'BS'))} Bs</p>
                             <div className='w-32 shrink-0 text-center'>
-                                <Button variant='destructive' size='icon-sm' onClick={() => removeProduct(product.id)}>
+                                <Button variant='destructive' size='icon-sm' onClick={() => handleDeleteProductClick(product)}>
                                     <FaRegTrashCan />
                                 </Button>
                             </div>
@@ -248,6 +274,13 @@ export const ListProducts = () => {
                     ))}
                 </div>
             </div>
+
+            <AlertDialogComponentPasswordSimple
+                open={openDialog}
+                close={() => setOpenDialog(false)}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+            />
         </div>
     )
 }

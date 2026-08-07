@@ -188,6 +188,9 @@ export const Footer = () => {
                                 value={balance}
                                 onChange={(event) => setBalance(Number(event.target.value))}
                                 placeholder="Ingrese el balance inicial en Bs"
+                                onFocus={() => {
+                                    if (balance === 0) setBalance('' as unknown as number)
+                                }}
                             />
                             <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
                         </div>
@@ -200,6 +203,9 @@ export const Footer = () => {
                                 value={balanceUsd}
                                 onChange={(event) => setBalanceUsd(Number(event.target.value))}
                                 placeholder="Ingrese el balance inicial en USD"
+                                onFocus={() => {
+                                    if (balanceUsd === 0) setBalanceUsd('' as unknown as number)
+                                }}
                             />
                             <span className="text-gray-500 text-sm">Esta es la cantidad de dolares con la que se inicia la caja.</span>
                         </div>

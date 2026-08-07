@@ -42,6 +42,11 @@ export interface ProductBreakdown {
     childId: number;
 }
 
+export interface DeleteProductPayload {
+    id: number;
+    password: string;
+}
+
 //Tasas
 export interface ExchangeRateContent {
     exchangeRate: ExchangeRate[];

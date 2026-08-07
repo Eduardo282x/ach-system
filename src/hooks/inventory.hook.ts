@@ -1,6 +1,6 @@
-import type { ExchangeRateBody, ExchangeRateType, Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { DeleteProductPayload, ExchangeRateBody, ExchangeRateType, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi, validatePasswordAdminApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
@@ -272,12 +272,18 @@ export const useUpdateProductMutation = () => {
 	});
 };
 
+export const useValidatePasswordAdminMutation = () => {
+	return useMutation({
+		mutationFn: async (password: string) => validatePasswordAdminApi(password),
+	});
+};
+
 export const useDeleteProductMutation = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (id: number) => deleteProductApi(id),
-		onMutate: async (id) => {
+		mutationFn: async (data: DeleteProductPayload) => deleteProductApi(data),
+		onMutate: async ({ id }: DeleteProductPayload) => {
 			const queries = queryClient.getQueriesData<{ products: Product[] }>({
 				queryKey: [INVENTORY_QUERY_KEY],
 			});
@@ -296,15 +302,20 @@ export const useDeleteProductMutation = () => {
 
 			return { previousQueries };
 		},
-		onError: (_err, _id, context) => {
+		onError: (_err, _variables, context) => {
 			if (context?.previousQueries) {
 				context.previousQueries.forEach(([queryKey, data]) => {
 					queryClient.setQueryData(queryKey, data);
 				});
 			}
 		},
-		onSuccess: (response, id) => {
+		onSuccess: (response, { id }, context) => {
 			if (!response.success) {
+				if (context?.previousQueries) {
+					context.previousQueries.forEach(([queryKey, data]) => {
+						queryClient.setQueryData(queryKey, data);
+					});
+				}
 				return;
 			}
 
