@@ -1,5 +1,5 @@
-import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown, SuggestionAttributes } from "@/interfaces/inventory.interface";
-import { deleteDataApi, getDataApi, postDataApi, putDataApi } from "./api.service";
+import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown, SuggestionAttributes } from "@/interfaces/inventory.interface";
+import { deleteDataBodyApi, getDataApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
 const inventoryUrl = '/products';
@@ -51,9 +51,13 @@ export const breakDownProductApi = async (data: ProductBreakdown) => {
     const response = await postDataApi<ProductBreakdown, Product>(`${inventoryUrl}/breakdown`, data);
     return response;
 }
-export const deleteProductApi = async (id: number) => {
-    const response = await deleteDataApi<Product>(`${inventoryUrl}`, id);
+export const deleteProductApi = async (data: DeleteProductPayload) => {
+    const response = await deleteDataBodyApi<DeleteProductPayload, Product>(`${inventoryUrl}`, data);
     return response;
+}
+export const validatePasswordAdminApi = async (password: string): Promise<boolean> => {
+    const response = await postDataApi<{ password: string }, boolean>(`${inventoryUrl}/validate-password`, { password });
+    return response.data ?? false;
 }
 
 //Tasas
