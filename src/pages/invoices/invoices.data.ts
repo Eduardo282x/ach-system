@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@/components/table/TableComponent";
 import { formatDate, formatNumberWithDecimal } from "@/helpers/formatters";
 import type { InvoiceResponse, Item } from "@/interfaces/distpatch.interface";
-import { LuCreditCard, LuPrinter } from "react-icons/lu";
+import { LuCreditCard, LuPrinter, LuRepeat, LuUndo2 } from "react-icons/lu";
 import type { InvoiceData } from "../dispatch/PrintInvoice";
 
 export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
@@ -62,7 +62,7 @@ export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
         width: '8rem',
         element: () => '',
         visible: true,
-        icons: () => [
+        icons: (row) => [
             {
                 label: 'Reimprimir',
                 icon: LuPrinter,
@@ -75,6 +75,22 @@ export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
                 action: 'viewPayments',
                 variant: 'outline',
             },
+            ...(row.status === 'PAID'
+                ? [
+                    {
+                        label: 'Devolución',
+                        icon: LuUndo2,
+                        action: 'return',
+                        variant: 'secondary' as const,
+                    },
+                    {
+                        label: 'Cambio',
+                        icon: LuRepeat,
+                        action: 'change',
+                        variant: 'outline' as const,
+                    },
+                ]
+                : []),
         ]
     }
 ];
@@ -84,6 +100,8 @@ const getStatusLabel = (status: string) => {
         case "PAID": return "Pagada";
         case "PENDING": return "Pendiente";
         case "CANCELLED": return "Cancelada";
+        case "RETURN": return "Devuelta";
+        case "CHANGE": return "Cambio";
         default: return status;
     }
 };
@@ -93,6 +111,8 @@ const getStatusColor = (status: string) => {
         case "PAID": return "text-green-800 bg-green-100";
         case "PENDING": return "text-yellow-800 bg-yellow-100";
         case "CANCELLED": return "text-red-800 bg-red-100";
+        case "RETURN": return "text-purple-800 bg-purple-100";
+        case "CHANGE": return "text-blue-800 bg-blue-100";
         default: return "text-gray-800 bg-gray-100";
     }
 };

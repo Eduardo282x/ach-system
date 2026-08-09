@@ -1,9 +1,11 @@
 import type { BaseResponse } from "@/interfaces/base.interface";
-import type { DispatchBody, InvoicesFilter, InvoiceResponseContent, ResumenFilter } from "@/interfaces/distpatch.interface";
-import { createInvoicesApi, getInvoicesApi, getResumenSalesApi, getTypesPaymentApi } from "@/services/dispatch.service";
+import type { CreateChangeBody, CreateReturnBody, DispatchBody, InvoicesFilter, InvoiceResponseContent, ResumenFilter } from "@/interfaces/distpatch.interface";
+import { createChangeApi, createInvoicesApi, createReturnApi, getInvoicesApi, getResumenSalesApi, getTypesPaymentApi, payInvoiceCreditApi } from "@/services/dispatch.service";
 import { useDispatchStore } from "@/store/dispatch.store";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { INVENTORY_QUERY_KEY } from "./inventory.hook";
+import { SESSIONS_QUERY_KEY } from "./sessions.hook";
 
 export const TYPES_PAYMENTS = "types-payments";
 
@@ -40,7 +42,57 @@ export const useInvoicesQuery = (filter: InvoicesFilter) => {
 };
 
 export const useCreateInvoiceMutation = () => {
+    const queryClient = useQueryClient();
+
     return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, DispatchBody>({
         mutationFn: async (data: DispatchBody) => createInvoicesApi(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+        },
+    });
+};
+
+export const usePayInvoiceCreditMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, number>({
+        mutationFn: async (invoiceId: number) => payInvoiceCreditApi(invoiceId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+        },
+    });
+};
+
+export const useCreateReturnMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, CreateReturnBody>({
+        mutationFn: async (data: CreateReturnBody) => createReturnApi(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["invoices"] });
+            queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: ["resumen-sales"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+        },
+    });
+};
+
+export const useCreateChangeMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation<BaseResponse<InvoiceResponseContent | null>, Error, CreateChangeBody>({
+        mutationFn: async (data: CreateChangeBody) => createChangeApi(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["invoices"] });
+            queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: ["resumen-sales"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+        },
     });
 };

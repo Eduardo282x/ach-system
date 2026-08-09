@@ -82,7 +82,7 @@ export interface Resuman {
 
 //Invoice
 
-export type InvoiceStatus = 'PAID' | 'PENDING' | 'CANCELLED';
+export type InvoiceStatus = 'PAID' | 'PENDING' | 'CANCELLED' | 'RETURN' | 'CHANGE';
 
 export interface InvoiceResponseContent {
     invoice: InvoiceResponse;
@@ -184,4 +184,73 @@ export interface InvoicesPagination {
 export interface InvoicesResponse {
     invoices: InvoiceResponse[];
     pagination: InvoicesPagination;
+}
+
+// Return / Change
+
+export type ReturnCondition = 'GOOD' | 'DEFECTIVE';
+export type ReturnType = 'RETURN' | 'CHANGE';
+
+export interface ReturnItemBody {
+    invoiceItemId: number;
+    quantity: number;
+    condition: ReturnCondition;
+}
+
+export interface RefundPaymentBody {
+    paymentTypeId: number;
+    amount: number;
+}
+
+export interface CreateReturnBody {
+    invoiceId: number;
+    reason: string;
+    items: ReturnItemBody[];
+    payments: RefundPaymentBody[];
+}
+
+export interface ReplacementItemBody {
+    productId: number;
+    quantity: number;
+}
+
+export interface CreateChangeBody {
+    invoiceId: number;
+    reason: string;
+    returnedItems: ReturnItemBody[];
+    replacementItems: ReplacementItemBody[];
+    sessionId: number;
+    exchangeRateUsdId?: number;
+    exchangeRateEurId?: number;
+}
+
+export interface ReturnItem {
+    id: number;
+    returnId: number;
+    productId: number;
+    quantity: string;
+    condition: ReturnCondition;
+    createdAt: Date;
+    product: Product;
+}
+
+export interface ReturnRecord {
+    id: number;
+    invoiceId: number;
+    type: ReturnType;
+    reason: string;
+    userId: number;
+    createdAt: Date;
+    items: ReturnItem[];
+}
+
+export interface CreateReturnResponseContent {
+    return: ReturnRecord;
+    invoice: InvoiceResponse;
+}
+
+export interface CreateChangeResponseContent {
+    return: ReturnRecord;
+    invoice: InvoiceResponse;
+    newInvoice: InvoiceResponse;
 }

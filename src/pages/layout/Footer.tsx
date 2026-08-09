@@ -22,10 +22,10 @@ export const Footer = () => {
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
 
     const [open, setOpen] = useState<boolean>(false);
-    const [cashDrawerSelected, setCashDrawerSelected] = useState<number | null>(null);
     const [balance, setBalance] = useState<number>(0);
     const [balanceUsd, setBalanceUsd] = useState<number>(0);
     const cashDrawers = useCashDrawersQuery();
+    const cashDrawerSelected: number = cashDrawers.data ? (cashDrawers.data?.cashDrawers.length >= 1 ? cashDrawers.data?.cashDrawers[0].id : 1) : 1;
     const openSessionMutation = useOpenSessionMutation();
 
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
@@ -162,7 +162,7 @@ export const Footer = () => {
                     </DialogHeader>
 
                     <div className="w-full">
-                        <div className="flex flex-col gap-2 my-4">
+                        {/* <div className="flex flex-col gap-2 my-4">
                             <p className='font-semibold'>Seleccionar caja</p>
                             <div className='flex items-center gap-2'>
                                 <Select defaultValue={cashDrawerSelected?.toString()} onValueChange={(value) => setCashDrawerSelected(Number(value))}>
@@ -178,7 +178,7 @@ export const Footer = () => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                        </div>
+                        </div> */}
 
                         <div className="flex flex-col gap-2 my-4">
                             <p className='font-semibold'>Balance inicial (Bs)</p>

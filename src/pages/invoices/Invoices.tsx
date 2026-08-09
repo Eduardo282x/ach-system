@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useInvoicesQuery } from "@/hooks/dispatch.hook";
+import { useInvoicesQuery, useTypesPaymentsQuery } from "@/hooks/dispatch.hook";
 import { useUsersQuery } from "@/hooks/users.hook";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
 import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
@@ -16,6 +16,8 @@ import {
 
 import { formatDate, formatOnlyTime } from "@/helpers/formatters";
 import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
+import { ReturnDialog } from "./ReturnDialog";
+import { ChangeDialog } from "./ChangeDialog";
 import { PrintInvoice, type InvoiceData } from "../dispatch/PrintInvoice";
 import { useReactToPrint } from "react-to-print";
 import type { DateRange } from "react-day-picker";
@@ -27,8 +29,11 @@ export const Invoices = () => {
         page: 1,
         size: 20,
     });
+    useTypesPaymentsQuery();
     // const [expandedRow, setExpandedRow] = useState<number | null>(null);
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+    const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+    const [changeDialogOpen, setChangeDialogOpen] = useState(false);
     const [selectedPaymentDetails, setSelectedPaymentDetails] = useState<PaymentDetail[]>([]);
     const [selectedInvoiceTotals, setSelectedInvoiceTotals] = useState<{ totalAmountBs: string; totalAmountUsd: string }>({ totalAmountBs: "0", totalAmountUsd: "0" });
 
@@ -103,6 +108,12 @@ export const Invoices = () => {
         }
         if (action === "viewPayments") {
             handleOpenPayments(data);
+        }
+        if (action === "return") {
+            setReturnDialogOpen(true);
+        }
+        if (action === "change") {
+            setChangeDialogOpen(true);
         }
     }
 
@@ -217,6 +228,20 @@ export const Invoices = () => {
                 paymentDetails={selectedPaymentDetails}
                 totalAmountBs={selectedInvoiceTotals.totalAmountBs}
                 totalAmountUsd={selectedInvoiceTotals.totalAmountUsd}
+            />
+
+            {/* Return Dialog */}
+            <ReturnDialog
+                open={returnDialogOpen}
+                onClose={() => setReturnDialogOpen(false)}
+                invoice={invoiceSelected}
+            />
+
+            {/* Change Dialog */}
+            <ChangeDialog
+                open={changeDialogOpen}
+                onClose={() => setChangeDialogOpen(false)}
+                invoice={invoiceSelected}
             />
 
             {/* Hidden PrintInvoice */}

@@ -100,7 +100,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
     const [changeDeliveredUSDInput, setChangeDeliveredUSDInput] = useState<string>('0');
 
     const typesPaymentState = useDispatchStore((state) => state.typesPayments);
-    const typesPayment = useMemo(() => Array.isArray(typesPaymentState) ? typesPaymentState : [], [typesPaymentState]);
+    const typesPayment = useMemo(() => Array.isArray(typesPaymentState) ? typesPaymentState.filter(type => !type.name.includes('Devolución')) : [], [typesPaymentState]);
     const [payments, setPayments] = useState<Payments[]>([]);
 
     const { setValue, control, handleSubmit, reset } = useForm<PaymentForm>({

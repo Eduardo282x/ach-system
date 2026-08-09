@@ -1,7 +1,7 @@
 import type { BaseResponse } from "@/interfaces/base.interface";
 import { formatOnlyDateStringFilter } from "@/helpers/formatters";
-import type { DispatchBody, InvoicesFilter, InvoicesResponse, InvoiceResponseContent, PaymentType, ResumenContent, ResumenFilter, TypesPaymentContent } from "@/interfaces/distpatch.interface";
-import { getDataApi, getDataFileApi, postDataApi } from "./api.service";
+import type { CreateChangeBody, CreateReturnBody, DispatchBody, InvoicesFilter, InvoicesResponse, InvoiceResponseContent, PaymentType, ResumenContent, ResumenFilter, TypesPaymentContent } from "@/interfaces/distpatch.interface";
+import { getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 
 const salesUrl = '/sales';
 
@@ -53,5 +53,25 @@ export const getInvoicesApi = async (filter: InvoicesFilter): Promise<InvoicesRe
 
 export const createInvoicesApi = async (data: DispatchBody): Promise<BaseResponse<InvoiceResponseContent | null>> => {
     const result = await postDataApi<DispatchBody, InvoiceResponseContent>(`${salesUrl}/invoices`, data);
+    return result;
+}
+
+export const getInvoiceByIdApi = async (invoiceId: number): Promise<BaseResponse<InvoiceResponseContent | null>> => {
+    const result = await getDataApi<InvoiceResponseContent>(`${salesUrl}/invoices/${invoiceId}`);
+    return result;
+}
+
+export const createReturnApi = async (data: CreateReturnBody): Promise<BaseResponse<InvoiceResponseContent | null>> => {
+    const result = await postDataApi<CreateReturnBody, InvoiceResponseContent>(`${salesUrl}/return`, data);
+    return result;
+}
+
+export const createChangeApi = async (data: CreateChangeBody): Promise<BaseResponse<InvoiceResponseContent | null>> => {
+    const result = await postDataApi<CreateChangeBody, InvoiceResponseContent>(`${salesUrl}/change`, data);
+    return result;
+}
+
+export const payInvoiceCreditApi = async (invoiceId: number): Promise<BaseResponse<InvoiceResponseContent | null>> => {
+    const result = await putDataApi<null, InvoiceResponseContent>(`${salesUrl}/pay-invoice-credit/${invoiceId}`, null);
     return result;
 }
