@@ -237,7 +237,7 @@ const ChangeDialogContent = ({
     };
 
     return (
-        <DialogContent className="max-w-5xl">
+        <DialogContent className="!max-w-5xl !w-5xl">
             <DialogHeader>
                 <DialogTitle>Cambio - Factura #{invoice.invoiceNumber}</DialogTitle>
             </DialogHeader>

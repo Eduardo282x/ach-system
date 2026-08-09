@@ -183,7 +183,7 @@ const ReturnDialogContent = ({
     };
 
     return (
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="!max-w-4xl !w-4xl"> 
             <DialogHeader>
                 <DialogTitle>Devolución - Factura #{invoice.invoiceNumber}</DialogTitle>
             </DialogHeader>
