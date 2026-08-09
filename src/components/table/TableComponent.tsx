@@ -21,7 +21,7 @@ export interface ColumnIcons {
     icon: React.ComponentType<{ className?: string }>;
     action: string;
     label: string;
-    variant: 'primary' | 'error' | 'outline';
+    variant: 'primary' | 'error' | 'outline' | 'secondary';
 }
 
 export interface ColumnDef<T> {
@@ -48,7 +48,7 @@ interface TableComponentProps<T> {
     renderRow?: (item: T, index: number) => React.ReactNode;
 }
 
-const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
+const styleVariant = (variant: 'primary' | 'error' | 'outline' | 'secondary') => {
     switch (variant) {
         case 'primary':
             return 'text-blue-600';
@@ -56,6 +56,8 @@ const styleVariant = (variant: 'primary' | 'error' | 'outline') => {
             return 'text-red-600';
         case 'outline':
             return 'text-gray-600';
+        case 'secondary':
+            return 'text-orange-600';
         default:
             return '';
     }
