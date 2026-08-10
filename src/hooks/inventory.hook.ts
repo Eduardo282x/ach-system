@@ -74,7 +74,7 @@ export const useInventoryQueryLocal = (search: string, filter: Pagination) => {
 	const normalizedSearch = search.trim();
 
 	const query = useQuery({
-		queryKey: [INVENTORY_QUERY_KEY, filter],
+		queryKey: [INVENTORY_QUERY_KEY, filter, search],
 		queryFn: () => getInventoryApi(normalizedSearch || undefined, filter),
 	});
 
