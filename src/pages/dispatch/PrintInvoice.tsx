@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import { formatNumberWithDecimal, formatNumberWithDots } from "@/helpers/formatters";
+import type { ReturnType } from "@/interfaces/distpatch.interface";
 
 interface InvoiceProduct {
     id: number;
@@ -31,6 +32,7 @@ export interface InvoiceData {
         totalUSD: number;
     };
     hasDiscount?: boolean;
+    invoiceType?: ReturnType;
     productsList: InvoiceProduct[];
     payments: InvoicePayment[];
 }
@@ -69,7 +71,7 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     <div key={index} className="flex items-start justify-between w-full my-4">
                         <div>
                             <p><strong>{product.quantity}</strong> x {product.name}</p>
-                            <p>X {formatNumberWithDecimal(product.unitPrice)} Bs</p>
+                            <p>X {formatNumberWithDecimal(product.unitPrice)} $</p>
                         </div>
                         <p>{formatNumberWithDecimal(product.subtotal)} Bs</p>
                     </div>
@@ -93,6 +95,11 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
 
                 <div>
                     <p className="font-bold">Métodos de pago:</p>
+                    {data.invoiceType && (
+                        <p className="font-semibold text-center my-2">
+                            {data.invoiceType === 'RETURN' ? 'Devolución de factura' : 'Cambio de productos'}
+                        </p>
+                    )}
                     {data.payments.length === 0 ? (
                         <p>--</p>
                     ) : (

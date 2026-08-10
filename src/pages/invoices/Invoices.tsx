@@ -1,8 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useInvoicesQuery, useTypesPaymentsQuery } from "@/hooks/dispatch.hook";
+import { AlertDialogComponentPasswordSimple } from "@/components/dialog/AlertDialogComponent";
+import { useValidatePasswordAdminMutation } from "@/hooks/inventory.hook";
 import { useUsersQuery } from "@/hooks/users.hook";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
-import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
+import type { InvoicesFilter, InvoiceResponse, PaymentDetail, ReturnType } from "@/interfaces/distpatch.interface";
 import { FilterComponent } from "@/components/table/FilterComponent";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
 import {
@@ -34,10 +36,14 @@ export const Invoices = () => {
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [changeDialogOpen, setChangeDialogOpen] = useState(false);
+    const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+    const [pendingAction, setPendingAction] = useState<'return' | 'change' | null>(null);
+    const [printInvoiceType, setPrintInvoiceType] = useState<ReturnType | undefined>(undefined);
     const [selectedPaymentDetails, setSelectedPaymentDetails] = useState<PaymentDetail[]>([]);
     const [selectedInvoiceTotals, setSelectedInvoiceTotals] = useState<{ totalAmountBs: string; totalAmountUsd: string }>({ totalAmountBs: "0", totalAmountUsd: "0" });
 
     const componentRef = useRef<HTMLDivElement>(null);
+    const validatePasswordMutation = useValidatePasswordAdminMutation();
 
     const { data: invoicesData, isLoading } = useInvoicesQuery(filter);
     const { data: usersData } = useUsersQuery("");
@@ -47,7 +53,13 @@ export const Invoices = () => {
     const pagination = invoicesData?.pagination;
 
     const users = useMemo(() => usersData?.users ?? [], [usersData]);
-    const sessions = useMemo(() => sessionsData?.sessions ?? [], [sessionsData]);
+    const sessions = useMemo(() => {
+        const list = sessionsData?.sessions ?? [];
+        return list.filter(
+            (session, index, array) =>
+                array.findIndex((item) => item.sessionId === session.sessionId) === index,
+        );
+    }, [sessionsData]);
 
     const handleSearch = useCallback((value: string) => {
         setFilter((prev) => ({ ...prev, search: value || undefined, page: 1 }));
@@ -104,26 +116,49 @@ export const Invoices = () => {
     const getActionTable = async (action: string, data: InvoiceResponse) => {
         setInvoiceSelected(data);
         if (action === "print") {
+            setPrintInvoiceType(undefined);
             setTimeout(() => handlePrint(), 100);
         }
         if (action === "viewPayments") {
             handleOpenPayments(data);
         }
-        if (action === "return") {
+        if (action === "return" || action === "change") {
+            setPendingAction(action);
+            setPasswordDialogOpen(true);
+        }
+    }
+
+    const handleConfirmPassword = async (password: string) => {
+        const valid = await validatePasswordMutation.mutateAsync(password);
+        if (!valid) return;
+
+        if (pendingAction === "return") {
+            setPrintInvoiceType('RETURN');
             setReturnDialogOpen(true);
         }
-        if (action === "change") {
+        if (pendingAction === "change") {
+            setPrintInvoiceType('CHANGE');
             setChangeDialogOpen(true);
         }
+
+        setPasswordDialogOpen(false);
+        setPendingAction(null);
+    }
+
+    const handleCancelPassword = () => {
+        setPasswordDialogOpen(false);
+        setPendingAction(null);
     }
 
     const invoicePrint: InvoiceData = useMemo(() => {
         if (!invoiceSelected) return EmptyInvoice;
+        console.log(printInvoiceType)
         const data: InvoiceData = {
             invoiceNumber: invoiceSelected.invoiceNumber,
             date: formatDate(invoiceSelected.createdAt),
             time: formatOnlyTime(invoiceSelected.createdAt),
             cashier: invoiceSelected.user?.name ?? "--",
+            invoiceType: printInvoiceType ? printInvoiceType : (invoiceSelected.status == 'CHANGE' || invoiceSelected.status == 'RETURN' ? invoiceSelected.status : undefined),
             customer: {
                 fullName: invoiceSelected.customer?.fullName ?? "--",
                 identify: invoiceSelected.customer?.identify ?? "--",
@@ -148,7 +183,7 @@ export const Invoices = () => {
             })),
         };
         return data;
-    }, [invoiceSelected]);
+    }, [invoiceSelected, printInvoiceType]);
 
     const changePagination = (page: number, size: number) => {
         setFilter({ page, size });
@@ -176,7 +211,7 @@ export const Invoices = () => {
                                 <SelectGroup>
                                     <SelectItem value="all">Todas las sesiones</SelectItem>
                                     {sessions.map((session) => (
-                                        <SelectItem key={session.sessionId} value={String(session.sessionId)}>
+                                        <SelectItem key={session.id} value={String(session.sessionId)}>
                                             {session.cashDrawer?.name ?? `Sesion ${session.sessionId}`}
                                         </SelectItem>
                                     ))}
@@ -234,6 +269,7 @@ export const Invoices = () => {
             <ReturnDialog
                 open={returnDialogOpen}
                 onClose={() => setReturnDialogOpen(false)}
+                onPrint={handlePrint}
                 invoice={invoiceSelected}
             />
 
@@ -241,7 +277,16 @@ export const Invoices = () => {
             <ChangeDialog
                 open={changeDialogOpen}
                 onClose={() => setChangeDialogOpen(false)}
+                onPrint={handlePrint}
                 invoice={invoiceSelected}
+            />
+
+            {/* Password Dialog */}
+            <AlertDialogComponentPasswordSimple
+                open={passwordDialogOpen}
+                close={() => setPasswordDialogOpen(false)}
+                onConfirm={handleConfirmPassword}
+                onCancel={handleCancelPassword}
             />
 
             {/* Hidden PrintInvoice */}

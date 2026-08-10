@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 interface ChangeDialogProps {
     open: boolean;
     onClose: () => void;
+    onPrint?: () => void;
     invoice: InvoiceResponse | null;
 }
 
@@ -48,11 +49,11 @@ const normalizeDecimalInput = (value: string) => {
     return `${integerPart}.${decimalParts.join('')}`;
 };
 
-export const ChangeDialog = ({ open, onClose, invoice }: ChangeDialogProps) => {
+export const ChangeDialog = ({ open, onClose, onPrint, invoice }: ChangeDialogProps) => {
     return (
         <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
             {open && invoice && (
-                <ChangeDialogContent key={invoice.id} invoice={invoice} onClose={onClose} />
+                <ChangeDialogContent key={invoice.id} invoice={invoice} onClose={onClose} onPrint={onPrint} />
             )}
         </Dialog>
     );
@@ -61,9 +62,11 @@ export const ChangeDialog = ({ open, onClose, invoice }: ChangeDialogProps) => {
 const ChangeDialogContent = ({
     invoice,
     onClose,
+    onPrint,
 }: {
     invoice: InvoiceResponse;
     onClose: () => void;
+    onPrint?: () => void;
 }) => {
     const createChangeMutation = useCreateChangeMutation();
     const cashDrawerSession = useAuthStore((state) => state.cashDrawerSession);
@@ -226,8 +229,14 @@ const ChangeDialogContent = ({
                         toast.error(response?.message || 'No se pudo registrar el cambio');
                         return;
                     }
-                    toast.success(response?.message || 'Cambio registrado correctamente');
+                    const newInvoiceNumber = response?.data?.newInvoice?.invoiceNumber;
+                    toast.success(
+                        newInvoiceNumber
+                            ? `${response?.message || 'Cambio registrado correctamente'} Nueva factura #${newInvoiceNumber} generada`
+                            : (response?.message || 'Cambio registrado correctamente'),
+                    );
                     onClose();
+                    onPrint?.();
                 },
                 onError: () => {
                     toast.error('Ocurrió un error al registrar el cambio');

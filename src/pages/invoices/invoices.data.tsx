@@ -9,7 +9,19 @@ export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
         key: 'invoiceNumber',
         header: '# Recibo',
         width: '8rem',
-        element: (row) => `#${row.invoiceNumber}`,
+        element: (row) => (
+            <div className="flex items-center gap-2">
+                <span>#{row.invoiceNumber}</span>
+                {row.originalInvoice && (
+                    <span
+                        title={`Origen del cambio: #${row.originalInvoice.invoiceNumber}`}
+                        className="rounded px-1.5 py-0.5 text-xs text-blue-800 bg-blue-100"
+                    >
+                        # {row.originalInvoice.invoiceNumber}
+                    </span>
+                )}
+            </div>
+        ),
         visible: true,
     },
     {

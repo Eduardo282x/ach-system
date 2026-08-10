@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 interface ReturnDialogProps {
     open: boolean;
     onClose: () => void;
+    onPrint?: () => void;
     invoice: InvoiceResponse | null;
 }
 
@@ -33,11 +34,11 @@ const normalizeDecimalInput = (value: string) => {
     return `${integerPart}.${decimalParts.join('')}`;
 };
 
-export const ReturnDialog = ({ open, onClose, invoice }: ReturnDialogProps) => {
+export const ReturnDialog = ({ open, onClose, onPrint, invoice }: ReturnDialogProps) => {
     return (
         <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
             {open && invoice && (
-                <ReturnDialogContent key={invoice.id} invoice={invoice} onClose={onClose} />
+                <ReturnDialogContent key={invoice.id} invoice={invoice} onClose={onClose} onPrint={onPrint} />
             )}
         </Dialog>
     );
@@ -46,9 +47,11 @@ export const ReturnDialog = ({ open, onClose, invoice }: ReturnDialogProps) => {
 const ReturnDialogContent = ({
     invoice,
     onClose,
+    onPrint,
 }: {
     invoice: InvoiceResponse;
     onClose: () => void;
+    onPrint?: () => void;
 }) => {
     const createReturnMutation = useCreateReturnMutation();
     const typesPayments = useDispatchStore((state) => state.typesPayments);
@@ -174,6 +177,7 @@ const ReturnDialogContent = ({
                     }
                     toast.success(response?.message || 'Devolución registrada correctamente');
                     onClose();
+                    onPrint?.();
                 },
                 onError: () => {
                     toast.error('Ocurrió un error al registrar la devolución');

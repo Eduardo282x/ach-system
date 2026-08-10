@@ -1,4 +1,4 @@
-import type { InvoiceStatus } from "./distpatch.interface";
+import type { InvoiceStatus, OriginalInvoiceRef } from "./distpatch.interface";
 import type { ExchangeRateType } from "./inventory.interface";
 import type { TypeRole } from "./users.interface";
 
@@ -31,6 +31,7 @@ export interface Ingresos {
 
 export interface Invoice {
     id:              number;
+    originalInvoice?: OriginalInvoiceRef | null;
     invoiceNumber:   string;
     totalAmountBs:   string;
     exchangeRateUsd: string;

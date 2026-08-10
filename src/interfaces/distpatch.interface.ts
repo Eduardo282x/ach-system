@@ -88,8 +88,15 @@ export interface InvoiceResponseContent {
     invoice: InvoiceResponse;
 }
 
+export interface OriginalInvoiceRef {
+    id: number;
+    invoiceNumber: string;
+    status: InvoiceStatus;
+}
+
 export interface InvoiceResponse {
     id: number;
+    originalInvoice?: OriginalInvoiceRef | null;
     invoiceNumber: string;
     totalAmountBs: string;
     exchangeRateUsd: string;
