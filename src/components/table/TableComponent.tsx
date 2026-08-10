@@ -171,7 +171,7 @@ export const TableComponent = <T,>({
                     </TableBody>
                 </Table>
             </div>
-            {!ignorePagination && data.length > 0 && (
+            {!ignorePagination && data.length > 10 && (
                 <div className="flex items-center justify-between">
 
                     <p className="text-sm text-gray-700 mt-3 ml-1">{
