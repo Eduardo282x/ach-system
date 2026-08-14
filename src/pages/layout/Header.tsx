@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { MdOutlineShoppingCart } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router";
 import {
     DropdownMenu,
@@ -18,6 +17,7 @@ import achLogo from "@/assets/ach.png";
 import { DispatchAlertDialog } from "../dispatch/Dispatch";
 import { logoutApi } from "@/services/auth.service";
 
+import repuestosLogo from "@/assets/logo-v2.png";
 
 export const Header = () => {
     const navigate = useNavigate();
@@ -76,8 +76,11 @@ export const Header = () => {
     return (
         <div className="w-full py-4 px-6 flex items-center justify-between bg-white">
             <div className="flex items-center gap-2">
-                <div className="bg-blue-800 p-2 rounded-md">
+                {/* <div className="bg-blue-800 p-2 rounded-md">
                     <MdOutlineShoppingCart className="text-2xl text-white" />
+                </div> */}
+                <div className="w-12 h-12 rounded-md">
+                    <img src={repuestosLogo} alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 <span className="text-xl font-bold">{import.meta.env.VITE_NAME}</span>
             </div>
