@@ -79,6 +79,7 @@ export const useInventoryQueryLocal = (search: string, filter: Pagination) => {
 	});
 
 	const products = useMemo(() => {
+		
 		const source = query.data?.products ?? [];
 
 		if (!normalizedSearch) {
