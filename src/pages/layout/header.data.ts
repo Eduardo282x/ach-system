@@ -69,7 +69,7 @@ export const headerData: HeaderInterface[] = [
         children: []
     },
     {
-        title: 'Despachos',
+        title: 'Recibos',
         icon: LuReceipt,
         navigateTo: '/despachos',
         type: 'button',

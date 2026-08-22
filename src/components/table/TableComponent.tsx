@@ -330,7 +330,7 @@ export const SelectColumnsComponent = <T,>({ columns, onChange }: { columns: Col
                         className="bg-white text-blue-800 border border-blue-800 hover:bg-blue-700 hover:text-white"
                     >
                         <FaFilter />
-                        Columnas
+                        Filtros
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
