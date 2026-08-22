@@ -309,7 +309,7 @@ export const Payment = ({ customer }: PaymentProps) => {
 
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: 'Factura',
+        documentTitle: 'Despacho',
         onAfterPrint: () => {
         }
     });
@@ -321,7 +321,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         }
 
         if (!productList.length) {
-            toast.error('Debe agregar productos para generar la factura');
+            toast.error('Debe agregar productos para generar el despachos');
             return;
         }
 
@@ -344,7 +344,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         const sessionId = cashDrawerSession ? Number(cashDrawerSession) : 0;
 
         if (!sessionId) {
-            toast.error('No hay sesión/cajero seleccionado para registrar la factura');
+            toast.error('No hay sesión/cajero seleccionado para registrar el despachos');
             return;
         }
 
@@ -369,7 +369,7 @@ export const Payment = ({ customer }: PaymentProps) => {
         createInvoiceMutation.mutate(dispatchData, {
             onSuccess: (response) => {
                 if (!response?.success) {
-                    toast.error(response?.message || 'No se pudo registrar la factura');
+                    toast.error(response?.message || 'No se pudo registrar el despachos');
                     return;
                 }
 
@@ -387,7 +387,7 @@ export const Payment = ({ customer }: PaymentProps) => {
                 setOpen(false);
             },
             onError: () => {
-                toast.error('Ocurrió un error al registrar la factura');
+                toast.error('Ocurrió un error al registrar el despacho');
             },
         });
     }
