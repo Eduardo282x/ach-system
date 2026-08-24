@@ -10,24 +10,22 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-ENV VITE_API_URL=__VITE_API_URL__
-ENV VITE_NAME=__VITE_NAME__
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+ARG VITE_NAME
+ENV VITE_NAME=$VITE_NAME
 
 RUN pnpm build
 
 FROM nginx:alpine
 
-RUN apk add --no-cache bash
-
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget -qO- http://localhost:80/ || exit 1
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
