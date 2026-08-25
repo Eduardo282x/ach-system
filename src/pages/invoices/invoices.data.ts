@@ -7,7 +7,7 @@ import type { InvoiceData } from "../dispatch/PrintInvoice";
 export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
     {
         key: 'invoiceNumber',
-        header: '# Factura',
+        header: '# Despacho',
         width: '8rem',
         element: (row) => `#${row.invoiceNumber}`,
         visible: true,

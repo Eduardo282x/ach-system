@@ -44,7 +44,7 @@ export const Login = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="shadow-xl p-8 rounded-lg bg-white w-120 h-96 text-center flex flex-col justify-between">
                 <div>
                     <h1 className="text-3xl font-semibold">Sistema POS</h1>
-                    <span className="text-sm text-gray-600">Facturación y Gestión</span>
+                    <span className="text-sm text-gray-600">Despachos y Gestión</span>
                 </div>
 
                 <Field>
