@@ -1,6 +1,6 @@
 import type { ExchangeRateBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, getSuggestionAttributesApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
@@ -9,6 +9,7 @@ export const INVENTORY_QUERY_KEY = "inventory";
 export const INVENTORY_HISTORY_QUERY_KEY = "inventory-history";
 export const EXCHANGE_RATE_TODAY_QUERY_KEY = "exchange-rate-today";
 export const EXCHANGE_RATE_AUTOMATIC_QUERY_KEY = "exchange-rate-automatic";
+export const SUGGESTION_ATTRIBUTES_QUERY_KEY = "suggestion-attributes";
 
 const productMatchesSearch = (product: Product, search: string) => {
 	if (!search) {
@@ -145,6 +146,13 @@ export const useExchangeRateAutomaticQuery = () => {
 	}, [query.data, setExchangeRates]);
 
 	return query;
+};
+
+export const useSuggestionAttributesQuery = () => {
+	return useQuery({
+		queryKey: [SUGGESTION_ATTRIBUTES_QUERY_KEY],
+		queryFn: () => getSuggestionAttributesApi(),
+	});
 };
 
 export const useExchangeRateMutation = () => {

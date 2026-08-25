@@ -7,7 +7,7 @@ import type { InvoiceData } from "../dispatch/PrintInvoice";
 export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
     {
         key: 'invoiceNumber',
-        header: '# Despacho',
+        header: '# Recibo',
         width: '8rem',
         element: (row) => `#${row.invoiceNumber}`,
         visible: true,
@@ -28,7 +28,7 @@ export const invoiceColumns: ColumnDef<InvoiceResponse>[] = [
     {
         key: 'session',
         header: 'Caja',
-        element: (row) => row.session.cashDrawer.name ?? '--',
+        element: (row) => row.session?.cashDrawer?.name ?? '--',
         visible: true,
     },
     {

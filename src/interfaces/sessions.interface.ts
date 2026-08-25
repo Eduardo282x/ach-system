@@ -3,7 +3,10 @@ import type { DateRangeFilter } from "./base.interface";
 export interface SessionFilter extends DateRangeFilter {
     cashDrawerId: number;
     status: EventType;
-    shiftId?: number;
+}
+
+export interface SessionGroupFilter {
+    date: Date | string;
 }
 
 export interface SessionsContent {
@@ -47,6 +50,32 @@ export interface CreateUpdateCashDrawer {
     cashDrawer: CashDrawer;
 }
 
+export interface SessionsGroupContent {
+    sessions: SessionsGroup[];
+}
+
+export interface SessionsGroup {
+    id:                number;
+    userId:            number;
+    cashDrawerId:      number;
+    openedAt:          Date;
+    closedAt:          Date;
+    openingBalance:    string;
+    openingBalanceUsd: string;
+    closingBalance:    null;
+    closingBalanceUsd: null;
+    totalSales:        string;
+    totalInUsd:        string;
+    totalInBs:         string;
+    status:            string;
+    cashDrawer:        CashDrawer;
+    user:              CashDrawer;
+}
+
+export interface CashDrawer {
+    id:   number;
+    name: string;
+}
 
 //Body
 export interface OpenSession {

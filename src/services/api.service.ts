@@ -5,6 +5,7 @@ import axios from "axios";
 export const api = axios.create({
     // baseURL: `https://qjf5hfj3-3000.use2.devtunnels.ms/api`,
     baseURL: `${import.meta.env.VITE_API_URL}/api`,
+    // baseURL: `https://ach-system-api.onrender.com/api`,
 });
 
 const getApiError = (error: unknown): BaseResponse<null> => {
@@ -40,7 +41,7 @@ export const getDataFileApi = (endpoint: string) => {
     },).then((response) => {
         return response.data;
     }).catch(err => {
-        return err.response.data;
+        return err.response?.data ?? new Blob();
     })
 };
 

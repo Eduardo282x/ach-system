@@ -3,8 +3,6 @@ import { formatDate, formatNumberWithDecimal, translateCurrency } from "@/helper
 import type { Product } from "@/interfaces/inventory.interface";
 import { GoPencil } from "react-icons/go";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { IoMdAdd } from "react-icons/io";
-import { IoCubeOutline } from "react-icons/io5";
 
 export const inventoryColumns: ColumnDef<Product>[] = [
     {
@@ -22,18 +20,46 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         visible: true,
     },
     {
-        header: 'Presentacion',
+        header: 'Presentación',
         key: 'presentation',
         width: '12rem',
-        element: (row) => `${row.presentation.trim() === '' ? '-' : row.presentation}`,
+        element: (row) => `${(row.presentation ?? '').trim() === '' ? '-' : row.presentation}`,
         visible: true,
     },
     {
-        header: 'Detallado',
-        key: 'isDetail',
-        width: '8rem',
-        element: (row) => row.isDetail ? 'Sí' : 'No',
+        header: 'N° Serie',
+        key: 'serialNumber',
+        width: '12rem',
+        element: (row) => `${(row.serialNumber ?? '').trim() === '' ? '-' : row.serialNumber}`,
         visible: true,
+    },
+    {
+        header: 'N° Lote',
+        key: 'lote',
+        width: '12rem',
+        element: (row) => `${(row.lote ?? '').trim() === '' ? '-' : row.lote}`,
+        visible: true,
+    },
+    {
+        header: 'Marca',
+        key: 'brand',
+        width: '12rem',
+        element: (row) => `${(row.brand ?? '').trim() === '' ? '-' : row.brand}`,
+        visible: true,
+    },
+    {
+        header: 'Tipo',
+        key: 'type',
+        width: '12rem',
+        element: (row) => `${(row.type ?? '').trim() === '' ? '-' : row.type}`,
+        visible: true,
+    },
+    {
+        header: 'Descripción',
+        key: 'description',
+        width: '12rem',
+        element: (row) => `${(row.description ?? '').trim() === '' ? '-' : row.description}`,
+        visible: false,
     },
     {
         header: 'Cantidad',
@@ -43,17 +69,17 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         visible: true,
     },
     {
-        header: 'Cantidad Detallada',
-        key: 'unitsDetail',
-        width: '8rem',
-        element: (row) => (row.unitsDetail ?? 0).toString(),
-        visible: true,
-    },
-    {
         header: 'Precio',
         key: 'price',
         width: '8rem',
         element: (row) => `${formatNumberWithDecimal(row.price)} ${translateCurrency(row.currency)}`,
+        visible: true,
+    },
+    {
+        header: 'Precio Descuento',
+        key: 'discountPrice',
+        width: '8rem',
+        element: (row) => `${formatNumberWithDecimal(row.discountPrice ?? 0)} ${translateCurrency(row.currency)}`,
         visible: true,
     },
     {
@@ -69,13 +95,7 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         width: '8rem',
         element: () => '',
         visible: true,
-        icons: (row) => [
-            {
-                label: row.isDetail ? 'Cargar y descargar' : 'Agregar Detalle',
-                icon: row.isDetail ? IoCubeOutline : IoMdAdd,
-                action: row.isDetail ? 'breakdown' : 'addDetail',
-                variant: 'outline',
-            },
+        icons: () => [
             {
                 label:'Editar',
                 icon: GoPencil,

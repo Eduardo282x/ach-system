@@ -2,7 +2,6 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useInvoicesQuery } from "@/hooks/dispatch.hook";
 import { useUsersQuery } from "@/hooks/users.hook";
 import { useSessionsQuery } from "@/hooks/sessions.hook";
-import { useShiftsQuery } from "@/hooks/shifts.hook";
 import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
 import { FilterComponent } from "@/components/table/FilterComponent";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
@@ -14,10 +13,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 
 import { formatDate, formatOnlyTime } from "@/helpers/formatters";
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
 import { PrintInvoice, type InvoiceData } from "../dispatch/PrintInvoice";
 import { useReactToPrint } from "react-to-print";
@@ -40,14 +37,12 @@ export const Invoices = () => {
     const { data: invoicesData, isLoading } = useInvoicesQuery(filter);
     const { data: usersData } = useUsersQuery("");
     const { data: sessionsData } = useSessionsQuery();
-    const { data: shiftsData } = useShiftsQuery();
 
     const invoices = useMemo(() => invoicesData?.invoices ?? [], [invoicesData]);
     const pagination = invoicesData?.pagination;
 
     const users = useMemo(() => usersData?.users ?? [], [usersData]);
     const sessions = useMemo(() => sessionsData?.sessions ?? [], [sessionsData]);
-    const shifts = useMemo(() => shiftsData?.shifts ?? [], [shiftsData]);
 
     const handleSearch = useCallback((value: string) => {
         setFilter((prev) => ({ ...prev, search: value || undefined, page: 1 }));
@@ -81,18 +76,6 @@ export const Invoices = () => {
             userId: value === "all" ? undefined : Number(value),
             page: 1,
         }));
-    }, []);
-
-    const handleShiftChange = useCallback((value: string) => {
-        setFilter((prev) => ({
-            ...prev,
-            shiftId: value === "all" ? undefined : Number(value),
-            page: 1,
-        }));
-    }, []);
-
-    const handlePageChange = useCallback((newPage: number) => {
-        setFilter((prev) => ({ ...prev, page: newPage }));
     }, []);
 
     // const toggleRow = useCallback((invoiceId: number) => {
@@ -156,6 +139,10 @@ export const Invoices = () => {
         return data;
     }, [invoiceSelected]);
 
+    const changePagination = (page: number, size: number) => {
+        setFilter({ page, size });
+    }
+
     return (
         <div className="w-full">
             <p className="text-2xl font-semibold mb-2 ml-2">Despachos</p>
@@ -201,22 +188,6 @@ export const Invoices = () => {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-
-                        <Select onValueChange={handleShiftChange}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Todos los turnos" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="all">Todos los turnos</SelectItem>
-                                    {shifts.map((shift) => (
-                                        <SelectItem key={shift.id} value={String(shift.id)}>
-                                            {shift.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
                     </div>
 
                     <DatePickerRange onChange={handleDateRangeChange} />
@@ -232,6 +203,7 @@ export const Invoices = () => {
                     isExpansible={true}
                     pagination={pagination}
                     totalElements={pagination?.total}
+                    onPaginationChange={changePagination}
                     renderRow={(item, index) => (
                         <InvoiceDetail key={index} invoice={item} />
                     )}

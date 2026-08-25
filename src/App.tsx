@@ -6,9 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Login } from './pages/auth/login/Login';
 import { useAxiosInterceptor } from './services/interceptors';
 import { Layout } from './pages/layout/Layout';
-import { Customers } from './pages/customers/Customers';
 import { Toaster } from "react-hot-toast";
-import { Dashboard } from './pages/dashboard/Dashboard';
 import { Inventory } from './pages/inventory/Inventory';
 import { Dispatch } from './pages/dispatch/Dispatch';
 import { queryClient } from './lib/query-client';
@@ -18,6 +16,10 @@ import { HistoryInventory } from './pages/inventory/HistoryInventory';
 import { CashDrawerSession } from './pages/cashDrawerSession/CashDrawerSession';
 import { CashClosing } from './pages/cashClosing/CashClosing';
 import { Invoices } from './pages/invoices/Invoices';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Dashboard } from './pages/dashboard/Dashboard';
+import { Customers } from './pages/customers/Customers';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -27,66 +29,68 @@ function AxiosInterceptorProvider() {
 function App() {
   return (
     <div className="w-screen h-screen bg-gray-100">
-      <QueryClientProvider client={queryClient}>
-        <AxiosInterceptorProvider />
-        <Toaster />
-        <RouterProvider router={createBrowserRouter([
-          {
-            path: '/login',
-            element: <Login />
-          },
-          {
-            path: '/',
-            element: <Layout />,
-            children: [
-              {
-                path: '/',
-                element: <Dashboard />
-              },
-              {
-                path: '/inventario',
-                element: <Inventory />
-              },
-              {
-                path: '/tasas',
-                element: <ExchangeRate />
-              },
-              {
-                path: '/historial-inventario',
-                element: <HistoryInventory />
-              },
-              {
-                path: '/despacho',
-                element: <Dispatch />
-              },
-              {
-                path: '/cajeros',
-                element: <Users />
-              },
-              {
-                path: '/cierre-caja',
-                element: <CashClosing />
-              },
-              {
-                path: '/historial-cajeros',
-                element: <CashDrawerSession />
-              },
-              {
-                path: '/clientes',
-                element: <Customers />
-              },
-              {
-                path: '/despachos',
-                element: <Invoices />
-              },
-              {
-                path: '*',
-                element: <Navigate to="/inventario" replace />
-              }
-            ]
-          }
-        ])}></RouterProvider>
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <AxiosInterceptorProvider />
+          <Toaster />
+          <RouterProvider router={createBrowserRouter([
+            {
+              path: '/login',
+              element: <Login />
+            },
+            {
+              path: '/',
+              element: <Layout />,
+              children: [
+                {
+                  path: '/',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>
+                },
+                {
+                  path: '/inventario',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>
+                },
+                {
+                  path: '/tasas',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><ExchangeRate /></ProtectedRoute>
+                },
+                {
+                  path: '/historial-inventario',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
+                },
+                {
+                  path: '/despacho',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Dispatch /></ProtectedRoute>
+                },
+                {
+                  path: '/cajeros',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>
+                },
+                {
+                  path: '/clientes',
+                  element: <ProtectedRoute allowedRoles={['ADMIN']}><Customers /></ProtectedRoute>
+                },
+                {
+                  path: '/cierre-caja',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashClosing /></ProtectedRoute>
+                },
+                {
+                  path: '/historial-cajeros',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><CashDrawerSession /></ProtectedRoute>
+                },
+                {
+                  path: '/recibos',
+                  element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Invoices /></ProtectedRoute>
+                },
+                {
+                  path: '*',
+                  element: <Navigate to="/inventario" replace />
+                }
+              ]
+            }
+          ])}></RouterProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </div>
   )
 }

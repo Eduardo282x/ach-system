@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateString, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
-import { useExchangeRateAutomaticQuery } from "@/hooks/inventory.hook";
 import { useAuthStore } from "@/store/auth.store";
 import { useInventoryStore } from "@/store/inventory.store";
 import { IoMdSync } from "react-icons/io";
@@ -14,10 +12,12 @@ import { Input } from "@/components/ui/input";
 import { useSocket } from "@/services/socket.io";
 import type { ExchangeRate } from "@/interfaces/inventory.interface";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
     const today = new Date();
+    const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
 
@@ -30,11 +30,11 @@ export const Footer = () => {
 
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
-    const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
+    // const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
     const [euroRate, setEuroRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined);
-    const [exchangeDate, setExchangeDate] = useState(exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
+    const [exchangeDate, setExchangeDate] = useState(exchangeRates && exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
 
     useEffect(() => {
         const bcvRate = exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined;
@@ -42,7 +42,7 @@ export const Footer = () => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setBcvRate(bcvRate);
         setEuroRate(euroRate);
-        setExchangeDate(exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
+        setExchangeDate(exchangeRates && exchangeRates.length > 1 ? exchangeRates[0].date : undefined);
     }, [exchangeRates])
 
     const cashierSessionOptions = data ? data.sessions.map((cashDrawerSession) => ({
@@ -77,7 +77,8 @@ export const Footer = () => {
     };
 
     const updateExchangeRates = async () => {
-        await exchangeRateAutomaticQuery.refetch();
+        // await exchangeRateAutomaticQuery.refetch();
+        navigate('/tasas');
     }
 
     useSocket('exchangeRateUpdate', (data: { data: ExchangeRate[], message: string }) => {
@@ -120,31 +121,32 @@ export const Footer = () => {
             </div>
             <div className={`${isAdmin ? 'flex' : 'hidden'} items-center gap-2`}>
                 <Label>Cajero: </Label>
-                <Select
-                    value={cashDrawerSession}
-                    onValueChange={onChangeCashDrawerSession}
-                >
-                    <SelectTrigger className="w-60">
-                        <SelectValue placeholder="Seleccione un cajero" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {cashierSessionOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+                {cashierSessionOptions.length > 0 ? (
+                    <Select
+                        value={cashDrawerSession}
+                        onValueChange={onChangeCashDrawerSession}
+                    >
+                        <SelectTrigger className="w-60">
+                            <SelectValue placeholder="Seleccione un cajero" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {cashierSessionOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                ) : (
+                    <div className="w-60 flex items-center h-9 px-3 rounded-md border border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        No hay cajeros disponibles
+                    </div>
+                )}
             </div>
             <div className="flex items-center gap-1 mb-1 relative ">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant='ghost' onClick={updateExchangeRates} disabled={exchangeRateAutomaticQuery.isFetching}><IoMdSync /></Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Actualizar tasas
-                    </TooltipContent>
-                </Tooltip>
+                {user?.role !== 'CAJERO' && (
+                    <Button variant='ghost' onClick={updateExchangeRates}><IoMdSync /></Button>
+                )}
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
                 <span>|</span>
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
@@ -186,6 +188,9 @@ export const Footer = () => {
                                 value={balance}
                                 onChange={(event) => setBalance(Number(event.target.value))}
                                 placeholder="Ingrese el balance inicial en Bs"
+                                onFocus={() => {
+                                    if (balance === 0) setBalance('' as unknown as number)
+                                }}
                             />
                             <span className="text-gray-500 text-sm">Esta es la cantidad de dinero con la que se inicia la caja.</span>
                         </div>
@@ -198,6 +203,9 @@ export const Footer = () => {
                                 value={balanceUsd}
                                 onChange={(event) => setBalanceUsd(Number(event.target.value))}
                                 placeholder="Ingrese el balance inicial en USD"
+                                onFocus={() => {
+                                    if (balanceUsd === 0) setBalanceUsd('' as unknown as number)
+                                }}
                             />
                             <span className="text-gray-500 text-sm">Esta es la cantidad de dolares con la que se inicia la caja.</span>
                         </div>

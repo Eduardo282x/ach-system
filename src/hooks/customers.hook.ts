@@ -12,9 +12,9 @@ const customerMatchesSearch = (customer: Client, search: string) => {
 
 	const normalized = search.toLowerCase();
 	return (
-		customer.fullName.toLowerCase().includes(normalized) ||
-		customer.identify.toLowerCase().includes(normalized) ||
-		customer.phone.toLowerCase().includes(normalized)
+		(customer.fullName ?? '').toLowerCase().includes(normalized) ||
+		(customer.identify ?? '').toLowerCase().includes(normalized) ||
+		(customer.phone ?? '').toLowerCase().includes(normalized)
 	);
 };
 

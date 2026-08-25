@@ -79,11 +79,11 @@ export const PaymentDetailsDialog = ({
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Total despachos (Bs):</span>
+                            <span className="text-sm text-muted-foreground">Total recibos (Bs):</span>
                             <span className="font-bold">{formatNumberWithDecimal(totalAmountBs)} Bs</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Total despachos (USD):</span>
+                            <span className="text-sm text-muted-foreground">Total recibos (USD):</span>
                             <span className="font-bold">${formatNumberWithDecimal(totalAmountUsd)}</span>
                         </div>
                     </div>

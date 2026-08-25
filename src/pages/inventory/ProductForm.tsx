@@ -12,7 +12,7 @@ import { translateCurrency } from "@/helpers/formatters";
 import { Checkbox } from "@/components/ui/checkbox"
 import toast from 'react-hot-toast';
 
-export type ProductFormMode = "create" | "edit" | "addDetail";
+export type ProductFormMode = "create" | "edit";
 
 interface ProductFormProps {
     mode: ProductFormMode;
@@ -47,6 +47,7 @@ const defaultChildValues: ProductBody = {
 export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
     const createProductMutation = useCreateProductMutation();
     const updateProductMutation = useUpdateProductMutation();
+    const { data: suggestions } = useSuggestionAttributesQuery();
     const [disableBtnGenerate, setDisableBtnGenerate] = useState(false);
     const [disableBtnGenerateChild, setDisableBtnGenerateChild] = useState(false);
     const isAddDetail = mode === "addDetail";
@@ -77,6 +78,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 unitsDetail: isEditChild ? null : Math.max(1, fatherData.unitsDetail ?? 1),
             };
 
+        if (isEdit && product) {
             const response = await updateProductMutation.mutateAsync({
                 id: product.id,
                 data: body,
@@ -151,6 +153,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                 presentation: product.presentation,
                 barcode: product.barcode,
                 price: typeof product.price === "number" ? product.price : Number(product.price),
+                discountPrice: typeof product.discountPrice === "number" ? product.discountPrice : Number(product.discountPrice),
                 currency: product.currency,
                 stock: product.stock,
                 isDetail: product.isDetail,
@@ -197,6 +200,11 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
     const barcodeValueChild = useWatch({
         control: formProductChildren.control,
         name: 'barcode',
+    })
+
+    const currencyValue = useWatch({
+        control,
+        name: 'currency',
     })
 
     useEffect(() => {

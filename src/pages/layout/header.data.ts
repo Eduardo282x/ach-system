@@ -29,7 +29,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN'],
         children: []
     },
     {
@@ -38,7 +38,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/clientes',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN'],
         children: []
     },
     {
@@ -56,7 +56,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/inventario',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN'],
         children: []
     },
     {
@@ -65,16 +65,18 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/despacho',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
     {
         title: 'Recibos',
+        title: 'Recibos',
         icon: LuReceipt,
         navigateTo: '/despachos',
+        navigateTo: '/recibos',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR'],
+        auth: ['ADMIN'],
         children: []
     },
     {
@@ -83,7 +85,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '/cierre-caja',
         type: 'button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
     {
@@ -92,14 +94,14 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '',
         type: 'dropdown',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: [
             {
                 title: 'Tasa del dia',
                 navigateTo: '/tasas',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN'],
                 children: []
             },
             {
@@ -107,7 +109,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '/cajeros',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN'],
                 children: []
             },
             {
@@ -115,7 +117,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '/historial-cajeros',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'CAJERO'],
                 children: []
             },
             {
@@ -123,7 +125,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '',
                 type: 'separator',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'CAJERO'],
                 children: []
             },
             {
@@ -131,7 +133,7 @@ export const headerData: HeaderInterface[] = [
                 navigateTo: '',
                 type: 'dropdown-item',
                 active: false,
-                auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+                auth: ['ADMIN', 'CAJERO'],
                 children: [],
                 action: 'logout'
             }
@@ -144,7 +146,7 @@ export const headerData: HeaderInterface[] = [
         type: 'button',
         active: false,
         action: 'help',
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: []
     },
 ]
