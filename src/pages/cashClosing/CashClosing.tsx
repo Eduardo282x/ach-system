@@ -1,50 +1,31 @@
 import { DatePicker } from "@/components/datePickerRange/DatePickerRange"
 import { useResumenSalesQuery } from "@/hooks/dispatch.hook";
-import { formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
+import { formatDate, formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
 import type { ResumenFilter } from "@/interfaces/distpatch.interface";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LuEqualApproximately } from "react-icons/lu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCashDrawersQuery, useSessionsGroupQuery } from "@/hooks/sessions.hook";
+import { useSessionsQuery } from "@/hooks/sessions.hook";
+import { Button } from "@/components/ui/button";
+import { RiFileExcel2Line } from "react-icons/ri";
+import { getResumenSalesExcelApi } from "@/services/dispatch.service";
 import { Loading } from "@/components/loader/Loading";
 import { useAuthStore } from "@/store/auth.store";
 import type { TypeRole } from "@/interfaces/users.interface";
 
 export const CashClosing = () => {
 
-    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, cashDrawerId: undefined });
+    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined });
     const { data: resumen, isLoading } = useResumenSalesQuery(filter);
 
-    const cashDrawerSessions = useSessionsGroupQuery({ date: filter.date });
-
-    const { data } = useCashDrawersQuery();
-    const cashDrawersOptions = data?.cashDrawers ? data.cashDrawers.map((cashDrawer) => ({
-        label: cashDrawer.name,
-        value: cashDrawer.id.toString(),
-    })) : [];
-
+    const cashDrawerSessions = useSessionsQuery({ status: 'OPEN' });
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
-    const user = useAuthStore((state) => state.user);
 
-    const cashierSessionOptions = cashDrawerSessions.data?.sessions?.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer?.name ?? 'N/A'} (${cashDrawerSession.user?.name ?? 'N/A'})`,
-        value: cashDrawerSession.id.toString(),
-    })) ?? [];
-
-    useEffect(() => {
-        if (userRole === 'CAJERO' && cashDrawerSessions.data?.sessions && user?.id) {
-            // const mySession = cashDrawerSessions.data.sessions.find(
-            //     s => s.user.id === user.id
-            // );
-            // if (mySession && filter.sessionId !== mySession.sessionId) {
-            // setFilter(prev => ({
-            //     ...prev,
-            //     sessionId: mySession.sessionId,
-            // }));
-            // }
-        }
-    }, [userRole, cashDrawerSessions.data, user]);
+    const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
+        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name})`,
+        value: cashDrawerSession.sessionId.toString(),
+    })) : [];
 
     const handleCashDrawerSessionChange = (sessionId: string) => {
         if (sessionId === 'all') {
@@ -60,20 +41,6 @@ export const CashClosing = () => {
         }));
     }
 
-    const handleCashDrawerChange = (cashDrawerId: string) => {
-        if (cashDrawerId === 'all') {
-            setFilter((prev) => ({
-                ...prev,
-                cashDrawerId: undefined,
-            }));
-            return;
-        }
-        setFilter((prev) => ({
-            ...prev,
-            cashDrawerId: parseInt(cashDrawerId),
-        }));
-    }
-
     const handleChangeDate = (date: Date | undefined) => {
         const parsedDate = formatOnlyDateStringFilter(date);
         if (!parsedDate) return;
@@ -83,56 +50,46 @@ export const CashClosing = () => {
         })
     }
 
+    const handleExportExcel = async () => {
+        const blob = await getResumenSalesExcelApi(filter);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Resumen Cierre Caja ${formatDate(filter.date)}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+    }
+
     return (
         <div className='w-full h-full'>
-            <div className='w-full bg-white rounded-xl p-4 mb-4'>
+            <div className='w-3/4 mx-auto bg-white rounded-xl p-4 mb-4'>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <p className='text-2xl font-semibold mb-4'>Cierre de Caja</p>
+                    <Button variant='export' disabled={!resumen || resumen.totalInvoice === 0} onClick={handleExportExcel}><RiFileExcel2Line /> Exportar</Button>
                 </div>
                 <div className="flex items-center justify-between mb-4 w-full">
                     <DatePicker onChange={handleChangeDate} />
 
                     {userRole !== 'CAJERO' && (
-                        <div className="flex items-center gap-4">
-                            <div className="flex flex-col gap-2">
-                                <Label>Session</Label>
-                                <Select
-                                    value={filter.sessionId?.toString() ?? 'all'}
-                                    onValueChange={handleCashDrawerSessionChange}
-                                >
-                                    <SelectTrigger className="w-48">
-                                        <SelectValue placeholder="Seleccione un cajero" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="all">Todos</SelectItem>
-                                            {cashierSessionOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                                <Label>Caja</Label>
-                                <Select
-                                    value={filter.cashDrawerId?.toString() ?? 'all'}
-                                    onValueChange={handleCashDrawerChange}
-                                >
-                                    <SelectTrigger className="w-48">
-                                        <SelectValue placeholder="Seleccione una caja" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="all">Todos</SelectItem>
-                                            {cashDrawersOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="flex flex-col gap-2">
+                            <Label>Caja</Label>
+                            <Select
+                                value={filter.sessionId?.toString() ?? 'all'}
+                                onValueChange={handleCashDrawerSessionChange}
+                            >
+                                <SelectTrigger className="w-60">
+                                    <SelectValue placeholder="Seleccione un cajero" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="all">Todos</SelectItem>
+                                        {cashierSessionOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
                     )}
                 </div>
@@ -165,7 +122,7 @@ export const CashClosing = () => {
                                 <p className="flex items-center gap-1" >{`${formatNumberWithDecimal(resumen.total.totalAmountBs)} ${translateCurrency('BS')}`} <LuEqualApproximately /> <span className="text-sm text-gray-500 font-medium">{`(${formatNumberWithDecimal(resumen.total.totalAmountUsd)} ${translateCurrency('USD')})`}</span></p>
                             </div>
                         </div>
-                        <p className="font-semibold">Total recibos: {resumen.totalInvoice}</p>
+                        <p className="font-semibold">Total despachos: {resumen.totalInvoice}</p>
 
                     </div>
                 )}

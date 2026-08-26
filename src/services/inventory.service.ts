@@ -1,4 +1,4 @@
-import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown, SuggestionAttributes } from "@/interfaces/inventory.interface";
+import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
 import { deleteDataApi, getDataApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
@@ -72,10 +72,4 @@ export const putExchangeRateDefaultApi = async (id: number): Promise<ExchangeRat
 export const getExchangeRateAutomaticApi = async (): Promise<ExchangeRate[]> => {
     const response = await postDataApi<null, ExchangeRate[]>(`${inventoryUrl}/exchange-rate/automatic`, null);
     return response.data || [];
-}
-
-//Suggestion Type & Brands
-export const getSuggestionAttributesApi = async (): Promise<SuggestionAttributes> => {
-    const response = await getDataApi<SuggestionAttributes>(`${inventoryUrl}/attributes`);
-    return response.data || { brands: [], types: [] };
 }

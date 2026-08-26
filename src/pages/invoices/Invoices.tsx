@@ -13,8 +13,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 import { formatDate, formatOnlyTime } from "@/helpers/formatters";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
 import { PrintInvoice, type InvoiceData } from "../dispatch/PrintInvoice";
 import { useReactToPrint } from "react-to-print";
@@ -78,6 +80,10 @@ export const Invoices = () => {
         }));
     }, []);
 
+    const handlePageChange = useCallback((newPage: number) => {
+        setFilter((prev) => ({ ...prev, page: newPage }));
+    }, []);
+
     // const toggleRow = useCallback((invoiceId: number) => {
     //     setExpandedRow((prev) => (prev === invoiceId ? null : invoiceId));
     // }, []);
@@ -139,10 +145,6 @@ export const Invoices = () => {
         return data;
     }, [invoiceSelected]);
 
-    const changePagination = (page: number, size: number) => {
-        setFilter({ page, size });
-    }
-
     return (
         <div className="w-full">
             <p className="text-2xl font-semibold mb-2 ml-2">Despachos</p>
@@ -203,7 +205,6 @@ export const Invoices = () => {
                     isExpansible={true}
                     pagination={pagination}
                     totalElements={pagination?.total}
-                    onPaginationChange={changePagination}
                     renderRow={(item, index) => (
                         <InvoiceDetail key={index} invoice={item} />
                     )}

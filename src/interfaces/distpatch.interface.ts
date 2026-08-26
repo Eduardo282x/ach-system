@@ -20,7 +20,6 @@ export interface DispatchBody {
     sessionId: number;
     exchangeRateUsdId: number;
     exchangeRateEurId: number;
-    hasDiscount: boolean;
 
     items: ProductsDispatchBody[];
     payments: PaymentBody[]
@@ -35,7 +34,6 @@ export interface PaymentBody {
 export interface ProductsDispatchBody {
     productId: number;
     quantity: number;
-    unitPrice: number;
 }
 
 //Resumen
@@ -43,7 +41,6 @@ export interface ProductsDispatchBody {
 export interface ResumenFilter {
     date: Date | string;
     sessionId?: number | undefined;
-    cashDrawerId?: number | undefined;
 }
 
 export interface ResumenContent {

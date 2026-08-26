@@ -11,18 +11,14 @@ export interface Product {
     presentation: string;
     barcode: string;
     price: string;
-    discountPrice: string;
     currency: ExchangeRateType;
     quantity?: number;
-    unitPrice?: number;
-    stock: number;
+    stock?: number;
     subtotalBs?: number;
     subtotal?: number;
-    serialNumber: string;
-    lote: string;
-    brand: string;
-    type: string;
-    description: string;
+    isDetail?: boolean;
+    parentId?: number | null;
+    unitsDetail?: number | null;
     createdAt?: Date;
     updatedAt?: Date;
     exchangeRates?: { [key: string]: number };
@@ -35,14 +31,11 @@ export interface ProductBody {
     presentation: string;
     barcode: string;
     price: number;
-    discountPrice: number | null;
     currency: string;
     stock: number;
-    serialNumber: string;
-    lote: string;
-    brand: string;
-    type: string;
-    description: string;
+    isDetail: boolean;
+    parentId: number | null | undefined;
+    unitsDetail: number | null;
 }
 
 export interface ProductBreakdown {
@@ -102,7 +95,4 @@ export type MovementType =
     'ADJUSTMENT' |
     'RETURN';
 
-export interface SuggestionAttributes {
-    brands: string[];
-    types: string[];
-}
+// Duplicate Product interface removed. See above for the merged definition.

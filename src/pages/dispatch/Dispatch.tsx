@@ -1,6 +1,6 @@
 import { SearchClients } from './SearchClients'
 import { InfoCashDrawer } from './InfoCashDrawer'
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ListProducts } from './ListProducts';
 import type { Client } from '@/interfaces/customer.interface';
 import { Payment } from './Payment';
@@ -10,30 +10,23 @@ import { AlertDialogComponent } from '@/components/dialog/AlertDialogComponent';
 
 export const Dispatch = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-    const [resetKey, setResetKey] = useState<number>(0);
     const disabled = selectedClient == null;
     useTypesPaymentsQuery();
-    const { setProductList, setHasDiscount } = useDispatchStore(state => state)
+    const { setProductList } = useDispatchStore(state => state)
 
     useEffect(() => {
         return () => {
             setProductList([]); // Limpiar la lista de productos al salir del componente
-            setHasDiscount(false);
         }
-    }, [setProductList, setHasDiscount]);
-
-    const handleCompleteSale = useCallback(() => {
-        setSelectedClient(null);
-        setResetKey((prev) => prev + 1);
-    }, []);
+    }, [setProductList]);
 
     return (
         <div className='w-full'>
 
             <div className="flex items-center gap-4 h-36 mb-2">
-                <SearchClients key={resetKey} onClientChange={setSelectedClient} />
+                <SearchClients onClientChange={setSelectedClient} />
                 <InfoCashDrawer />
-                <Payment customer={selectedClient} onCompleteSale={handleCompleteSale} />
+                <Payment customer={selectedClient} />
             </div>
 
             <div className={`w-full transition-opacity ${disabled ? 'opacity-70' : 'opacity-100'} relative`} aria-disabled={disabled}>

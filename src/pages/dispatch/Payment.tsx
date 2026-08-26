@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { formatDate, formatNumberWithDecimal, formatOnlyTime } from "@/helpers/formatters";
 import { useDispatchStore } from "@/store/dispatch.store";
 import { useInventoryStore } from "@/store/inventory.store";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FiShoppingCart } from "react-icons/fi";
 import {
     Dialog,
@@ -29,7 +29,7 @@ import { PrintInvoice } from "./PrintInvoice";
 import { useReactToPrint } from 'react-to-print';
 import type { Client } from "@/interfaces/customer.interface";
 import { flushSync } from "react-dom";
-import type { ExchangeRateType, Product } from "@/interfaces/inventory.interface";
+import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 interface CardPayment {
     name: string;
     value: string;
@@ -57,38 +57,24 @@ interface PaymentForm {
 
 interface PaymentProps {
     customer?: Client | null;
-    onCompleteSale?: () => void;
 }
 
-const PAYMENT_EPSILON = 0.01;
+const PAYMENT_EPSILON = 0.0001;
 
-const effectiveUnitPrice = (product: Product, hasDiscount: boolean) => {
-    if (!hasDiscount) return Number(product.price);
-    if (product.unitPrice != null && product.unitPrice > 0) return product.unitPrice;
-    const discountPrice = Number(product.discountPrice);
-    if (discountPrice > 0) return discountPrice;
-    return Number(product.price);
-}
-
+const normalizeIntegerInput = (value: string) => value.replace(/[^0-9]/g, '');
 const normalizeDecimalInput = (value: string) => {
-    let sanitized = value.replace(',', '.').replace(/[^0-9.]/g, '');
+    const sanitized = value.replace(/[^0-9.]/g, '');
+    const [integerPart, ...decimalParts] = sanitized.split('.');
 
-    const firstDotIndex = sanitized.indexOf('.');
-    if (firstDotIndex !== -1) {
-        const integerPart = sanitized.slice(0, firstDotIndex).replace(/\./g, '');
-        const decimalPart = sanitized.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, 2);
-        sanitized = decimalPart.length > 0 ? `${integerPart}.${decimalPart}` : `${integerPart}.`;
+    if (decimalParts.length === 0) {
+        return integerPart;
     }
 
-    if (sanitized.startsWith('.')) {
-        sanitized = `0${sanitized}`;
-    }
-
-    return sanitized;
+    return `${integerPart}.${decimalParts.join('')}`;
 };
 
-export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
-    const { total, totalUSD, hasDiscount, productList, setHasDiscount, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
+export const Payment = ({ customer }: PaymentProps) => {
+    const { total, totalUSD, productList, setProductList, setTotal, setTotalUSD } = useDispatchStore((state) => state)
     const { cashDrawerSession, cashier, user } = useAuthStore((state) => state);
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const createInvoiceMutation = useCreateInvoiceMutation();
@@ -111,20 +97,6 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         },
     });
 
-    const usdPaymentTypes = useMemo(() => {
-        if (!hasDiscount) return typesPayment;
-        return typesPayment.filter((type) => type.currency === 'USD');
-    }, [hasDiscount, typesPayment]);
-
-    useEffect(() => {
-        if (hasDiscount) {
-            const usdType = typesPayment.find((type) => type.currency === 'USD');
-            if (usdType) {
-                setValue('typeSelected', usdType.id.toString());
-            }
-        }
-    }, [hasDiscount, typesPayment, setValue]);
-
     const typeSelected = useWatch({
         control,
         name: 'typeSelected',
@@ -132,7 +104,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
 
     const isCash = useMemo(() => {
         const selectedType = typesPayment.find((type) => type.id.toString() === typeSelected);
-        return selectedType?.name.toLowerCase().includes('efectivo') || selectedType?.name.toLowerCase().includes('divisas') || false;
+        return selectedType?.name.toLowerCase().includes('efectivo') || false;
     }, [typeSelected, typesPayment]);
 
     const usdRate = useMemo(() => {
@@ -233,13 +205,12 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                 totalBs: total,
                 totalUSD,
             },
-            hasDiscount,
             productsList: productList.map((product) => {
 
                 const findExchangeRate = exchangeRates.find((rate) => rate.currency === product.currency);
                 const exchangeRate = findExchangeRate ? findExchangeRate.rate : 1;
 
-                const unitPrice = effectiveUnitPrice(product, hasDiscount) * exchangeRate;
+                const unitPrice = Number(product.price) * exchangeRate;
 
                 const quantity = product.quantity ?? 0;
                 const subtotal = product.subtotalBs ?? quantity * unitPrice;
@@ -258,7 +229,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                 amountUSD: payment.amount,
             })),
         };
-    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, invoiceNumber, user?.name, exchangeRates, hasDiscount]);
+    }, [cashier?.name, customer?.fullName, customer?.identify, customer?.phone, payments, productList, total, totalUSD, invoiceNumber, user?.name, exchangeRates]);
 
     const openDialog = () => {
         setOpen(true);
@@ -272,7 +243,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         const selectedType = typesPayment.find((type) => type.id.toString() === formData.typeSelected);
         if (!selectedType) return;
 
-        const isSelectedTypeCash = selectedType.name.toLowerCase().includes('efectivo') || selectedType.name.toLowerCase().includes('divisas');
+        const isSelectedTypeCash = selectedType.name.toLowerCase().includes('efectivo');
         const requiresReference = !isSelectedTypeCash;
         const normalizedReference = formData.reference.trim();
 
@@ -293,20 +264,6 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         }
 
         setPayments((prevPayments) => {
-            const newPayment = {
-                paymentTypeId: selectedType.id,
-                typePayment: selectedType.name,
-                currency: selectedType.currency,
-                amountBs: amountBs,
-                amount: amountUSD,
-                reference: normalizedReference,
-                change: 0
-            };
-
-            if (hasDiscount) {
-                return [newPayment];
-            }
-
             const paymentIndex = prevPayments.findIndex((payment) => {
                 if (payment.paymentTypeId !== selectedType.id) return false;
                 if (!requiresReference) return true;
@@ -316,7 +273,15 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             if (paymentIndex === -1) {
                 return [
                     ...prevPayments,
-                    newPayment,
+                    {
+                        paymentTypeId: selectedType.id,
+                        typePayment: selectedType.name,
+                        currency: selectedType.currency,
+                        amountBs: amountBs,
+                        amount: amountUSD,
+                        reference: normalizedReference,
+                        change: 0
+                    },
                 ];
             }
 
@@ -344,7 +309,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
 
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: 'Recibo',
+        documentTitle: 'Despacho',
         onAfterPrint: () => {
         }
     });
@@ -356,7 +321,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         }
 
         if (!productList.length) {
-            toast.error('Debe agregar productos para generar el recibo');
+            toast.error('Debe agregar productos para generar el despachos');
             return;
         }
 
@@ -365,15 +330,13 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             return;
         }
 
-        if (hasDiscount && (paymentsToSend.length !== 1 || paymentsToSend[0].currency !== 'USD')) {
-            toast.error('El descuento manual requiere un único método de pago en USD');
-            return;
-        }
-
         if (!isPaymentComplete) {
             toast.error('El pago aún no cubre el total de la compra');
             return;
         }
+
+        console.log(exchangeRates);
+        
 
         const usdRateValue = exchangeRates.find((rate) => rate.currency === 'USD')?.id ?? usdRate;
         const eurRateValue = exchangeRates.find((rate) => rate.currency === 'EUR')?.id ?? 0;
@@ -381,7 +344,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         const sessionId = cashDrawerSession ? Number(cashDrawerSession) : 0;
 
         if (!sessionId) {
-            toast.error('No hay sesión/cajero seleccionado para registrar el recibo');
+            toast.error('No hay sesión/cajero seleccionado para registrar el despachos');
             return;
         }
 
@@ -390,18 +353,15 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             sessionId,
             exchangeRateUsdId: usdRateValue,
             exchangeRateEurId: eurRateValue,
-            hasDiscount,
             items: productList.map((product) => ({
                 productId: product.id,
                 quantity: product.quantity ?? 1,
-                unitPrice: effectiveUnitPrice(product, hasDiscount),
             })),
             payments: paymentsToSend.map((payment) => {
-                const raw = payment.currency === 'BS' ? payment.amountBs : payment.amount;
                 return {
                     paymentTypeId: payment.paymentTypeId,
-                    amountReceived: Math.round(raw * 100) / 100,
-                    amountChange: Math.round((payment.change ?? 0) * 100) / 100,
+                    amountReceived: payment.currency === 'BS' ? payment.amountBs : payment.amount,
+                    amountChange: payment.change,
                 }
             }),
         }
@@ -409,7 +369,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
         createInvoiceMutation.mutate(dispatchData, {
             onSuccess: (response) => {
                 if (!response?.success) {
-                    toast.error(response?.message || 'No se pudo registrar el recibo');
+                    toast.error(response?.message || 'No se pudo registrar el despachos');
                     return;
                 }
 
@@ -424,12 +384,10 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                 setProductList([]);
                 setTotal(0);
                 setTotalUSD(0);
-                setHasDiscount(false);
                 setOpen(false);
-                onCompleteSale?.();
             },
             onError: () => {
-                toast.error('Ocurrió un error al registrar el recibo');
+                toast.error('Ocurrió un error al registrar el despacho');
             },
         });
     }
@@ -437,12 +395,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
     const completePayment = () => {
         const hasChange = changeBs > PAYMENT_EPSILON || changeUSD > PAYMENT_EPSILON;
 
-        const allPaymentsAreCash = payments.every((payment) => {
-            const type = typesPayment.find((t) => t.id === payment.paymentTypeId);
-            return type?.name.toLowerCase().includes('efectivo') || type?.name.toLowerCase().includes('divisas');
-        });
-
-        if (hasChange && allPaymentsAreCash) {
+        if (hasChange) {
             setChangeDeliveredUSDInput('0');
             setOpenChangeDialog(true);
             return;
@@ -457,8 +410,8 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
             return;
         }
 
-        const cashUSD = typesPayment.find((item) => item.currency === 'USD' && (item.name.toLocaleLowerCase().includes('efectivo') || item.name.toLocaleLowerCase().includes('divisas')));
-        const cashBS = typesPayment.find((item) => item.currency === 'BS' && (item.name.toLocaleLowerCase().includes('efectivo') || item.name.toLocaleLowerCase().includes('divisas')));
+        const cashUSD = typesPayment.find((item) => item.currency === 'USD' && item.name.toLocaleLowerCase().includes('efectivo'));
+        const cashBS = typesPayment.find((item) => item.currency === 'BS' && item.name.toLocaleLowerCase().includes('efectivo'));
 
         if (!cashUSD && changeDeliveredUSD > PAYMENT_EPSILON) {
             toast.error('No existe un método de pago en efectivo USD para registrar el vuelto');
@@ -472,22 +425,43 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
 
         const nextPayments = [...payments];
 
-        const originalPaymentIndex = nextPayments.findIndex((p) => p.amount > 0);
-
-        if (originalPaymentIndex >= 0) {
-            const originalPayment = nextPayments[originalPaymentIndex];
-            const originalType = typesPayment.find((t) => t.id === originalPayment.paymentTypeId);
-
-            if (originalType?.currency === 'USD') {
-                nextPayments[originalPaymentIndex] = {
-                    ...originalPayment,
-                    change: Number(requiredChangeUSD),
+        if (cashUSD) {
+            const usdIndex = nextPayments.findIndex((payment) => payment.paymentTypeId === cashUSD.id);
+            if (usdIndex >= 0) {
+                nextPayments[usdIndex] = {
+                    ...nextPayments[usdIndex],
+                    change: Number(changeDeliveredUSD),
                 };
-            } else if (originalType?.currency === 'BS') {
-                nextPayments[originalPaymentIndex] = {
-                    ...originalPayment,
-                    change: Number(changeBs),
+            } else {
+                nextPayments.push({
+                    paymentTypeId: cashUSD.id,
+                    typePayment: cashUSD.name,
+                    currency: 'USD',
+                    reference: '',
+                    amount: 0,
+                    amountBs: 0,
+                    change: Number(changeDeliveredUSD),
+                });
+            }
+        }
+
+        if (cashBS) {
+            const bsIndex = nextPayments.findIndex((payment) => payment.paymentTypeId === cashBS.id);
+            if (bsIndex >= 0) {
+                nextPayments[bsIndex] = {
+                    ...nextPayments[bsIndex],
+                    change: Number(changeDeliveredBs),
                 };
+            } else {
+                nextPayments.push({
+                    paymentTypeId: cashBS.id,
+                    typePayment: cashBS.name,
+                    currency: 'BS',
+                    reference: '',
+                    amount: 0,
+                    amountBs: 0,
+                    change: Number(changeDeliveredBs),
+                });
             }
         }
 
@@ -509,7 +483,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
 
     return (
         <div className='w-[20%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
-            {/* Imprimir recibos */}
+            {/* Imprimir factura */}
             <div className='hidden'>
                 <PrintInvoice ref={componentRef} data={invoiceData} />
             </div>
@@ -540,12 +514,6 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                         </DialogTitle>
 
                     </DialogHeader>
-                    {hasDiscount && (
-                        <div className="flex items-center gap-2 rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
-                            <FaRegCreditCard />
-                            <p>Descuento manual aplicado. El pago se realizará únicamente en USD.</p>
-                        </div>
-                    )}
                     <div className="grid grid-cols-4 gap-4">
                         {cardsPayment.map((card) => (
                             <div key={card.name} className={`px-4 py-2 rounded-md ${variantsStyles[card.variant]} ${variantsStylesText[card.variant]}`}>
@@ -573,13 +541,13 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                                             control={control}
                                             name="typeSelected"
                                             render={({ field }) => (
-                                                <Select value={field.value} onValueChange={field.onChange} disabled={hasDiscount}>
+                                                <Select value={field.value} onValueChange={field.onChange}>
                                                     <SelectTrigger className="w-full">
                                                         <SelectValue placeholder="Seleccione un método de pago" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectGroup>
-                                                            {usdPaymentTypes && usdPaymentTypes.map((option) => (
+                                                            {typesPayment && typesPayment.map((option) => (
                                                                 <SelectItem key={option.id} value={option.id.toString()}>{option.name}</SelectItem>
                                                             ))}
                                                         </SelectGroup>
@@ -612,9 +580,8 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
                                                     <Input
                                                         type="text"
                                                         inputMode="numeric"
-                                                        step="0.01"
                                                         value={field.value}
-                                                        onChange={(event) => field.onChange(normalizeDecimalInput(event.target.value))}
+                                                        onChange={(event) => field.onChange(normalizeIntegerInput(event.target.value))}
                                                         placeholder="Ingrese el monto a pagar"
                                                     />
                                                 )}
