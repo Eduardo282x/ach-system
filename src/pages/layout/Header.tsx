@@ -41,7 +41,8 @@ export const Header = () => {
         setOpenInfo(true);
     }
 
-    const logout = () => {
+    const logout = async () => {
+        await logoutApi();
         setOpen(false);
         useAuthStore.getState().clearSession();
         navigate('/login');

@@ -1,4 +1,4 @@
-import type { CashDrawerContent, CloseSession, CreateUpdateCashDrawer, OpenSession, SessionFilter, SessionsContent } from "@/interfaces/sessions.interface";
+import type { CashDrawerContent, CloseSession, CreateUpdateCashDrawer, OpenSession, SessionFilter, SessionGroupFilter, SessionsContent, SessionsGroupContent } from "@/interfaces/sessions.interface";
 import { getDataApi, postDataApi, putDataApi } from "./api.service";
 
 const sessionsUrl = '/sessions';
@@ -15,6 +15,18 @@ export const getSessionsApi = async (filter?: Partial<SessionFilter>): Promise<S
         params += params ? `&status=${filter.status}` : `?status=${filter.status}`;
     }
     const response = await getDataApi<SessionsContent>(`${sessionsUrl}${params}`);
+    if (response.data == null) {
+        return { sessions: [] };
+    }
+    return response.data;
+}
+
+export const getSessionsGroupApi = async (filter: SessionGroupFilter): Promise<SessionsGroupContent> => {
+    let params = '';
+    if (filter && filter.date) {
+        params = `?date=${filter.date}`;
+    }
+    const response = await getDataApi<SessionsGroupContent>(`${sessionsUrl}/group${params}`);
     if (response.data == null) {
         return { sessions: [] };
     }

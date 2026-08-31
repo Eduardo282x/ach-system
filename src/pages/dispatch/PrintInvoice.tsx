@@ -30,6 +30,7 @@ export interface InvoiceData {
         totalBs: number;
         totalUSD: number;
     };
+    hasDiscount?: boolean;
     productsList: InvoiceProduct[];
     payments: InvoicePayment[];
 }
@@ -75,6 +76,10 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                 ))}
 
                 <div className="w-full border-2 border-dashed border-black"></div>
+
+                {data.hasDiscount && (
+                    <p className="font-semibold text-center my-2">Descuento manual aplicado</p>
+                )}
 
                 <div>
                     <div className="flex items-start justify-between w-full my-4">

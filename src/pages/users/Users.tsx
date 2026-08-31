@@ -122,8 +122,8 @@ export const Users = () => {
                                 <TabsTrigger value="cajas">Cajas</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <p className="text-2xl font-semibold">
-                            {activeTab === "usuarios" ? "Cajeros/Usuarios" : "Cajas"}
+                        <p className="text-2xl font-semibold capitalize">
+                            {activeTab === "usuarios" ? "Cajeros/Usuarios" : activeTab}
                         </p>
                     </div>
 

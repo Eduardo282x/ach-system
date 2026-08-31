@@ -44,7 +44,11 @@ export const CashDrawerSession = () => {
 
                 <div className="rounded-xl bg-white p-4">
                     <div className="w-full flex items-center justify-between mb-4">
-                        <DatePickerRange onChange={handleChangeDate} display="flex" />
+                        <div className="flex items-center gap-4 w-full ">
+                            <div className="">
+                                <DatePickerRange onChange={handleChangeDate} display="block" />
+                            </div>
+                        </div>
 
                         <div className="flex items-center gap-2">
                             <SelectColumnsComponent columns={columns} onChange={setColumns} />

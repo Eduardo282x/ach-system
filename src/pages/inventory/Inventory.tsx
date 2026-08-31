@@ -10,7 +10,6 @@ import { ProductForm, type ProductFormMode } from "./ProductForm";
 import type { Product } from "@/interfaces/inventory.interface";
 import { useState } from "react";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
-import toast from 'react-hot-toast';
 import { DownloadAndUploadProducts } from "./DownloadAndUploadProducts";
 import { InventoryEntries } from "./InventoryEntries";
 import { InventoryEntryForm } from "./InventoryEntryForm";
@@ -54,19 +53,6 @@ export const Inventory = () => {
         }
         if (action === "breakdown") {
             await breakDownProductMutation.mutateAsync(data.id);
-        }
-        if (action === "addDetail") {
-            const findParent = products.find((product) => product.parentId === data.id);
-            if (findParent) {
-                toast.error("No se puede agregar un detalle a un producto que ya tiene un detalle.", {
-                    duration: 1500,
-                    position: 'top-right'
-                });
-                return;
-            }
-            setFormMode("addDetail");
-            setProductSelected(data);
-            openForm();
         }
     }
 

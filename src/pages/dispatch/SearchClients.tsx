@@ -131,7 +131,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                 <p>Información del cliente</p>
 
                 <div className='absolute top-1 left-1'>
-                    <Button variant='primary' disabled={identify !== ''} onClick={openDialogClient}>
+                    <Button variant='primary' onClick={openDialogClient}>
                         Buscar cliente
                     </Button>
                 </div>
@@ -146,7 +146,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <p className='font-semibold'>Nombre</p>
+                    <p className='font-semibold'>Nombre y Apellido</p>
                     <Input
                         value={fullName}
                         disabled
@@ -207,7 +207,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                         </div>
 
                         <div className="flex flex-col gap-1 my-2">
-                            <p className='font-semibold'>Nombre</p>
+                            <p className='font-semibold'>Nombre y Apellido</p>
                             <Input
                                 value={fullName}
                                 onChange={(event) => setFullName(event.target.value)}
