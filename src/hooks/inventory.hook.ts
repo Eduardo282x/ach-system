@@ -9,6 +9,7 @@ export const INVENTORY_QUERY_KEY = "inventory";
 export const INVENTORY_HISTORY_QUERY_KEY = "inventory-history";
 export const EXCHANGE_RATE_TODAY_QUERY_KEY = "exchange-rate-today";
 export const EXCHANGE_RATE_AUTOMATIC_QUERY_KEY = "exchange-rate-automatic";
+export const PRODUCT_PRICE_SEARCH_QUERY_KEY = "product-price-search";
 
 const productMatchesSearch = (product: Product, search: string) => {
 	if (!search) {
@@ -102,6 +103,16 @@ export const useInventoryQuery = (search: string) => {
 	return useQuery({
 		queryKey: [INVENTORY_QUERY_KEY, normalizedSearch],
 		queryFn: () => getInventoryApi(normalizedSearch || undefined),
+	});
+};
+
+export const useProductSearchQuery = (search: string) => {
+	const normalizedSearch = search.trim();
+
+	return useQuery({
+		queryKey: [PRODUCT_PRICE_SEARCH_QUERY_KEY, normalizedSearch],
+		queryFn: () => getInventoryApi(normalizedSearch || undefined, { page: 1, size: 50 }),
+		enabled: normalizedSearch.length > 0,
 	});
 };
 

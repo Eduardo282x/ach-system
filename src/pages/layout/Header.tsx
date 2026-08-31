@@ -16,6 +16,7 @@ import type { TypeRole } from "@/interfaces/users.interface";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import achLogo from "@/assets/ach.png";
 import { DispatchAlertDialog } from "../dispatch/Dispatch";
+import { ProductPriceDialog } from "./ProductPriceDialog";
 
 
 export const Header = () => {
@@ -28,6 +29,7 @@ export const Header = () => {
 
     const [open, setOpen] = useState(false);
     const [openInfo, setOpenInfo] = useState(false);
+    const [openQueryProduct, setOpenQueryProduct] = useState(false);
     const [openDispatchLeaveDialog, setOpenDispatchLeaveDialog] = useState(false);
     const [pendingNavigateTo, setPendingNavigateTo] = useState<string | null>(null);
 
@@ -69,6 +71,12 @@ export const Header = () => {
         }
 
         navigate(navigateTo);
+    }
+
+    const actionBtn = (action?: string) => {
+        if(action == 'query-product'){
+            setOpenQueryProduct(true);
+        }
     }
 
     return (
@@ -146,6 +154,21 @@ export const Header = () => {
                         );
                     }
 
+                    if (item.type === 'action-button' && item.icon) {
+                        const Icon = item.icon;
+
+                        return (
+                            <Button
+                                key={item.title}
+                                variant={item.active ? 'primary' : 'secondaryBorder'}
+                                onClick={() => actionBtn(item.action)}
+                            >
+                                <Icon />
+                                {item.title}
+                            </Button>
+                        );
+                    }
+
                     return null;
                 })}
             </div>
@@ -166,6 +189,11 @@ export const Header = () => {
                     logout();
                 }}
                 onCancel={() => setOpen(false)}
+            />
+
+            <ProductPriceDialog
+                open={openQueryProduct}
+                onClose={() => setOpenQueryProduct(false)}
             />
 
             <Dialog open={openInfo} onOpenChange={setOpenInfo}>

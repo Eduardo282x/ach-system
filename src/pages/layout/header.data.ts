@@ -6,10 +6,11 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark } from "react-icons/md";
 import { PiUsersThree } from "react-icons/pi";
 import { LuLayoutDashboard, LuReceipt } from "react-icons/lu";
+import { LuPackageSearch } from "react-icons/lu";
 
-export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
+export type HeaderType = 'button' | 'action-button' | 'dropdown' | 'dropdown-item' | 'separator';
 
-export type HeaderAction = 'logout' | 'help';
+export type HeaderAction = 'logout' | 'help' | 'query-product';
 
 export interface HeaderInterface {
     title: string;
@@ -58,6 +59,16 @@ export const headerData: HeaderInterface[] = [
         active: false,
         auth: ['ADMIN', 'SUPERVISOR'],
         children: []
+    },
+    {
+        title: 'Consultar precio',
+        icon: LuPackageSearch,
+        navigateTo: '',
+        type: 'action-button',
+        active: false,
+        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        children: [],
+        action: 'query-product'
     },
     {
         title: 'Despacho',
@@ -111,7 +122,7 @@ export const headerData: HeaderInterface[] = [
                 children: []
             },
             {
-                title: 'Historial de Cajeros',
+                title: 'Historial de Movimientos',
                 navigateTo: '/historial-cajeros',
                 type: 'dropdown-item',
                 active: false,

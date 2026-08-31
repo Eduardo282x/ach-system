@@ -7,7 +7,7 @@ import { IoCubeOutline } from "react-icons/io5";
 
 export const inventoryColumns: ColumnDef<Product>[] = [
     {
-        header: 'Código',
+        header: 'Código de barras',
         key: 'barcode',
         element: (row) => row.barcode,
         width: '12rem',
