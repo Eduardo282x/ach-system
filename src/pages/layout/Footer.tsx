@@ -14,10 +14,12 @@ import { Input } from "@/components/ui/input";
 import { useSocket } from "@/services/socket.io";
 import type { ExchangeRate } from "@/interfaces/inventory.interface";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
     const today = new Date();
+    const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
     const { data } = useSessionsQuery({ status: 'OPEN' });
 
@@ -81,7 +83,13 @@ export const Footer = () => {
     };
 
     const updateExchangeRates = async () => {
-        await exchangeRateAutomaticQuery.refetch();
+        if(import.meta.env.VITE_BTN_FOOTER_ACTION == 'AUTOMATIC') {
+            await exchangeRateAutomaticQuery.refetch();
+        }
+
+        if(import.meta.env.VITE_BTN_FOOTER_ACTION == 'GOTO') {
+            navigate('/tasas')
+        }
     }
 
     useSocket('exchangeRateUpdate', (data: { data: ExchangeRate[], message: string }) => {
@@ -140,14 +148,16 @@ export const Footer = () => {
                 </Select>
             </div>
             <div className="flex items-center gap-1 mb-1 relative ">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant='ghost' onClick={updateExchangeRates} disabled={exchangeRateAutomaticQuery.isFetching}><IoMdSync /></Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Actualizar tasas
-                    </TooltipContent>
-                </Tooltip>
+                {import.meta.env.VITE_BTN_FOOTER_ACTION !== 'HIDDEN' && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant='ghost' onClick={updateExchangeRates} disabled={exchangeRateAutomaticQuery.isFetching}><IoMdSync /></Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Actualizar tasas
+                        </TooltipContent>
+                    </Tooltip>
+                )}
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
                 {import.meta.env.VITE_IGNORE_EUR !== 'true' && (
                     <>
