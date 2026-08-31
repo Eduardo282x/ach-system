@@ -24,4 +24,11 @@ export const customersColumns: ColumnDef<Client>[] = [
 		element: (row) => row.phone,
 		visible: true,
 	},
+	{
+		header: "Dirección",
+		key: "address",
+		width: "14rem",
+		element: (row) => row.address,
+		visible: true,
+	},
 ];

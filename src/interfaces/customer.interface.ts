@@ -3,11 +3,12 @@ export interface CustomerContent {
 }
 
 export interface Client {
-    id:       number;
+    id: number;
     identify: string;
-    phone:    string;
+    phone: string;
+    address: string;
     fullName: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ClientBody extends Omit<Client, 'id'> {}
+export interface ClientBody extends Omit<Client, 'id'> { }

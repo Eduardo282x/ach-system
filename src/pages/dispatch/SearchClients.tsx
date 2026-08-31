@@ -16,6 +16,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
     const [identify, setIdentify] = useState('');
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
@@ -51,6 +52,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
             setFullName(client.fullName);
             setIdentifyPrefix(client.identify.slice(0, 1));
             setPhone(client.phone);
+            setAddress(client.address);
             setShowCreate(false);
             onClientChange(client);
             toast.success('Cliente encontrado', {
@@ -67,9 +69,10 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
         const identifyValue = identify.trim();
         const fullNameValue = fullName.trim();
         const phoneValue = phone.trim();
+        const addressValue = address.trim();
 
-        if (!identifyValue || !fullNameValue || !phoneValue) {
-            toast.error('Completa cédula, nombre y teléfono para crear el cliente', {
+        if (!identifyValue || !fullNameValue || !phoneValue || !addressValue) {
+            toast.error('Completa cédula, nombre, teléfono y dirección para crear el cliente', {
                 duration: 3000,
                 position: 'top-right',
             });
@@ -83,6 +86,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                 identify: `${identifyPrefix}${identifyValue}`,
                 fullName: fullNameValue,
                 phone: phoneValue,
+                address: addressValue,
             });
 
             if (!response.success || response.data == null) {
@@ -124,7 +128,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
     return (
         <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             <div className='bg-white text-center text-xl font-semibold text-blue-800 py-2 relative'>
-                <p>Informacion del cliente</p>
+                <p>Información del cliente</p>
 
                 <div className='absolute top-1 left-1'>
                     <Button variant='primary' disabled={identify !== ''} onClick={openDialogClient}>
@@ -135,7 +139,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="flex flex-col gap-1">
-                    <p className='font-semibold'>Cedula</p>
+                    <p className='font-semibold'>Cédula</p>
                     <Input
                         value={`${identifyPrefix}-${identify}`}
                         disabled
@@ -153,6 +157,14 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                     <p className='font-semibold'>Teléfono</p>
                     <Input
                         value={phone}
+                        disabled
+                    />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <p className='font-semibold'>Dirección</p>
+                    <Input
+                        value={address}
                         disabled
                     />
                 </div>
@@ -209,6 +221,15 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
                                 value={phone}
                                 onChange={(event) => setPhone(event.target.value)}
                                 placeholder="Ingrese el teléfono del cliente"
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-1 my-2">
+                            <p className='font-semibold'>Dirección</p>
+                            <Input
+                                value={address}
+                                onChange={(event) => setAddress(event.target.value)}
+                                placeholder="Ingrese la dirección del cliente"
                             />
                         </div>
 
