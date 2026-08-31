@@ -1,6 +1,6 @@
-import type { ExchangeRateBody, Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { ExchangeRateBody, InventoryEntryBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createInventoryEntryApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryEntriesApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
@@ -10,6 +10,7 @@ export const INVENTORY_HISTORY_QUERY_KEY = "inventory-history";
 export const EXCHANGE_RATE_TODAY_QUERY_KEY = "exchange-rate-today";
 export const EXCHANGE_RATE_AUTOMATIC_QUERY_KEY = "exchange-rate-automatic";
 export const PRODUCT_PRICE_SEARCH_QUERY_KEY = "product-price-search";
+export const INVENTORY_ENTRIES_QUERY_KEY = "inventory-entries";
 
 const productMatchesSearch = (product: Product, search: string) => {
 	if (!search) {
@@ -120,6 +121,32 @@ export const useInventoryHistoryQuery = (filter: Pagination) => {
 	return useQuery({
 		queryKey: [INVENTORY_HISTORY_QUERY_KEY, filter],
 		queryFn: () => getInventoryHistoryApi(filter),
+	});
+};
+
+export const useInventoryEntriesQuery = (filter: Pagination) => {
+	return useQuery({
+		queryKey: [INVENTORY_ENTRIES_QUERY_KEY, filter],
+		queryFn: () => getInventoryEntriesApi(filter),
+	});
+};
+
+export const useCreateInventoryEntryMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (data: InventoryEntryBody) => createInventoryEntryApi(data),
+		onSuccess: async (response) => {
+			if (response.data == null) {
+				return;
+			}
+
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_ENTRIES_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [PRODUCT_PRICE_SEARCH_QUERY_KEY] }),
+			]);
+		},
 	});
 };
 

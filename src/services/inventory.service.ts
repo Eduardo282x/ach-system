@@ -1,8 +1,9 @@
-import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
+import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryEntryBody, InventoryEntryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
 import { deleteDataApi, getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
 const inventoryUrl = '/products';
+const inventoryEntriesUrl = '/inventory/entries';
 const excelUrl = '/excel';
 
 export const getInventoryApi = async (search?: string, filter?: Pagination): Promise<InventoryInterface> => {
@@ -54,6 +55,23 @@ export const breakDownProductApi = async (data: ProductBreakdown) => {
 }
 export const deleteProductApi = async (id: number) => {
     const response = await deleteDataApi<Product>(`${inventoryUrl}`, id);
+    return response;
+}
+
+//Entradas de inventario
+export const getInventoryEntriesApi = async (filter: Pagination): Promise<InventoryEntryContent> => {
+    let params = '';
+    if (filter.page) {
+        params += `?page=${filter.page}&size=${filter.size}`;
+    }
+    const response = await getDataApi<InventoryEntryContent>(`${inventoryEntriesUrl}${params}`);
+    if (response.data == null) {
+        return { inventoryEntries: [], pagination: { total: 0, page: 1, size: filter.size } };
+    }
+    return response.data;
+}
+export const createInventoryEntryApi = async (data: InventoryEntryBody) => {
+    const response = await postDataApi<InventoryEntryBody, InventoryEntryContent>(`${inventoryEntriesUrl}`, data);
     return response;
 }
 

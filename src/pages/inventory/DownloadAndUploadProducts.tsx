@@ -95,10 +95,7 @@ export const DownloadAndUploadProducts = () => {
         <div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="bg-white text-green-800 border border-green-800 hover:bg-green-700 hover:text-white"
-                    >
+                    <Button variant="export">
                         <LuLayoutTemplate />
                         Plantilla
                     </Button>
