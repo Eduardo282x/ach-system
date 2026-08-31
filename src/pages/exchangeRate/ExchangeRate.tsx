@@ -50,7 +50,9 @@ export const ExchangeRate = () => {
                                         <SelectContent>
                                             <SelectGroup>
                                                 <SelectItem value={'USD'}>Dólar</SelectItem>
-                                                <SelectItem value={'EUR'}>Euro</SelectItem>
+                                                {import.meta.env.VITE_IGNORE_EUR !== 'true' && (
+                                                    <SelectItem value={'EUR'}>Euro</SelectItem>
+                                                )}
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>

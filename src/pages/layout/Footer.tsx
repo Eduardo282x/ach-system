@@ -149,8 +149,12 @@ export const Footer = () => {
                     </TooltipContent>
                 </Tooltip>
                 <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>BCV: {bcvRate ? `${formatNumberWithDecimal(bcvRate.rate)} Bs` : '--'} </span>
-                <span>|</span>
-                <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
+                {import.meta.env.VITE_IGNORE_EUR !== 'true' && (
+                    <>
+                        <span>|</span>
+                        <span className={`cursor-pointer rounded-md px-4 py-1 bg-gray-200 text-gray-800`}>Euro: {euroRate ? `${formatNumberWithDecimal(euroRate.rate)} Bs` : '--'}</span>
+                    </>
+                )}
                 <span className={`absolute -bottom-2.5 right-0 text-gray-800 px-4 text-xs w-120 text-right`}>Fecha de Actualización: {exchangeDate ? `${formatDateString(exchangeDate)} Hora: ${formatOnlyTime(exchangeDate)}` : '--'}</span>
             </div>
 

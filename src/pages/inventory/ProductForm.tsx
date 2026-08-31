@@ -291,7 +291,9 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                             <SelectContent>
                                 <SelectGroup>
                                     <SelectItem value="USD">Dolares</SelectItem>
-                                    <SelectItem value="EUR">Euros</SelectItem>
+                                    {import.meta.env.VITE_IGNORE_EUR !== 'true' && (
+                                        <SelectItem value={'EUR'}>Euro</SelectItem>
+                                    )}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
