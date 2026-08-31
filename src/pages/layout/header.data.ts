@@ -66,7 +66,7 @@ export const headerData: HeaderInterface[] = [
         navigateTo: '',
         type: 'action-button',
         active: false,
-        auth: ['ADMIN', 'SUPERVISOR', 'CAJERO'],
+        auth: ['ADMIN', 'CAJERO'],
         children: [],
         action: 'query-product'
     },

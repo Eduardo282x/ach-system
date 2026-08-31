@@ -13,12 +13,12 @@ import { useSocket } from "@/services/socket.io";
 import type { ExchangeRate } from "@/interfaces/inventory.interface";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
-import { useNavigate } from "react-router";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useExchangeRateAutomaticQuery } from "@/hooks/inventory.hook";
 // import type { ExchangeRate } from "@/interfaces/inventory.interface";
 
 export const Footer = () => {
     const today = new Date();
-    const navigate = useNavigate();
     const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
@@ -32,7 +32,7 @@ export const Footer = () => {
 
     const exchangeRates = useInventoryStore((state) => state.exchangeRates);
     const setExchangeRates = useInventoryStore((state) => state.setExchangeRates);
-    // const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
+    const exchangeRateAutomaticQuery = useExchangeRateAutomaticQuery();
     // const exchangeRateDefaultMutation = useExchangeRateDefaultMutation();
     const [bcvRate, setBcvRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'USD') : undefined);
     const [euroRate, setEuroRate] = useState(exchangeRates ? exchangeRates.find((rate) => rate.currency === 'EUR') : undefined);

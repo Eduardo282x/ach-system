@@ -42,7 +42,7 @@ export const Header = () => {
     }
 
     const logout = async () => {
-        await logoutApi();
+        // await logoutApi();
         setOpen(false);
         useAuthStore.getState().clearSession();
         navigate('/login');

@@ -1,4 +1,4 @@
-import type { ColumnDef, ColumnIcons } from "@/components/table/TableComponent";
+import type { ColumnDef, IconColumn } from "@/components/table/TableComponent";
 import { formatDate } from "@/helpers/formatters";
 import type { User } from "@/interfaces/users.interface";
 import { GoPencil } from "react-icons/go";
@@ -50,15 +50,15 @@ export const usersColumns: ColumnDef<User>[] = [
     },
 ];
 
-const setActionsIcons = (row: User): ColumnIcons[] => {
-    const actionDelete: ColumnIcons = {
+const setActionsIcons = (row: User): IconColumn[] => {
+    const actionDelete: IconColumn = {
         label: "Eliminar",
         icon: FaRegTrashCan,
         action: "delete",
         variant: "error",
     };
 
-    const base: ColumnIcons[] = [
+    const base: IconColumn[] = [
         {
             label: "Editar",
             icon: GoPencil,
