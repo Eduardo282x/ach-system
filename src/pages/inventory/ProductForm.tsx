@@ -244,8 +244,8 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             <Field className="col-span-1">
                 <FieldLabel>Código</FieldLabel>
                 <div className="flex items-center gap-2">
-                    <Input {...formProductFather.register('barcode')} />
-                    <Button type="button" disabled={disableBtnGenerate} variant="primary" onClick={() => generateBarcode(formProductFather, setDisableBtnGenerate)}>Generar</Button>
+                    <Input {...formProductFather.register('barcode')} disabled={isEdit} />
+                    <Button type="button" disabled={disableBtnGenerate || isEdit} variant="primary" onClick={() => generateBarcode(formProductFather, setDisableBtnGenerate)}>Generar</Button>
                 </div>
             </Field>
             <Field className="col-span-1">
@@ -258,7 +258,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             </Field>
             <Field className="col-span-1">
                 <FieldLabel>Cantidad</FieldLabel>
-                <Input type="number" step="0.01" {...formProductFather.register('stock', { valueAsNumber: true })} />
+                <Input type="number" step="0.01" {...formProductFather.register('stock', { valueAsNumber: true })} disabled={isEdit} />
             </Field>
             <Field className="col-span-1">
                 <FieldLabel>Precio {RequiredField()}</FieldLabel>
@@ -284,6 +284,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
                             name={field.name}
                             value={field.value}
                             onValueChange={field.onChange}
+                            disabled={isEdit}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione una moneda" />
