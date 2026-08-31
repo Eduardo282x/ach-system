@@ -17,18 +17,20 @@ import { TableSkeleton } from "./TableSkeleton";
 import { IoIosArrowDown } from "react-icons/io";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+export interface IconColumn {
+    icon: React.ComponentType<{ className?: string }>;
+    action: string;
+    label: string;
+    variant: 'primary' | 'error' | 'outline';
+}
+
 export interface ColumnDef<T> {
     key: string;
     header: string;
     width?: string;
     element: (row: T) => string | JSX.Element;
     class?: (row: T) => string;
-    icons?: (row: T) => {
-        icon: React.ComponentType<{ className?: string }>;
-        action: string;
-        label: string;
-        variant: 'primary' | 'error' | 'outline';
-    }[]
+    icons?: (row: T) => IconColumn[]
     visible: boolean;
 }
 
@@ -105,7 +107,7 @@ export const TableComponent = <T,>({
                 {columns.map((column, idx) => (
                     <TableCell key={idx}>
                         {column.icons ? (
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-end gap-4">
                                 {column.icons(row).map((icon) => (
                                     <Tooltip key={icon.action}>
                                         <TooltipTrigger asChild>

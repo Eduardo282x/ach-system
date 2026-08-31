@@ -1,9 +1,8 @@
-import type { ColumnDef } from "@/components/table/TableComponent";
+import type { ColumnDef, IconColumn } from "@/components/table/TableComponent";
 import { formatDate, formatNumberWithDecimal, translateCurrency } from "@/helpers/formatters";
 import type { Product } from "@/interfaces/inventory.interface";
 import { GoPencil } from "react-icons/go";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { IoMdAdd } from "react-icons/io";
 import { IoCubeOutline } from "react-icons/io5";
 
 export const inventoryColumns: ColumnDef<Product>[] = [
@@ -69,25 +68,35 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         width: '8rem',
         element: () => '',
         visible: true,
-        icons: (row) => [
-            {
-                label: row.isDetail ? 'Cargar y descargar' : 'Agregar Detalle',
-                icon: row.isDetail ? IoCubeOutline : IoMdAdd,
-                action: row.isDetail ? 'breakdown' : 'addDetail',
-                variant: 'outline',
-            },
-            {
-                label:'Editar',
-                icon: GoPencil,
-                action: 'edit',
-                variant: 'primary',
-            },
-            {
-                label:'Eliminar',
-                icon: FaRegTrashCan,
-                action: 'delete',
-                variant: 'error',
-            },
-        ]
+        icons: (row) => addBtnAction(row),
     }
 ];
+
+const addBtnAction = (row: Product): IconColumn[] => {
+    const actions: IconColumn[] = []
+    if (row.isDetail) {
+        actions.push({
+            label: 'Cargar y descargar',
+            icon: IoCubeOutline,
+            action: 'breakdown',
+            variant: 'outline',
+        })
+    }
+
+    actions.push(
+        {
+            label: 'Editar',
+            icon: GoPencil,
+            action: 'edit',
+            variant: 'primary',
+        },
+        {
+            label: 'Eliminar',
+            icon: FaRegTrashCan,
+            action: 'delete',
+            variant: 'error',
+        });
+
+
+    return actions;
+}
