@@ -11,6 +11,7 @@ import type { Product } from "@/interfaces/inventory.interface";
 import { useState } from "react";
 import { AlertDialogComponent } from "@/components/dialog/AlertDialogComponent";
 import toast from 'react-hot-toast';
+import { DownloadAndUploadProducts } from "./DownloadAndUploadProducts";
 
 export const Inventory = () => {
     const {
@@ -98,6 +99,7 @@ export const Inventory = () => {
                                 <FilterComponent placeholder="Buscar producto..." onChange={setSearch} loading={isLoading} />
                             </div>
                             <div className="flex items-center gap-2">
+                                <DownloadAndUploadProducts/>
                                 <SelectColumnsComponent columns={columns} onChange={setColumns} />
                                 <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
                             </div>

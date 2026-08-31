@@ -1,8 +1,9 @@
 import type { ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
-import { deleteDataApi, getDataApi, postDataApi, putDataApi } from "./api.service";
+import { deleteDataApi, getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
 const inventoryUrl = '/products';
+const excelUrl = '/excel';
 
 export const getInventoryApi = async (search?: string, filter?: Pagination): Promise<InventoryInterface> => {
     let params = '';
@@ -72,4 +73,16 @@ export const putExchangeRateDefaultApi = async (id: number): Promise<ExchangeRat
 export const getExchangeRateAutomaticApi = async (): Promise<ExchangeRate[]> => {
     const response = await postDataApi<null, ExchangeRate[]>(`${inventoryUrl}/exchange-rate/automatic`, null);
     return response.data || [];
+}
+
+//Template
+export const downloadTemplateProduct = async () => {
+    return await getDataFileApi(`${inventoryUrl}/template`);
+}
+
+//Excel
+export const uploadExcelProducts = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await postDataApi<FormData, unknown>(`${excelUrl}/products/upload`, formData);
 }
