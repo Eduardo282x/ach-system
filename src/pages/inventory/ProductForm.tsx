@@ -15,9 +15,11 @@ import toast from 'react-hot-toast';
 export type ProductFormMode = "create" | "edit" | "addDetail";
 
 interface ProductFormProps {
+    isFull: boolean;
     mode: ProductFormMode;
     product: Product | null;
     closeForm: () => void;
+    onCreated?: (product: Product) => void;
 }
 
 const defaultFatherValues: ProductBody = {
@@ -44,7 +46,7 @@ const defaultChildValues: ProductBody = {
     unitsDetail: null,
 };
 
-export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
+export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: ProductFormProps) => {
     const createProductMutation = useCreateProductMutation();
     const updateProductMutation = useUpdateProductMutation();
     const [disableBtnGenerate, setDisableBtnGenerate] = useState(false);
@@ -99,6 +101,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             const response = await createProductMutation.mutateAsync(body);
 
             if (response.data != null && response.success) {
+                onCreated?.(response.data);
                 closeForm();
                 resetForms();
             }
@@ -137,6 +140,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
             return;
         }
 
+        onCreated?.(fatherResponse.data);
         closeForm();
         resetForms();
     }
@@ -232,7 +236,7 @@ export const ProductForm = ({ mode, product, closeForm }: ProductFormProps) => {
 
 
     return (
-        <form onSubmit={formProductFather.handleSubmit(onSubmit)} className="w-3/4 mx-auto mt-8 h-full grid grid-cols-3 gap-4 px-8 py-4 bg-white rounded-xl shadow-md">
+        <form onSubmit={formProductFather.handleSubmit(onSubmit)} className={`${isFull ? 'w-full' : 'w-3/4 px-8 py-4  rounded-xl shadow-md'} mx-auto mt-8 h-full grid grid-cols-3 gap-4 bg-white`}>
 
             {product && isAddDetail && (
                 <Field className="col-span-2">

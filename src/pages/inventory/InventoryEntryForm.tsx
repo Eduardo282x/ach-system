@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { InventoryEntryBody, Product } from "@/interfaces/inventory.interface";
-import { useCreateInventoryEntryMutation, useProductSearchQuery } from "@/hooks/inventory.hook";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import type { InventoryEntryBody, Product, Supplier } from "@/interfaces/inventory.interface";
+import { useCreateInventoryEntryMutation, useProductSearchQuery, useSupplierSearchQuery } from "@/hooks/inventory.hook";
 import { formatNumberWithDecimal, formatOnlyDateStringFilter } from "@/helpers/formatters";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -15,7 +16,8 @@ import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import toast from 'react-hot-toast';
 import { FaRegTrashCan } from "react-icons/fa6";
-import { IoIosSearch } from "react-icons/io";
+import { IoIosSearch, IoMdAdd } from "react-icons/io";
+import { ProductForm } from "./ProductForm";
 
 interface InventoryEntryFormProps {
     closeForm: () => void;
@@ -33,16 +35,30 @@ interface EntryDetail {
     barcode: string;
     presentation: string;
     quantity: number;
+    purchasePrice: number;
+    iva: number;
     unitPrice: number;
 }
+
+const DEFAULT_IVA = 16;
+
+const computeUnitPrice = (purchasePrice: number, iva: number): number => {
+    const value = purchasePrice * (1 + iva / 100);
+    return Number(value.toFixed(2));
+};
 
 export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
     const createInventoryEntryMutation = useCreateInventoryEntryMutation();
     const [productSearch, setProductSearch] = useState("");
+    const [supplierSearch, setSupplierSearch] = useState("");
+    const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
     const [details, setDetails] = useState<EntryDetail[]>([]);
     const [date, setDate] = useState<Date>(new Date());
+    const [globalIva, setGlobalIva] = useState<number>(DEFAULT_IVA);
+    const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
 
     const { data: searchData, isLoading: isSearching } = useProductSearchQuery(productSearch);
+    const { data: supplierData, isLoading: isSearchingSuppliers } = useSupplierSearchQuery(supplierSearch);
 
     const {
         register,
@@ -58,6 +74,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
     });
 
     const addProduct = (product: Product) => {
+        const purchasePrice = Number(product.price);
         setDetails((prev) => {
             const exists = prev.find((item) => item.productId === product.id);
             if (exists) {
@@ -75,7 +92,9 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                     barcode: product.barcode,
                     presentation: product.presentation,
                     quantity: 1,
-                    unitPrice: Number(product.price),
+                    purchasePrice,
+                    iva: globalIva,
+                    unitPrice: computeUnitPrice(purchasePrice, globalIva),
                 },
             ];
         });
@@ -86,10 +105,33 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
         setDetails((prev) => prev.filter((item) => item.productId !== productId));
     };
 
-    const changeDetail = (productId: number, field: "quantity" | "unitPrice", value: number) => {
+    const changeDetail = (productId: number, field: "quantity" | "purchasePrice" | "iva", value: number) => {
         setDetails((prev) =>
-            prev.map((item) => (item.productId === productId ? { ...item, [field]: value } : item))
+            prev.map((item) => {
+                if (item.productId !== productId) return item;
+                const next = { ...item, [field]: value };
+                if (field === "purchasePrice" || field === "iva") {
+                    next.unitPrice = computeUnitPrice(next.purchasePrice, next.iva);
+                }
+                return next;
+            })
         );
+    };
+
+    const updateGlobalIva = (value: number) => {
+        setGlobalIva(value);
+        setDetails((prev) =>
+            prev.map((item) => ({
+                ...item,
+                iva: value,
+                unitPrice: computeUnitPrice(item.purchasePrice, value),
+            }))
+        );
+    };
+
+    const selectSupplier = (supplier: Supplier) => {
+        setSelectedSupplier(supplier);
+        setSupplierSearch(supplier.name);
     };
 
     const onSubmit = async (header: EntryHeaderFields) => {
@@ -122,6 +164,8 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
             });
             reset();
             setDetails([]);
+            setSelectedSupplier(null);
+            setSupplierSearch("");
             closeForm();
             return;
         }
@@ -133,6 +177,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
     };
 
     const products = searchData?.products ?? [];
+    const suppliers = supplierData?.suppliers ?? [];
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="w-3/4 mx-auto mt-8 h-full grid grid-cols-3 gap-4 px-8 py-4 bg-white rounded-xl shadow-md">
@@ -180,6 +225,61 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                 </Popover>
             </Field>
 
+            <Field className="col-span-2">
+                <FieldLabel>Proveedor <span className="text-gray-500 text-sm font-normal">(Opcional)</span></FieldLabel>
+                <div className="relative">
+                    <div className="relative">
+                        <Input
+                            placeholder="Buscar proveedor..."
+                            className="w-full"
+                            value={supplierSearch}
+                            onChange={(event) => {
+                                setSupplierSearch(event.target.value);
+                                if (event.target.value !== selectedSupplier?.name) {
+                                    setSelectedSupplier(null);
+                                }
+                            }}
+                        />
+                        {isSearchingSuppliers && (
+                            <div className="absolute top-2.5 right-3 text-sm text-gray-400">
+                                <Spinner />
+                            </div>
+                        )}
+                    </div>
+
+                    {supplierSearch.trim() !== '' && (
+                        <div className="absolute top-11 w-full left-0 border-2 border-gray-300 rounded-md bg-white shadow-md z-50">
+                            {suppliers.length > 0 ? suppliers.map((supplier) => (
+                                <div
+                                    key={supplier.id}
+                                    onClick={() => selectSupplier(supplier)}
+                                    className="text-sm flex items-center justify-between p-2 border-b last:border-0 hover:bg-gray-100 cursor-pointer"
+                                >
+                                    <div>
+                                        <p className="font-semibold">{supplier.name}</p>
+                                        {supplier.rif && <p><span className="font-semibold">RIF:</span> {supplier.rif}</p>}
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-center p-4 text-gray-500">No se encontraron proveedores</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </Field>
+
+            <Field className="col-span-1">
+                <FieldLabel>IVA % Fijo</FieldLabel>
+                <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="w-full"
+                    value={globalIva}
+                    onChange={(event) => updateGlobalIva(Number(event.target.value))}
+                />
+            </Field>
+
             <Field className="col-span-3">
                 <FieldLabel>Descripción <span className="text-gray-500 text-sm font-normal">(Opcional)</span></FieldLabel>
                 <Textarea placeholder="Mercancía recibida..." {...register('description')} />
@@ -223,15 +323,29 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                             )) : (
                                 <p className="text-center p-4 text-gray-500">No se encontraron productos</p>
                             )}
+                            <div className="border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setProductSearch("");
+                                        setIsProductDialogOpen(true);
+                                    }}
+                                    className="w-full text-sm flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer text-blue-700 font-semibold"
+                                >
+                                    <IoMdAdd /> Crear nuevo producto
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
 
                 <div className="overflow-x-auto rounded-md border bg-white">
-                    <div className="flex items-center gap-3 p-2 border-b-2 text-sm font-semibold min-w-[40rem]">
+                    <div className="flex items-center gap-3 p-2 border-b-2 text-sm font-semibold min-w-[56rem]">
                         <p className="w-32 shrink-0">Código</p>
                         <p className="min-w-0 flex-1">Producto</p>
-                        <p className="w-24 shrink-0 text-center">Cantidad</p>
+                        <p className="w-20 shrink-0 text-center">Cantidad</p>
+                        <p className="w-28 shrink-0 text-right">Precio de compra</p>
+                        <p className="w-20 shrink-0 text-center">IVA %</p>
                         <p className="w-28 shrink-0 text-right">Precio</p>
                         <p className="w-28 shrink-0 text-right">Subtotal</p>
                         <p className="w-10 shrink-0"></p>
@@ -241,15 +355,15 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                         <p className="text-center py-8 text-gray-500 text-sm">No hay productos agregados</p>
                     ) : (
                         details.map((detail) => (
-                            <div key={detail.productId} className="flex items-center gap-3 p-2 border-b-2 last:border-0 text-sm min-w-[40rem]">
+                            <div key={detail.productId} className="flex items-center gap-3 p-2 border-b-2 last:border-0 text-sm min-w-[56rem]">
                                 <p className="w-32 shrink-0 truncate">{detail.barcode}</p>
                                 <p className="min-w-0 flex-1 truncate">{detail.name} - {detail.presentation}</p>
-                                <div className="w-24 shrink-0 text-center">
+                                <div className="w-20 shrink-0 text-center">
                                     <Input
                                         type="number"
                                         step="0.01"
                                         min="0.01"
-                                        className="h-8 w-20 mx-auto text-center"
+                                        className="h-8 w-16 mx-auto text-center"
                                         value={detail.quantity}
                                         onChange={(event) => changeDetail(detail.productId, "quantity", Number(event.target.value))}
                                     />
@@ -258,10 +372,29 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                                     <Input
                                         type="number"
                                         step="0.01"
-                                        min="0.01"
+                                        min="0"
+                                        className="h-8 w-24 ml-auto text-right"
+                                        value={detail.purchasePrice}
+                                        onChange={(event) => changeDetail(detail.productId, "purchasePrice", Number(event.target.value))}
+                                    />
+                                </div>
+                                <div className="w-20 shrink-0 text-center">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        className="h-8 w-16 mx-auto text-center"
+                                        value={detail.iva}
+                                        onChange={(event) => changeDetail(detail.productId, "iva", Number(event.target.value))}
+                                    />
+                                </div>
+                                <div className="w-28 shrink-0 text-right">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
                                         className="h-8 w-24 ml-auto text-right"
                                         value={detail.unitPrice}
-                                        onChange={(event) => changeDetail(detail.productId, "unitPrice", Number(event.target.value))}
+                                        disabled
                                     />
                                 </div>
                                 <p className="w-28 shrink-0 text-right font-semibold">
@@ -286,6 +419,25 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
             >
                 {createInventoryEntryMutation.isPending ? <Spinner /> : 'Guardar Entrada'}
             </Button>
+
+            <Dialog open={isProductDialogOpen} onOpenChange={(open) => !open && setIsProductDialogOpen(false)}>
+                <DialogContent className="max-w-4xl sm:w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Nuevo Producto</DialogTitle>
+                        <DialogDescription>Completa los datos para crear un nuevo producto.</DialogDescription>
+                    </DialogHeader>
+                    <ProductForm
+                        isFull={true}
+                        mode="create"
+                        product={null}
+                        closeForm={() => setIsProductDialogOpen(false)}
+                        onCreated={(product) => {
+                            addProduct(product);
+                            setIsProductDialogOpen(false);
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
         </form>
     );
 }

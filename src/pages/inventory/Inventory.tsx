@@ -138,7 +138,7 @@ export const Inventory = () => {
                                 Agregar Producto
                             </p>
 
-                            <ProductForm product={productSelected} mode={formMode} closeForm={handleCloseForm} />
+                            <ProductForm  isFull={false} product={productSelected} mode={formMode} closeForm={handleCloseForm} />
                         </>
                     ) : (
                         <>
