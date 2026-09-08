@@ -127,6 +127,7 @@ export interface InventoryEntryBody {
     title: string;
     description: string;
     date: string;
+    supplierId: number;
     details: InventoryEntryDetailBody[];
 }
 

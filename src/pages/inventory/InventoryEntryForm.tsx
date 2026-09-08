@@ -57,6 +57,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
     const [date, setDate] = useState<Date>(new Date());
     const [globalIva, setGlobalIva] = useState<number>(DEFAULT_IVA);
     const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+    const [supplierError, setSupplierError] = useState<string | null>(null);
 
     const { data: searchData, isLoading: isSearching } = useProductSearchQuery(productSearch);
     const { data: supplierData, isLoading: isSearchingSuppliers } = useSupplierSearchQuery(supplierSearch);
@@ -133,6 +134,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
     const selectSupplier = (supplier: Supplier) => {
         setSelectedSupplier(supplier);
         setSupplierSearch(supplier.name);
+        setSupplierError(null);
     };
 
     const onSubmit = async (header: EntryHeaderFields) => {
@@ -144,11 +146,17 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
             return;
         }
 
+        if (!selectedSupplier) {
+            setSupplierError("El proveedor es obligatorio.");
+            return;
+        }
+
         const body: InventoryEntryBody = {
             controlNumber: header.controlNumber,
             title: header.title,
             description: header.description ?? "",
             date: formatOnlyDateStringFilter(date),
+            supplierId: selectedSupplier.id,
             details: details.map((item) => ({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -227,7 +235,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
             </Field>
 
             <Field className="col-span-2">
-                <FieldLabel>Proveedor <span className="text-gray-500 text-sm font-normal">(Opcional)</span></FieldLabel>
+                <FieldLabel>Proveedor</FieldLabel>
                 <div className="relative">
                     <div className="relative">
                         <Input
@@ -239,6 +247,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                                 if (event.target.value !== selectedSupplier?.name) {
                                     setSelectedSupplier(null);
                                 }
+                                setSupplierError(null);
                             }}
                         />
                         {isSearchingSuppliers && (
@@ -248,7 +257,9 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                         )}
                     </div>
 
-                    {supplierSearch.trim() !== '' && (
+                    {supplierError && <span className="text-sm text-red-500">{supplierError}</span>}
+
+                    {supplierSearch.trim() !== '' && !selectedSupplier && (
                         <div className="absolute top-11 w-full left-0 border-2 border-gray-300 rounded-md bg-white shadow-md z-50">
                             {suppliers.length > 0 ? suppliers.map((supplier) => (
                                 <div
@@ -347,7 +358,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                         <p className="w-20 shrink-0 text-center">Cantidad</p>
                         <p className="w-28 shrink-0 text-right">Precio de compra</p>
                         <p className="w-20 shrink-0 text-center">IVA %</p>
-                        <p className="w-28 shrink-0 text-right">Precio</p>
+                        <p className="w-28 shrink-0 text-right">Precio de venta</p>
                         <p className="w-28 shrink-0 text-right">Subtotal</p>
                         <p className="w-10 shrink-0"></p>
                     </div>
