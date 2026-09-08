@@ -64,23 +64,6 @@ export interface ExchangeRateBody {
 
 export type ExchangeRateType = 'USD' | 'EUR' | 'BS';
 
-//Proveedores
-export interface SupplierContent {
-    suppliers: Supplier[];
-    pagination?: PaginationContent;
-}
-
-export interface Supplier {
-    id: number;
-    name: string;
-    rif?: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
 //History
 export interface HistoryInventoryContent {
     history: HistoryInventory[];

@@ -1,6 +1,7 @@
 import type { ExchangeRateBody, InventoryEntryBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createInventoryEntryApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryEntriesApi, getInventoryHistoryApi, getSuppliersApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
+import { breakDownProductApi, createInventoryEntryApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryEntriesApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi } from "@/services/inventory.service";
+import { getSuppliersApi } from "@/services/suppliers.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";

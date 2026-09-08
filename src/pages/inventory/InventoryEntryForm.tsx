@@ -6,7 +6,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { InventoryEntryBody, Product, Supplier } from "@/interfaces/inventory.interface";
+import type { InventoryEntryBody, Product } from "@/interfaces/inventory.interface";
+import type { Supplier } from "@/interfaces/suppliers.interface";
 import { useCreateInventoryEntryMutation, useProductSearchQuery, useSupplierSearchQuery } from "@/hooks/inventory.hook";
 import { formatNumberWithDecimal, formatOnlyDateStringFilter } from "@/helpers/formatters";
 import { useState } from "react";
@@ -257,7 +258,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                                 >
                                     <div>
                                         <p className="font-semibold">{supplier.name}</p>
-                                        {supplier.rif && <p><span className="font-semibold">RIF:</span> {supplier.rif}</p>}
+                                        {supplier.identify && <p><span className="font-semibold">Identificación:</span> {supplier.identify}</p>}
                                     </div>
                                 </div>
                             )) : (
