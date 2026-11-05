@@ -18,6 +18,7 @@ import { CashClosing } from './pages/cashClosing/CashClosing';
 import { Invoices } from './pages/invoices/Invoices';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Credits } from './pages/credits/Credits';
+import { Dashboard } from './pages/dashboard/Dashboard';
 
 function AxiosInterceptorProvider() {
   useAxiosInterceptor();
@@ -39,6 +40,14 @@ function App() {
             path: '/',
             element: <Layout />,
             children: [
+              {
+                path: '/resumen',
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>
+              },
+              {
+                path: '/historial-inventario',
+                element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
+              },
               {
                 path: '/inventario',
                 element: <ProtectedRoute allowedRoles={['ADMIN']}><Inventory /></ProtectedRoute>

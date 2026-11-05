@@ -62,6 +62,28 @@ const styleVariant = (variant: VariantType) => {
     }
 }
 
+const getPageWindow = (current: number, totalPages: number, maxVisible: number) => {
+    if (totalPages <= maxVisible) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const half = Math.floor(maxVisible / 2);
+    let start = Math.max(1, current - half);
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    start = Math.max(1, end - maxVisible + 1);
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+const getMaxVisiblePages = () => {
+    if (typeof window === "undefined") return 18;
+    if (window.innerWidth < 640) return 5;
+    if (window.innerWidth < 768) return 7;
+    if (window.innerWidth < 1024) return 10;
+    if (window.innerWidth < 1280) return 13;
+    return 18;
+}
+
 export const TableComponent = <T,>({
     columns,
     data,
@@ -75,8 +97,13 @@ export const TableComponent = <T,>({
     automaticHeight,
     onPaginationChange
 }: TableComponentProps<T>) => {
-    const [size, setSize] = useState(pagination?.size || 100);
-    const [page, setPage] = useState(pagination?.page || 1);
+    const [internalSize, setInternalSize] = useState(pagination?.size || 100);
+    const [internalPage, setInternalPage] = useState(pagination?.page || 1);
+    const [maxVisiblePages, setMaxVisiblePages] = useState(getMaxVisiblePages);
+
+    const isControlled = Boolean(onPaginationChange && pagination);
+    const size = isControlled ? (pagination?.size ?? internalSize) : internalSize;
+    const page = isControlled ? (pagination?.page ?? internalPage) : internalPage;
 
     const getRowKey = useCallback((row: T, rowIndex: number) => {
         if (typeof row === "object" && row !== null && "id" in row) {
@@ -86,21 +113,43 @@ export const TableComponent = <T,>({
         return String(rowIndex);
     }, []);
 
-    const handlePageChange = (mode: 'increment' | 'decrement') => {
-        setPage((prevPage) => (mode === 'increment' ? prevPage + 1 : prevPage - 1));
+    useEffect(() => {
+        const handleResize = () => setMaxVisiblePages(getMaxVisiblePages());
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const totalPages = useMemo(
+        () => Math.max(1, Math.ceil((totalElements ?? 0) / size)),
+        [totalElements, size]
+    );
+
+    const visiblePages = useMemo(
+        () => getPageWindow(page, totalPages, maxVisiblePages),
+        [page, totalPages, maxVisiblePages]
+    );
+
+    const handlePageChange = (nextPage: number) => {
+        const clampedPage = Math.min(Math.max(nextPage, 1), totalPages);
+
+        if (clampedPage === page) return;
+
+        if (isControlled) {
+            onPaginationChange?.(clampedPage, size);
+        } else {
+            setInternalPage(clampedPage);
+        }
     }
 
-    useEffect(() => {
-        if (onPaginationChange) {
-            onPaginationChange(page, size);
+    const handleSizeChange = (nextSize: number) => {
+        if (isControlled) {
+            onPaginationChange?.(1, nextSize);
+        } else {
+            setInternalSize(nextSize);
+            setInternalPage(1);
         }
-    }, [page]);
-
-    useEffect(() => {
-        if (onPaginationChange) {
-            onPaginationChange(1, size);
-        }
-    }, [size]);
+    }
 
     const tableRows = useMemo(() => {
         return data.map((row, rowIndex) => (
@@ -171,47 +220,54 @@ export const TableComponent = <T,>({
                     </TableBody>
                 </Table>
             </div>
-            {!ignorePagination && data.length > 10 && (
-                <div className="flex items-center justify-between">
+            {!ignorePagination && (pagination && totalElements ? totalElements > 0 : data.length > 10) && (
+                <div className="flex flex-wrap items-center justify-between gap-4">
 
                     <p className="text-sm text-gray-700 mt-3 ml-1">{
                         pagination && totalElements ?
-                            `Mostrando ${pagination.page * pagination.size - pagination.size + 1} - ${Math.min(pagination.page * pagination.size, totalElements)} de ${totalElements} elementos` :
+                            `Mostrando ${page * size - size + 1} - ${Math.min(page * size, totalElements)} de ${totalElements} elementos` :
                             `Total de elementos ${data.length}`}
                     </p>
 
                     <div>
                         {pagination && totalElements && (
-                            <div className="flex items-center gap-2 mt-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2 mt-4">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-1">
                                         <Button
-                                            onClick={() => handlePageChange('decrement')}
+                                            type="button"
+                                            className="h-9 w-9 p-0"
+                                            onClick={() => handlePageChange(page - 1)}
                                             variant="outline"
-                                            disabled={pagination.page === 1}
+                                            disabled={page === 1}
                                         >
                                             <ChevronLeft />
                                         </Button>
-                                        {Array.from({ length: Math.ceil(totalElements / pagination.size) }, (_, i) => (
+                                        {visiblePages.map((pageNumber) => (
                                             <Button
-                                                key={i}
-                                                variant={pagination.page === i + 1 ? "primary" : "outline"}
-                                                onClick={() => setPage(i + 1)}
+                                                key={pageNumber}
+                                                type="button"
+                                                className="h-9 min-w-9 p-0"
+                                                variant={page === pageNumber ? "primary" : "outline"}
+                                                aria-current={page === pageNumber ? "page" : undefined}
+                                                onClick={() => handlePageChange(pageNumber)}
                                             >
-                                                {i + 1}
+                                                {pageNumber}
                                             </Button>
                                         ))}
                                         <Button
-                                            onClick={() => handlePageChange('increment')}
+                                            type="button"
+                                            className="h-9 w-9 p-0"
+                                            onClick={() => handlePageChange(page + 1)}
                                             variant="outline"
-                                            disabled={pagination.page * pagination.size >= totalElements}
+                                            disabled={page >= totalPages}
                                         >
                                             <ChevronRight />
                                         </Button>
                                     </div>
 
                                     <Label htmlFor="select-rows-per-page">Elementos por página</Label>
-                                    <Select defaultValue={size.toString()} onValueChange={(value) => setSize(parseInt(value))}>
+                                    <Select value={size.toString()} onValueChange={(value) => handleSizeChange(parseInt(value))}>
                                         <SelectTrigger className="w-20" id="select-rows-per-page">
                                             <SelectValue />
                                         </SelectTrigger>

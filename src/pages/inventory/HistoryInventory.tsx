@@ -17,6 +17,10 @@ export const HistoryInventory = () => {
 
     }
 
+    const changePagination = (page: number, size: number) => {
+        setFilter((prev) => ({ ...prev, page, size }));
+    }
+
     const handleChangeDate = (date: DateRange | undefined) => {
         if (date?.from && date?.to) {
             setFilter((prev) => ({
@@ -56,6 +60,7 @@ export const HistoryInventory = () => {
                         pagination={data?.pagination}
                         totalElements={data?.pagination?.total}
                         data={isLoading ? [] : data?.history || []}
+                        onPaginationChange={changePagination}
                     />
                 </div>
             </div>

@@ -3,8 +3,9 @@ import type { ComponentType } from "react";
 import { HiOutlineCurrencyDollar } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdQuestionMark } from "react-icons/md";
-import { LuReceipt } from "react-icons/lu";
+import { LuLayoutDashboard, LuReceipt } from "react-icons/lu";
 import { MdPayments } from "react-icons/md";
+import { GoHistory } from "react-icons/go";
 
 export type HeaderType = 'button' | 'dropdown' | 'dropdown-item' | 'separator';
 
@@ -22,6 +23,24 @@ export interface HeaderInterface {
 }
 
 export const headerData: HeaderInterface[] = [
+    {
+        title: 'Control',
+        icon: LuLayoutDashboard,
+        navigateTo: '/resumen',
+        type: 'button',
+        active: false,
+        auth: ['ADMIN'],
+        children: []
+    },
+    {
+        title: 'Salidas',
+        icon: GoHistory,
+        navigateTo: '/historial-inventario',
+        type: 'button',
+        active: false,
+        auth: ['ADMIN'],
+        children: []
+    },
     {
         title: 'Inventario',
         icon: MdOutlineInventory2,
