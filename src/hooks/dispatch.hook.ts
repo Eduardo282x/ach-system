@@ -50,6 +50,7 @@ export const useCreateInvoiceMutation = () => {
             queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
             queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
             queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-trend"] });
         },
     });
 };
@@ -63,6 +64,7 @@ export const usePayInvoiceCreditMutation = () => {
             queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
             queryClient.invalidateQueries({ queryKey: [SESSIONS_QUERY_KEY] });
             queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard-trend"] });
         },
     });
 };

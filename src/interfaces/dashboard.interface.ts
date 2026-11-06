@@ -124,3 +124,45 @@ export interface TotalSales {
     amountBs:  number;
     amountUsd: number;
 }
+
+export type TrendGroupBy = "month" | "week" | "day" | "weekday";
+
+export interface DashboardTrend {
+    range:   TrendRange;
+    groupBy: TrendGroupBy;
+    bounds:  TrendBounds;
+    periods: TrendPeriod[];
+    totals:  TrendTotals;
+}
+
+export interface TrendRange {
+    startDate: string;
+    endDate:   string;
+}
+
+export interface TrendBounds {
+    firstInvoice: string | null;
+    lastInvoice:  string | null;
+}
+
+export interface TrendPeriod {
+    key:               string;
+    label:             string;
+    startDate:         string | null;
+    endDate:           string | null;
+    totalInvoices:     number;
+    totalItems:        number;
+    totalSalesBs:      number;
+    totalSalesUsd:     number;
+    netIncomeBs:       number;
+    netIncomeUsd:      number;
+}
+
+export interface TrendTotals {
+    totalInvoices: number;
+    totalItems:    number;
+    totalSalesBs:  number;
+    totalSalesUsd: number;
+    netIncomeBs:   number;
+    netIncomeUsd:  number;
+}

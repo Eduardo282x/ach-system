@@ -13,17 +13,24 @@ import { Label } from "../ui/label"
 interface DatePickerRangeProps {
     display?: 'flex' | 'block';
     onChange: (date: DateRange | undefined) => void;
+    /** Permite usar el componente de forma controlada desde el padre. */
+    value?: DateRange | undefined;
 }
 
-export function DatePickerRange({ display = 'block', onChange }: DatePickerRangeProps) {
+export function DatePickerRange({ display = 'block', onChange, value }: DatePickerRangeProps) {
     const today = new Date();
-    const [date, setDate] = useState<DateRange | undefined>({
+    const [internalDate, setInternalDate] = useState<DateRange | undefined>({
         from: new Date(today.getFullYear(), today.getMonth(), 1),
         to: new Date(today.getFullYear(), today.getMonth() + 1, 0),
     })
 
+    const isControlled = value !== undefined;
+    const date = isControlled ? value : internalDate;
+
     const changeDate = (selectedDate: DateRange | undefined) => {
-        setDate(selectedDate);
+        if (!isControlled) {
+            setInternalDate(selectedDate);
+        }
         onChange(selectedDate);
     }
 

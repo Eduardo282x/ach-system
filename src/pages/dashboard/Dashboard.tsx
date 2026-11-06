@@ -1,4 +1,5 @@
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
+import { SalesTrendPanel } from "@/components/dashboard/SalesTrendPanel";
 import { useDashboardSummaryQuery } from "@/hooks/dashboard.hook";
 import {
     formatDateString,
@@ -10,26 +11,54 @@ import {
 } from "@/helpers/formatters";
 import type { DateRangeFilter } from "@/interfaces/base.interface";
 import type { InvoiceStatus } from "@/interfaces/distpatch.interface";
+import type { TrendGroupBy, TrendPeriod } from "@/interfaces/dashboard.interface";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { LuEqualApproximately } from "react-icons/lu";
 
+const parseDateOnly = (value: string) => new Date(`${value}T00:00:00`);
+
 export const Dashboard = () => {
     const today = new Date();
-    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+
+    const [detailRange, setDetailRange] = useState<DateRange | undefined>({
         from: new Date(today.getFullYear(), today.getMonth(), 1),
         to: new Date(today.getFullYear(), today.getMonth() + 1, 0),
     });
 
+    const [overviewRange, setOverviewRange] = useState<DateRange | undefined>({
+        from: new Date(today.getFullYear(), today.getMonth() - 11, 1),
+        to: new Date(today.getFullYear(), today.getMonth() + 1, 0),
+    });
+
+    const [trendGroupBy, setTrendGroupBy] = useState<TrendGroupBy>("month");
+    const [activePeriod, setActivePeriod] = useState<{ key: string; label: string } | null>(null);
+
     const filter: DateRangeFilter = {
-        startDate: dateRange?.from ? formatOnlyDateStringFilter(dateRange.from) : "",
-        endDate: dateRange?.to ? formatOnlyDateStringFilter(dateRange.to) : "",
+        startDate: detailRange?.from ? formatOnlyDateStringFilter(detailRange.from) : "",
+        endDate: detailRange?.to ? formatOnlyDateStringFilter(detailRange.to) : "",
     };
 
     const { data: dashboard, isLoading, isError } = useDashboardSummaryQuery(filter);
 
-    const handleChangeRange = (range: DateRange | undefined) => {
-        setDateRange(range);
+    const handleChangeDetailRange = (range: DateRange | undefined) => {
+        setDetailRange(range);
+        setActivePeriod(null);
+    };
+
+    const handleSelectPeriod = (period: TrendPeriod) => {
+        if (!period.startDate || !period.endDate) return;
+
+        setDetailRange({
+            from: parseDateOnly(period.startDate),
+            to: parseDateOnly(period.endDate),
+        });
+        setActivePeriod({ key: period.key, label: period.label });
+    };
+
+    const handleResetPeriod = () => {
+        setDetailRange(overviewRange);
+        setActivePeriod(null);
     };
 
     const translateStatus = (status: InvoiceStatus) => {
@@ -47,18 +76,39 @@ export const Dashboard = () => {
 
     return (
         <div className="w-full h-full p-4 space-y-4">
-            <div className="bg-white rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-white rounded-xl p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h2 className="text-2xl font-semibold text-blue-800">Dashboard de Ventas</h2>
                     <p className="text-sm text-gray-600">
-                        {dashboard?.range
-                            ? `${formatDateString(dateRange?.from, true)} - ${formatDateString(dateRange?.to, true)}`
-                            : "Selecciona un rango de fecha"}
+                        {activePeriod
+                            ? `Detalle: ${activePeriod.label} (${formatDateString(detailRange?.from, true)} - ${formatDateString(detailRange?.to, true)})`
+                            : detailRange?.from && detailRange?.to
+                                ? `${formatDateString(detailRange.from, true)} - ${formatDateString(detailRange.to, true)}`
+                                : "Selecciona un rango de fecha"}
                     </p>
                 </div>
-                <div className="mt-4">
-                    <DatePickerRange onChange={handleChangeRange} />
+                <div className="mt-4 md:mt-0">
+                    <DatePickerRange value={detailRange} onChange={handleChangeDetailRange} />
                 </div>
+            </div>
+
+            <SalesTrendPanel
+                groupBy={trendGroupBy}
+                onChangeGroupBy={setTrendGroupBy}
+                overviewRange={overviewRange}
+                onChangeOverviewRange={setOverviewRange}
+                activePeriodKey={activePeriod?.key}
+                onSelectPeriod={handleSelectPeriod}
+                onResetPeriod={handleResetPeriod}
+            />
+
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="text-lg font-bold text-blue-800">Detalle del rango seleccionado</h3>
+                {activePeriod && (
+                    <span className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                        Periodo: {activePeriod.label}
+                    </span>
+                )}
             </div>
 
             {isLoading && <p className="text-gray-700">Cargando resumen...</p>}
@@ -72,7 +122,7 @@ export const Dashboard = () => {
                             <p className="text-sm text-gray-600">Ingresos (pagos) realizados</p>
                             <p className="text-2xl font-bold text-blue-800 mt-1 flex items-end">
                                 {formatNumberWithDecimal(dashboard.ingresos.totalNetBs)} {translateCurrency("BS")}
-                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately/> {formatNumberWithDecimal(dashboard.ingresos.totalNetUsd)} {translateCurrency("USD")}</span>
+                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately /> {formatNumberWithDecimal(dashboard.ingresos.totalNetUsd)} {translateCurrency("USD")}</span>
                             </p>
                         </div>
 
@@ -80,7 +130,7 @@ export const Dashboard = () => {
                             <p className="text-sm text-gray-600">Total de venta</p>
                             <p className="text-2xl font-bold text-blue-800 mt-1 flex items-end">
                                 {formatNumberWithDecimal(dashboard.totalSales.amountBs)} {translateCurrency("BS")}
-                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately/> {formatNumberWithDecimal(dashboard.totalSales.amountUsd)} {translateCurrency("USD")}</span>
+                                <span className="mx-2 text-sm text-gray-600 flex items-center"><LuEqualApproximately /> {formatNumberWithDecimal(dashboard.totalSales.amountUsd)} {translateCurrency("USD")}</span>
                             </p>
                         </div>
 
