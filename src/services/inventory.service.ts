@@ -1,8 +1,10 @@
-import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
-import { deleteDataBodyApi, getDataApi, postDataApi, putDataApi } from "./api.service";
+import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryEntryBody, InventoryEntryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
+import { deleteDataBodyApi, getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
 const inventoryUrl = '/products';
+const inventoryEntriesUrl = '/inventory/entries';
+const excelUrl = '/excel';
 
 export const getInventoryApi = async (search?: string, filter?: Pagination): Promise<InventoryInterface> => {
     let params = '';
@@ -76,4 +78,33 @@ export const putExchangeRateDefaultApi = async (id: number): Promise<ExchangeRat
 export const getExchangeRateAutomaticApi = async (): Promise<ExchangeRate[]> => {
     const response = await postDataApi<null, ExchangeRate[]>(`${inventoryUrl}/exchange-rate/automatic`, null);
     return response.data || [];
+}
+
+//Entradas de inventario
+export const getInventoryEntriesApi = async (filter: Pagination): Promise<InventoryEntryContent> => {
+    let params = '';
+    if (filter.page) {
+        params += `?page=${filter.page}&size=${filter.size}`;
+    }
+    const response = await getDataApi<InventoryEntryContent>(`${inventoryEntriesUrl}${params}`);
+    if (response.data == null) {
+        return { inventoryEntries: [], pagination: { total: 0, page: 1, size: filter.size } };
+    }
+    return response.data;
+}
+export const createInventoryEntryApi = async (data: InventoryEntryBody) => {
+    const response = await postDataApi<InventoryEntryBody, InventoryEntryContent>(`${inventoryEntriesUrl}`, data);
+    return response;
+}
+
+//Template
+export const downloadTemplateProduct = async () => {
+    return await getDataFileApi(`${inventoryUrl}/template`);
+}
+
+//Excel
+export const uploadExcelProducts = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await postDataApi<FormData, unknown>(`${excelUrl}/products/upload`, formData);
 }

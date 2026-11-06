@@ -9,8 +9,13 @@ import { FaArrowLeft } from "react-icons/fa";
 import { ProductForm, type ProductFormMode } from "./ProductForm";
 import type { Product } from "@/interfaces/inventory.interface";
 import { useState } from "react";
+import { DownloadAndUploadProducts } from "./DownloadAndUploadProducts";
+import { InventoryEntries } from "./InventoryEntries";
+import { InventoryEntryForm } from "./InventoryEntryForm";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialogComponentAdminPassword } from "@/components/dialog/AlertDialogComponent";
 import toast from 'react-hot-toast';
+
 
 export const Inventory = () => {
     const {
@@ -18,9 +23,13 @@ export const Inventory = () => {
         pagination,
         columns,
         toggle,
+        activeTab,
+        formType,
         setSearch,
         setPagination,
         setColumns,
+        setActiveTab,
+        setFormType,
         openForm,
         closeForm
     } = useInventoryStore((state) => state);
@@ -76,13 +85,19 @@ export const Inventory = () => {
     const openCreateForm = () => {
         setFormMode("create");
         setProductSelected(null);
+        setFormType("inventory");
         openForm();
     };
 
     const handleCloseForm = () => {
         setFormMode("create");
         setProductSelected(null);
+        setFormType("inventory");
         closeForm();
+    };
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value as "inventory" | "entries");
     };
 
     return (
@@ -90,39 +105,66 @@ export const Inventory = () => {
 
             <PageTransitionComponent toggle={toggle}>
                 <div>
-                    <p className="text-2xl font-semibold mb-2 ml-2">Inventario</p>
-
-                    <div className="rounded-xl bg-white p-4">
-                        <div className="w-full flex items-center justify-between mb-4">
-                            <div className="w-96">
-                                <FilterComponent placeholder="Buscar producto..." onChange={setSearch} loading={isLoading} />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <SelectColumnsComponent columns={columns} onChange={setColumns} />
-                                <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
-                            </div>
-                        </div>
-
-
-                        <TableComponent
-                            onChange={getActionTable}
-                            columns={columns.filter(column => column.visible)}
-                            data={products}
-                            isLoading={isLoading}
-                            pagination={data?.pagination}
-                            totalElements={data?.pagination?.total}
-                            onPaginationChange={changePagination}
-                        />
+                    <div className="flex items-center gap-4 ml-2 mb-2">
+                        <Tabs value={activeTab} onValueChange={handleTabChange}>
+                            <TabsList>
+                                <TabsTrigger value="inventory">Inventario</TabsTrigger>
+                                <TabsTrigger value="entries">Entrada de inventario</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <p className="text-2xl font-semibold">
+                            {activeTab === "inventory" ? "Inventario" : "Entrada de inventario"}
+                        </p>
                     </div>
+
+                    {activeTab === "inventory" ? (
+                        <div className="rounded-xl bg-white p-4">
+                            <div className="w-full flex items-center justify-between mb-4">
+                                <div className="w-96">
+                                    <FilterComponent placeholder="Buscar producto..." onChange={setSearch} loading={isLoading} />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <DownloadAndUploadProducts/>
+                                    <SelectColumnsComponent columns={columns} onChange={setColumns} />
+                                    <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
+                                </div>
+                            </div>
+
+                            <TableComponent
+                                onChange={getActionTable}
+                                columns={columns.filter(column => column.visible)}
+                                data={products}
+                                isLoading={isLoading}
+                                pagination={data?.pagination}
+                                totalElements={data?.pagination?.total}
+                                onPaginationChange={changePagination}
+                            />
+                        </div>
+                    ) : (
+                        <InventoryEntries />
+                    )}
                 </div>
 
                 <div>
-                    <p className="text-2xl font-semibold mb-2 ml-2">
-                        <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
-                        Agregar Producto
-                    </p>
+                    {formType === "inventory" ? (
+                        <>
+                            <p className="text-2xl font-semibold mb-2 ml-2">
+                                <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
+                                Agregar Producto
+                            </p>
 
-                    <ProductForm product={productSelected} mode={formMode} closeForm={handleCloseForm} />
+                            <ProductForm  isFull={false} product={productSelected} mode={formMode} closeForm={handleCloseForm} />
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-2xl font-semibold mb-2 ml-2">
+                                <Button variant="ghost" onClick={handleCloseForm}><FaArrowLeft /></Button>
+                                Agregar Entrada de Inventario
+                            </p>
+
+                            <InventoryEntryForm closeForm={handleCloseForm} />
+                        </>
+                    )}
                 </div>
             </PageTransitionComponent>
 

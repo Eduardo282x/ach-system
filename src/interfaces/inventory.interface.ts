@@ -101,3 +101,43 @@ export type MovementType =
     'RETURN';
 
 // Duplicate Product interface removed. See above for the merged definition.
+export interface InventoryEntryContent {
+    inventoryEntries: InventoryEntry[];
+    pagination: PaginationContent;
+}
+
+export interface InventoryEntry {
+    id: number;
+    controlNumber: string;
+    title: string;
+    description: string;
+    date: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    inventoryEntryDetails: InventoryEntryDetail[];
+}
+
+export interface InventoryEntryDetail {
+    id: number;
+    inventoryEntryId: number;
+    productId: number;
+    quantity: string;
+    unitPrice: string;
+    subtotal: string;
+    product: Product;
+}
+
+
+export interface InventoryEntryBody {
+    controlNumber: string;
+    title: string;
+    description: string;
+    date: string;
+    details: InventoryEntryDetailBody[];
+}
+
+export interface InventoryEntryDetailBody {
+    productId: number;
+    quantity: number;
+    unitPrice: number;
+}
