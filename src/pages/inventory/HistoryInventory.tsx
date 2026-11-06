@@ -4,14 +4,23 @@ import { useState } from "react"
 import { useInventoryHistoryQuery } from "@/hooks/inventory.hook";
 import type { Pagination } from "@/interfaces/base.interface";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
+import { FilterComponent } from "@/components/table/FilterComponent";
 import { type DateRange } from "react-day-picker";
 import { formatOnlyDateStringFilter } from "@/helpers/formatters";
 
 export const HistoryInventory = () => {
     const [columns, setColumns] = useState(inventoryHistoryColumns);
-    const [filter, setFilter] = useState<Pagination>({ page: 1, size: 100 });
+    const [filter, setFilter] = useState<Pagination & { search?: string }>({ page: 1, size: 100 });
 
     const { data, isLoading } = useInventoryHistoryQuery(filter);
+
+    const handleSearch = (value: string) => {
+        setFilter((prev) => ({
+            ...prev,
+            page: 1,
+            search: value.trim() || undefined,
+        }));
+    };
 
     const getActionTable = () => {
 
@@ -46,8 +55,13 @@ export const HistoryInventory = () => {
                 <p className="text-2xl font-semibold mb-2 ml-2">Historial de Movimiento del Inventario</p>
 
                 <div className="rounded-xl bg-white p-4">
-                    <div className="w-full flex items-center justify-between mb-4">
-                        <DatePickerRange onChange={handleChangeDate} display="flex"/>
+                    <div className="w-full flex items-center justify-between mb-4 gap-4">
+                        <div className="flex items-center gap-4 w-full">
+                            <DatePickerRange onChange={handleChangeDate} display="flex"/>
+                            <div className="w-72">
+                                <FilterComponent placeholder="Buscar por producto o código..." onChange={handleSearch} loading={isLoading} />
+                            </div>
+                        </div>
 
                         <div className="flex items-center gap-2">
                             <SelectColumnsComponent columns={columns} onChange={setColumns} />

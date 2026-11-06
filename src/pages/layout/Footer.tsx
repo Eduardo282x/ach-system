@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useCashDrawersQuery, useOpenSessionMutation, useSessionsQuery } from "@/hooks/sessions.hook";
+import { useCurrentShiftQuery } from "@/hooks/shifts.hook";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useSocket } from "@/services/socket.io";
@@ -20,6 +21,8 @@ export const Footer = () => {
     const navigate = useNavigate();
     const { user, isAdmin, cashDrawerSession } = useAuthStore((state) => state);
     const { data, isLoading } = useSessionsQuery({ status: 'OPEN' });
+    const { data: currentShiftData } = useCurrentShiftQuery();
+    const currentShift = currentShiftData?.shift;
 
     const [open, setOpen] = useState<boolean>(false);
     const [cashDrawerSelected, setCashDrawerSelected] = useState<number | null>(null);
@@ -110,14 +113,34 @@ export const Footer = () => {
             cashDrawerId: Number(cashDrawerSelected),
             openingBalance: balance,
             openingBalanceUsd: balanceUsd,
-        })
-        setOpen(false);
+        }, {
+            onSuccess: (response) => {
+                if (!response.success) {
+                    toast.error(response.message || 'No se pudo abrir la caja. Verifique el turno activo.', {
+                        duration: 3000,
+                        position: 'top-right',
+                    });
+                    return;
+                }
+
+                setOpen(false);
+            },
+            onError: () => {
+                toast.error('No se pudo abrir la caja', {
+                    duration: 3000,
+                    position: 'top-right',
+                });
+            },
+        });
     }
 
     return (
         <div className='w-full py-2 px-6 bg-white flex items-center justify-between font-semibold text-sm'>
-            <div>
-                {user?.name || user?.username} {translateRole(user?.role || '')} | {formatDateString(today.toISOString())}
+            <div className="flex items-center gap-3">
+                <span>{user?.name || user?.username} {translateRole(user?.role || '')} | {formatDateString(today.toISOString())}</span>
+                <span className={`rounded-md px-2 py-1 text-xs font-semibold ${currentShift ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                    Turno: {currentShift?.name ?? 'Sin turno activo'}
+                </span>
             </div>
             <div className={`${isAdmin ? 'flex' : 'hidden'} items-center gap-2`}>
                 <Label>Cajero: </Label>

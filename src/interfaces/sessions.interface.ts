@@ -35,6 +35,7 @@ export interface Session {
     totalInUsd: string;
     cashDrawer: CashDrawer;
     user: User;
+    shift?: Shift | null;
 }
 
 export type EventType = 'OPEN' | 'CLOSE' | 'CLOSED' | '';

@@ -28,22 +28,23 @@ export const CashClosing = () => {
     })) : [];
 
     const { data: shiftsData } = useShiftsQuery();
-    const shifts = shiftsData?.shifts ?? [];
+    const shifts = (shiftsData?.shifts ?? []).filter((shift) => shift.active);
     const userRole: TypeRole = useAuthStore((state) => state.user?.role?.toUpperCase()) as TypeRole;
     const user = useAuthStore((state) => state.user);
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift.name}`,
+        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift?.name ?? 'Sin turno'}`,
         value: cashDrawerSession.id.toString(),
     })) : [];
 
     const getResumenAutomatic = (session: SessionsGroup) => {
         setFilter((prev) => {
-            if (prev.shiftId === session.shiftId) {
+            if (prev.shiftId === session.shiftId && prev.sessionId === session.id) {
                 return prev;
             }
             return {
                 ...prev,
+                sessionId: session.id,
                 shiftId: session.shiftId,
             };
         });
@@ -71,9 +72,14 @@ export const CashClosing = () => {
             }));
             return;
         }
+        const selectedSession = cashDrawerSessions.data?.sessions.find(
+            (session) => session.id.toString() === sessionId,
+        );
+
         setFilter((prev) => ({
             ...prev,
             sessionId: parseInt(sessionId),
+            shiftId: selectedSession?.shiftId ?? prev.shiftId,
         }));
     }
 
@@ -81,12 +87,14 @@ export const CashClosing = () => {
         if (shiftId === 'all') {
             setFilter((prev) => ({
                 ...prev,
+                sessionId: undefined,
                 shiftId: undefined,
             }));
             return;
         }
         setFilter((prev) => ({
             ...prev,
+            sessionId: undefined,
             shiftId: parseInt(shiftId),
         }));
     }

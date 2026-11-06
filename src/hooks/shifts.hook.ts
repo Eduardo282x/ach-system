@@ -1,13 +1,22 @@
 import type { Shift, ShiftBody } from "@/interfaces/shift.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createShiftApi, deleteShiftApi, getShiftsApi, updateShiftApi } from "@/services/shifts.service";
+import { createShiftApi, deleteShiftApi, getCurrentShiftApi, getShiftsApi, updateShiftApi } from "@/services/shifts.service";
 
 export const SHIFTS_QUERY_KEY = "shifts";
+export const CURRENT_SHIFT_QUERY_KEY = "current-shift";
 
 export const useShiftsQuery = () => {
 	return useQuery({
 		queryKey: [SHIFTS_QUERY_KEY],
 		queryFn: () => getShiftsApi(),
+	});
+};
+
+export const useCurrentShiftQuery = () => {
+	return useQuery({
+		queryKey: [CURRENT_SHIFT_QUERY_KEY],
+		queryFn: () => getCurrentShiftApi(),
+		refetchInterval: 60_000,
 	});
 };
 

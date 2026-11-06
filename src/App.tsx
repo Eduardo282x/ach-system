@@ -57,10 +57,6 @@ function App() {
                 element: <ProtectedRoute allowedRoles={['ADMIN']}><ExchangeRate /></ProtectedRoute>
               },
               {
-                path: '/historial-inventario',
-                element: <ProtectedRoute allowedRoles={['ADMIN']}><HistoryInventory /></ProtectedRoute>
-              },
-              {
                 path: '/despacho',
                 element: <ProtectedRoute allowedRoles={['ADMIN', 'CAJERO']}><Dispatch /></ProtectedRoute>
               },

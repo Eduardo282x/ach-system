@@ -36,7 +36,7 @@ interface EntryDetail {
     presentation: string;
     quantity: number;
     purchasePrice: number;
-    unitPrice: number;
+    salePrice: number;
 }
 
 export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
@@ -62,8 +62,8 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
     });
 
     const addProduct = (product: Product) => {
-        const purchasePrice = Number(product.price);
-        const unitPrice = Number(product.price);
+        const purchasePrice = Number(product.purchasePrice ?? 0);
+        const salePrice = Number(product.price ?? 0);
         setDetails((prev) => {
             const exists = prev.find((item) => item.productId === product.id);
             if (exists) {
@@ -82,7 +82,7 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                     presentation: product.presentation,
                     quantity: 1,
                     purchasePrice,
-                    unitPrice: unitPrice,
+                    salePrice,
                 },
             ];
         });
@@ -93,15 +93,15 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
         setDetails((prev) => prev.filter((item) => item.productId !== productId));
     };
 
-    const changeDetail = (productId: number, field: "quantity" | "purchasePrice", value: number) => {
+    const changeDetail = (
+        productId: number,
+        field: "quantity" | "purchasePrice" | "salePrice",
+        value: number,
+    ) => {
         setDetails((prev) =>
             prev.map((item) => {
                 if (item.productId !== productId) return item;
-                const next = { ...item, [field]: value };
-                if (field === "purchasePrice") {
-                    // next.unitPrice = computeUnitPrice(next.purchasePrice, next.iva);
-                }
-                return next;
+                return { ...item, [field]: value };
             })
         );
     };
@@ -115,6 +115,24 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
             return;
         }
 
+        const invalidDetail = details.find(
+            (item) =>
+                !Number.isFinite(item.quantity) ||
+                item.quantity <= 0 ||
+                !Number.isFinite(item.purchasePrice) ||
+                item.purchasePrice < 0 ||
+                !Number.isFinite(item.salePrice) ||
+                item.salePrice < 0,
+        );
+
+        if (invalidDetail) {
+            toast.error("Verifique las cantidades y los precios de compra/venta de los productos.", {
+                duration: 2500,
+                position: 'top-right'
+            });
+            return;
+        }
+
         const body: InventoryEntryBody = {
             controlNumber: header.controlNumber,
             title: header.title,
@@ -123,7 +141,8 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
             details: details.map((item) => ({
                 productId: item.productId,
                 quantity: item.quantity,
-                unitPrice: item.unitPrice,
+                unitPrice: item.purchasePrice,
+                salePrice: item.salePrice,
             })),
         };
 
@@ -295,12 +314,14 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                                     <Input
                                         type="number"
                                         step="0.01"
+                                        min="0"
                                         className="h-8 w-24 ml-auto text-right"
-                                        value={detail.unitPrice}
+                                        value={detail.salePrice}
+                                        onChange={(event) => changeDetail(detail.productId, "salePrice", Number(event.target.value))}
                                     />
                                 </div>
                                 <p className="w-28 shrink-0 text-right font-semibold">
-                                    {formatNumberWithDecimal((detail.quantity || 0) * (detail.unitPrice || 0))}
+                                    {formatNumberWithDecimal((detail.quantity || 0) * (detail.purchasePrice || 0))}
                                 </p>
                                 <div className="w-10 shrink-0 text-center">
                                     <Button variant="ghost" size="icon-sm" onClick={() => removeDetail(detail.productId)}>
@@ -311,6 +332,20 @@ export const InventoryEntryForm = ({ closeForm }: InventoryEntryFormProps) => {
                         ))
                     )}
                 </div>
+
+                {details.length > 0 && (
+                    <div className="flex justify-end items-center gap-3 text-sm pr-2">
+                        <span className="text-gray-600">Total compra:</span>
+                        <span className="font-semibold text-lg">
+                            {formatNumberWithDecimal(
+                                details.reduce(
+                                    (acc, detail) => acc + (Number(detail.quantity) || 0) * (Number(detail.purchasePrice) || 0),
+                                    0,
+                                ),
+                            )}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <Button

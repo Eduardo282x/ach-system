@@ -32,7 +32,7 @@ export const inventoryEntriesColumns: ColumnDef<InventoryEntry>[] = [
         visible: true,
     },
     {
-        header: 'Total',
+        header: 'Total compra',
         key: 'total',
         width: '8rem',
         element: (row) => {

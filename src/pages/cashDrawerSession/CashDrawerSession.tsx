@@ -17,7 +17,7 @@ export const CashDrawerSession = () => {
 
     const { data, isLoading } = useSessionsQuery(filter);
     const { data: shiftsData } = useShiftsQuery();
-    const shifts = shiftsData?.shifts ?? [];
+    const shifts = (shiftsData?.shifts ?? []).filter((shift) => shift.active);
 
     const getActionTable = () => {
 
@@ -59,7 +59,7 @@ export const CashDrawerSession = () => {
         <div>
 
             <div>
-                <p className="text-2xl font-semibold mb-2 ml-2">Historial de Movimiento del Inventario</p>
+                <p className="text-2xl font-semibold mb-2 ml-2">Historial de Aperturas y Cierres de Caja</p>
 
                 <div className="rounded-xl bg-white p-4">
                     <div className="w-full flex items-center justify-between mb-4">

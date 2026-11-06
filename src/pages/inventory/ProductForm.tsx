@@ -27,6 +27,7 @@ const defaultFatherValues: ProductBody = {
     presentation: '',
     barcode: '',
     price: 0,
+    purchasePrice: 0,
     currency: 'USD',
     stock: 0,
     isDetail: false,
@@ -39,6 +40,7 @@ const defaultChildValues: ProductBody = {
     presentation: 'Detal',
     barcode: '',
     price: 0,
+    purchasePrice: 0,
     currency: 'USD',
     stock: 0,
     isDetail: true,
@@ -155,6 +157,7 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                 presentation: product.presentation,
                 barcode: product.barcode,
                 price: typeof product.price === "number" ? product.price : Number(product.price),
+                purchasePrice: Number(product.purchasePrice ?? 0),
                 currency: product.currency,
                 stock: product.stock,
                 isDetail: product.isDetail,
@@ -171,6 +174,7 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                 presentation: '',
                 barcode: '',
                 price: 0,
+                purchasePrice: 0,
                 currency: product.currency,
                 stock: 0,
                 isDetail: true,
@@ -265,7 +269,21 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                 <Input type="number" step="0.01" {...formProductFather.register('stock', { valueAsNumber: true })} disabled={isEdit} />
             </Field>
             <Field className="col-span-1">
-                <FieldLabel>Precio {RequiredField()}</FieldLabel>
+                <FieldLabel>Precio de Compra {OptionalField()}</FieldLabel>
+                <div className="flex items-center gap-2">
+                    <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        {...formProductFather.register('purchasePrice', {
+                            setValueAs: (value) => (value === '' || value === null || value === undefined ? 0 : Number(value)),
+                        })}
+                    />
+                    {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
+                </div>
+            </Field>
+            <Field className="col-span-1">
+                <FieldLabel>Precio de Venta {RequiredField()}</FieldLabel>
                 <div className="flex items-center gap-2">
                     <Input
                         type="number"

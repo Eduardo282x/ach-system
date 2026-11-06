@@ -60,7 +60,7 @@ export const Layout = () => {
 
     const handleShiftWarningConfirm = useCallback(() => {
         setShiftWarning(null);
-        navigate('/dashboard');
+        navigate('/cierre-caja');
     }, [navigate]);
 
     const handleShiftWarningDismiss = useCallback(() => {

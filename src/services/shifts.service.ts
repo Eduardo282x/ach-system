@@ -11,6 +11,11 @@ export const getShiftsApi = async (): Promise<ShiftsInterface> => {
     return response.data;
 }
 
+export const getCurrentShiftApi = async (): Promise<{ shift: Shift | null }> => {
+    const response = await getDataApi<{ shift: Shift | null }>(`${shiftUrl}/current`);
+    return response.data ?? { shift: null };
+}
+
 export const createShiftApi = async (data: ShiftBody) => {
     const response = await postDataApi<ShiftBody, { shift: Shift }>(`${shiftUrl}`, data);
     return response;

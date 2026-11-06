@@ -33,7 +33,7 @@ export const headerData: HeaderInterface[] = [
         children: []
     },
     {
-        title: 'Salidas',
+        title: 'Historial Inventario',
         icon: GoHistory,
         navigateTo: '/historial-inventario',
         type: 'button',

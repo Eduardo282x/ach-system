@@ -11,6 +11,7 @@ export interface Product {
     presentation: string;
     barcode: string;
     price: string;
+    purchasePrice?: string | number;
     currency: ExchangeRateType;
     quantity?: number;
     stock: number;
@@ -31,6 +32,7 @@ export interface ProductBody {
     presentation: string;
     barcode: string;
     price: number;
+    purchasePrice?: number;
     currency: string;
     stock: number;
     isDetail: boolean;
@@ -123,6 +125,7 @@ export interface InventoryEntryDetail {
     productId: number;
     quantity: string;
     unitPrice: string;
+    salePrice?: string | null;
     subtotal: string;
     product: Product;
 }
@@ -140,4 +143,59 @@ export interface InventoryEntryDetailBody {
     productId: number;
     quantity: number;
     unitPrice: number;
+    salePrice?: number;
+}
+
+//Excel imports
+export interface ImportedProductChange {
+    barcode: string;
+    name: string;
+    action: 'created' | 'updated';
+    quantityAdded: number;
+    previous?: {
+        name: string;
+        presentation: string;
+        barcode: string;
+        price: number;
+        purchasePrice: number;
+        stock: number;
+    };
+    current: {
+        name: string;
+        presentation: string;
+        barcode: string;
+        price: number;
+        purchasePrice: number;
+        stock: number;
+    };
+}
+
+export interface ImportError {
+    row: number;
+    barcode?: string;
+    name?: string;
+    reason: string;
+}
+
+export interface ImportSummary {
+    created: number;
+    updated: number;
+    skipped: number;
+    errors: ImportError[];
+    products: ImportedProductChange[];
+}
+
+export interface ProductImportResult extends ImportSummary {
+    message?: string;
+}
+
+export interface InventoryEntryImportResult {
+    entry: {
+        id: number;
+        controlNumber: string;
+        title: string;
+        description: string;
+        date: string;
+    };
+    summary: ImportSummary;
 }

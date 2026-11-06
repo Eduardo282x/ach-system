@@ -33,6 +33,13 @@ export const cashDrawerSessionColumns: ColumnDef<Session>[] = [
         visible: true,
     },
     {
+        header: 'Turno',
+        key: 'shift',
+        width: '8rem',
+        element: (row) => row.shift?.name ?? 'Sin turno',
+        visible: true,
+    },
+    {
         header: 'Estado',
         key: 'status',
         width: '8rem',

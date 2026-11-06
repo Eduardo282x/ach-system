@@ -44,7 +44,7 @@ export const Invoices = () => {
     const cashDrawerSessions = useSessionsGroupQueryRange({ startDate: filter.startDate ?? '', endDate: filter.endDate ?? '', shiftId: filter.shiftId ?? 0 });
 
     const cashierSessionOptions = cashDrawerSessions.data ? cashDrawerSessions.data.sessions.map((cashDrawerSession) => ({
-        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift.name}`,
+        label: `${cashDrawerSession.cashDrawer.name} (${cashDrawerSession.user.name}) - Turno: ${cashDrawerSession.shift?.name ?? 'Sin turno'}`,
         value: cashDrawerSession.id.toString(),
     })) : [];
 
@@ -52,7 +52,7 @@ export const Invoices = () => {
     const pagination = invoicesData?.pagination;
 
     const users = useMemo(() => usersData?.users ?? [], [usersData]);
-    const shifts = useMemo(() => shiftsData?.shifts ?? [], [shiftsData]);
+    const shifts = useMemo(() => (shiftsData?.shifts ?? []).filter((shift) => shift.active), [shiftsData]);
 
     const handleSearch = useCallback((value: string) => {
         setFilter((prev) => ({ ...prev, search: value || undefined, page: 1 }));

@@ -1,4 +1,4 @@
-import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryEntryBody, InventoryEntryContent, InventoryInterface, Product, ProductBody, ProductBreakdown } from "@/interfaces/inventory.interface";
+import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryEntryBody, InventoryEntryContent, InventoryEntryImportResult, InventoryInterface, Product, ProductBody, ProductBreakdown, ProductImportResult } from "@/interfaces/inventory.interface";
 import { deleteDataBodyApi, getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
@@ -21,15 +21,23 @@ export const getInventoryApi = async (search?: string, filter?: Pagination): Pro
     return response.data;
 }
 
-export const getInventoryHistoryApi = async (filter: Pagination): Promise<HistoryInventoryContent> => {
-    let params = '';
+export const getInventoryHistoryApi = async (filter: Pagination & { search?: string }): Promise<HistoryInventoryContent> => {
+    const params = new URLSearchParams();
+
     if (filter.page) {
-        params += `?page=${filter.page}&size=${filter.size}`;
+        params.append('page', String(filter.page));
+        params.append('size', String(filter.size));
     }
     if (filter.startDate && filter.endDate) {
-        params += `${params ? '&' : '?'}startDate=${filter.startDate}&endDate=${filter.endDate}`;
+        params.append('startDate', String(filter.startDate));
+        params.append('endDate', String(filter.endDate));
     }
-    const response = await getDataApi<HistoryInventoryContent>(`${inventoryUrl}/inventory/history${params}`);
+    if (filter.search) {
+        params.append('search', filter.search);
+    }
+
+    const queryString = params.toString();
+    const response = await getDataApi<HistoryInventoryContent>(`${inventoryUrl}/inventory/history${queryString ? `?${queryString}` : ''}`);
     if (response.data == null) {
         return { history: [], pagination: { total: 0, page: 1, size: filter.size } };
     }
@@ -81,12 +89,19 @@ export const getExchangeRateAutomaticApi = async (): Promise<ExchangeRate[]> => 
 }
 
 //Entradas de inventario
-export const getInventoryEntriesApi = async (filter: Pagination): Promise<InventoryEntryContent> => {
-    let params = '';
+export const getInventoryEntriesApi = async (filter: Pagination & { search?: string }): Promise<InventoryEntryContent> => {
+    const params = new URLSearchParams();
+
     if (filter.page) {
-        params += `?page=${filter.page}&size=${filter.size}`;
+        params.append('page', String(filter.page));
+        params.append('size', String(filter.size));
     }
-    const response = await getDataApi<InventoryEntryContent>(`${inventoryEntriesUrl}${params}`);
+    if (filter.search) {
+        params.append('search', filter.search);
+    }
+
+    const queryString = params.toString();
+    const response = await getDataApi<InventoryEntryContent>(`${inventoryEntriesUrl}${queryString ? `?${queryString}` : ''}`);
     if (response.data == null) {
         return { inventoryEntries: [], pagination: { total: 0, page: 1, size: filter.size } };
     }
@@ -99,12 +114,18 @@ export const createInventoryEntryApi = async (data: InventoryEntryBody) => {
 
 //Template
 export const downloadTemplateProduct = async () => {
-    return await getDataFileApi(`${inventoryUrl}/template`);
+    return await getDataFileApi(`${excelUrl}/products/template`);
 }
 
 //Excel
 export const uploadExcelProducts = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return await postDataApi<FormData, unknown>(`${excelUrl}/products/upload`, formData);
+    return await postDataApi<FormData, ProductImportResult>(`${excelUrl}/products/upload`, formData);
+}
+
+export const uploadInventoryEntryExcel = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await postDataApi<FormData, InventoryEntryImportResult>(`${excelUrl}/inventory-entries/upload`, formData);
 }

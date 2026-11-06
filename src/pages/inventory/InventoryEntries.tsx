@@ -10,25 +10,23 @@ import { useInventoryStore } from "@/store/inventory.store";
 import type { Pagination } from "@/interfaces/base.interface";
 import type { InventoryEntry } from "@/interfaces/inventory.interface";
 import { formatNumberWithDecimal } from "@/helpers/formatters";
+import { DownloadAndUploadProducts } from "./DownloadAndUploadProducts";
 
 export const InventoryEntries = () => {
     const { setFormType, openForm } = useInventoryStore((state) => state);
 
     const [columns, setColumns] = useState(inventoryEntriesColumns);
-    const [pagination, setPagination] = useState<Pagination>({ page: 1, size: 100 });
-    const [search, setSearch] = useState("");
+    const [pagination, setPagination] = useState<Pagination & { search?: string }>({ page: 1, size: 100 });
 
     const { data, isLoading } = useInventoryEntriesQuery(pagination);
-
-    const normalizedSearch = search.trim().toLowerCase();
-    const entries = (data?.inventoryEntries ?? []).filter((entry) =>
-        normalizedSearch === "" ||
-        entry.controlNumber.toLowerCase().includes(normalizedSearch) ||
-        entry.title.toLowerCase().includes(normalizedSearch)
-    );
+    const entries = data?.inventoryEntries ?? [];
 
     const changePagination = (page: number, size: number) => {
-        setPagination({ page, size });
+        setPagination((prev) => ({ ...prev, page, size }));
+    };
+
+    const changeSearch = (value: string) => {
+        setPagination((prev) => ({ ...prev, search: value.trim() || undefined, page: 1 }));
     };
 
     const openCreateForm = () => {
@@ -52,7 +50,8 @@ export const InventoryEntries = () => {
                             <TableHead>Código</TableHead>
                             <TableHead>Producto</TableHead>
                             <TableHead className="text-right">Cantidad</TableHead>
-                            <TableHead className="text-right">Precio</TableHead>
+                            <TableHead className="text-right">Precio Compra</TableHead>
+                            <TableHead className="text-right">Precio Venta</TableHead>
                             <TableHead className="text-right">Subtotal</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -66,6 +65,7 @@ export const InventoryEntries = () => {
                                 </TableCell>
                                 <TableCell className="text-right">{detail.quantity}</TableCell>
                                 <TableCell className="text-right">{formatNumberWithDecimal(detail.unitPrice)}</TableCell>
+                                <TableCell className="text-right">{formatNumberWithDecimal(detail.salePrice ?? 0)}</TableCell>
                                 <TableCell className="text-right font-semibold">{formatNumberWithDecimal(detail.subtotal)}</TableCell>
                             </TableRow>
                         ))}
@@ -80,10 +80,11 @@ export const InventoryEntries = () => {
             <div className="rounded-xl bg-white p-4">
                 <div className="w-full flex items-center justify-between mb-4">
                     <div className="w-96">
-                        <FilterComponent placeholder="Buscar por control o título..." onChange={setSearch} loading={isLoading} />
+                        <FilterComponent placeholder="Buscar por control o título..." onChange={changeSearch} loading={isLoading} />
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <DownloadAndUploadProducts />
                         <SelectColumnsComponent columns={columns} onChange={setColumns} />
                         <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Entrada</Button>
                     </div>

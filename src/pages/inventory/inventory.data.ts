@@ -50,7 +50,14 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         visible: true,
     },
     {
-        header: 'Precio',
+        header: 'Precio Compra',
+        key: 'purchasePrice',
+        width: '8rem',
+        element: (row) => `${formatNumberWithDecimal(row.purchasePrice ?? 0)} ${translateCurrency(row.currency)}`,
+        visible: true,
+    },
+    {
+        header: 'Precio Venta',
         key: 'price',
         width: '8rem',
         element: (row) => `${formatNumberWithDecimal(row.price)} ${translateCurrency(row.currency)}`,

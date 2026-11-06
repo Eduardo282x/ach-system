@@ -1,6 +1,6 @@
 import type { DeleteProductPayload, ExchangeRateBody, ExchangeRateType, InventoryEntryBody, Product, ProductBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { breakDownProductApi, createInventoryEntryApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryEntriesApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi, validatePasswordAdminApi } from "@/services/inventory.service";
+import { breakDownProductApi, createInventoryEntryApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryEntriesApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi, uploadInventoryEntryExcel, validatePasswordAdminApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
@@ -109,7 +109,7 @@ export const useInventoryQuery = (search: string) => {
 	});
 };
 
-export const useInventoryHistoryQuery = (filter: Pagination) => {
+export const useInventoryHistoryQuery = (filter: Pagination & { search?: string }) => {
 	return useQuery({
 		queryKey: [INVENTORY_HISTORY_QUERY_KEY, filter],
 		queryFn: () => getInventoryHistoryApi(filter),
@@ -354,14 +354,15 @@ export const useBreakDownProductMutation = () => {
 				return;
 			}
 
-			await queryClient.invalidateQueries({
-				queryKey: [INVENTORY_QUERY_KEY],
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_HISTORY_QUERY_KEY] }),
+			]);
 		},
 	});
 };
 //Inventory Entries
-export const useInventoryEntriesQuery = (filter: Pagination) => {
+export const useInventoryEntriesQuery = (filter: Pagination & { search?: string }) => {
 	return useQuery({
 		queryKey: [INVENTORY_ENTRIES_QUERY_KEY, filter],
 		queryFn: () => getInventoryEntriesApi(filter),
@@ -393,6 +394,27 @@ export const useCreateInventoryEntryMutation = () => {
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: [INVENTORY_ENTRIES_QUERY_KEY] }),
 				queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_HISTORY_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [PRODUCT_PRICE_SEARCH_QUERY_KEY] }),
+			]);
+		},
+	});
+};
+
+export const useUploadInventoryEntryExcelMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (file: File) => uploadInventoryEntryExcel(file),
+		onSuccess: async (response) => {
+			if (response.data == null) {
+				return;
+			}
+
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_ENTRIES_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_HISTORY_QUERY_KEY] }),
 				queryClient.invalidateQueries({ queryKey: [PRODUCT_PRICE_SEARCH_QUERY_KEY] }),
 			]);
 		},
