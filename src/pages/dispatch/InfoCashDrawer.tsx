@@ -9,7 +9,7 @@ export const InfoCashDrawer = () => {
     const cashier = data ? data?.sessions[0]?.user?.name || '' : '';
 
     return (
-        <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
+        <div className='w-full h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             <div className='text-center text-xl bg-white font-semibold text-blue-800 py-2'>
                 <p>Informacion del cajero</p>
             </div>

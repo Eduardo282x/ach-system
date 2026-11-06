@@ -101,11 +101,11 @@ export const Inventory = () => {
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full h-full min-h-0">
 
             <PageTransitionComponent toggle={toggle}>
-                <div>
-                    <div className="flex items-center gap-4 ml-2 mb-2">
+                <div className="h-full min-h-0 flex flex-col">
+                    <div className="flex shrink-0 items-center gap-4 ml-2 mb-2">
                         <Tabs value={activeTab} onValueChange={handleTabChange}>
                             <TabsList>
                                 <TabsTrigger value="inventory">Inventario</TabsTrigger>
@@ -118,12 +118,12 @@ export const Inventory = () => {
                     </div>
 
                     {activeTab === "inventory" ? (
-                        <div className="rounded-xl bg-white p-4">
-                            <div className="w-full flex items-center justify-between mb-4">
-                                <div className="w-96">
+                        <div className="rounded-xl bg-white p-4 flex flex-1 min-h-0 flex-col">
+                            <div className="w-full flex shrink-0 flex-wrap items-center justify-between gap-3 mb-4">
+                                <div className="w-full sm:w-96">
                                     <FilterComponent placeholder="Buscar producto..." onChange={setSearch} loading={isLoading} />
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <DownloadAndUploadProducts/>
                                     <SelectColumnsComponent columns={columns} onChange={setColumns} />
                                     <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Producto</Button>
@@ -135,6 +135,7 @@ export const Inventory = () => {
                                 columns={columns.filter(column => column.visible)}
                                 data={products}
                                 isLoading={isLoading}
+                                fillHeight
                                 pagination={data?.pagination}
                                 totalElements={data?.pagination?.total}
                                 onPaginationChange={changePagination}

@@ -27,15 +27,21 @@ export const Dispatch = () => {
     }, []);
 
     return (
-        <div className='w-full'>
+        <div className='w-full h-full min-h-0 flex flex-col'>
 
-            <div className="flex items-center gap-4 h-36 mb-2">
-                <SearchClients key={resetKey} onClientChange={setSelectedClient} />
-                <InfoCashDrawer />
-                <Payment customer={selectedClient} onCompleteSale={handleCompleteSale} />
+            <div className="flex flex-col lg:flex-row items-stretch gap-4 lg:h-36 mb-2 shrink-0">
+                <div className="w-full lg:w-[40%]">
+                    <SearchClients key={resetKey} onClientChange={setSelectedClient} />
+                </div>
+                <div className="w-full lg:w-[40%]">
+                    <InfoCashDrawer />
+                </div>
+                <div className="w-full lg:w-[20%]">
+                    <Payment customer={selectedClient} onCompleteSale={handleCompleteSale} />
+                </div>
             </div>
 
-            <div className={`w-full transition-opacity ${disabled ? 'opacity-70' : 'opacity-100'} relative`} aria-disabled={disabled}>
+            <div className={`w-full flex-1 min-h-[320px] lg:min-h-0 transition-opacity ${disabled ? 'opacity-70' : 'opacity-100'} relative`} aria-disabled={disabled}>
                 {disabled && (
                     <div>
                         <div className="absolute inset-0 bg-gray-700 opacity-50 z-10" />

@@ -49,16 +49,16 @@ export const HistoryInventory = () => {
     }
 
     return (
-        <div>
+        <div className="h-full min-h-0 flex flex-col">
 
-            <div>
-                <p className="text-2xl font-semibold mb-2 ml-2">Historial de Movimiento del Inventario</p>
+            <div className="flex flex-1 min-h-0 flex-col">
+                <p className="text-2xl font-semibold mb-2 ml-2 shrink-0">Historial de Movimiento del Inventario</p>
 
-                <div className="rounded-xl bg-white p-4">
-                    <div className="w-full flex items-center justify-between mb-4 gap-4">
-                        <div className="flex items-center gap-4 w-full">
+                <div className="rounded-xl bg-white p-4 flex flex-1 min-h-0 flex-col">
+                    <div className="w-full flex shrink-0 flex-wrap items-center justify-between mb-4 gap-4">
+                        <div className="flex flex-1 flex-wrap items-center gap-3">
                             <DatePickerRange onChange={handleChangeDate} display="flex"/>
-                            <div className="w-72">
+                            <div className="w-full sm:w-72">
                                 <FilterComponent placeholder="Buscar por producto o código..." onChange={handleSearch} loading={isLoading} />
                             </div>
                         </div>
@@ -75,6 +75,7 @@ export const HistoryInventory = () => {
                         totalElements={data?.pagination?.total}
                         data={isLoading ? [] : data?.history || []}
                         onPaginationChange={changePagination}
+                        fillHeight
                     />
                 </div>
             </div>

@@ -71,7 +71,7 @@ export const Layout = () => {
         <div className="w-screen h-full flex flex-col overflow-hidden">
             <TooltipProvider>
                 <Header />
-                <div className="flex-1 bg-gray-200 p-4 overflow-auto">
+                <div className="flex-1 min-h-0 bg-gray-200 p-4 overflow-auto">
                     <Outlet />
                 </div>
                 <Footer />

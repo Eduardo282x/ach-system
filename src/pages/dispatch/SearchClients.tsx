@@ -122,7 +122,7 @@ export const SearchClients = ({ onClientChange }: SearchClientsProps) => {
     }
 
     return (
-        <div className='w-[40%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
+        <div className='w-full h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             <div className='bg-white text-center text-xl font-semibold text-blue-800 py-2 relative'>
                 <p>Informacion del cliente</p>
 

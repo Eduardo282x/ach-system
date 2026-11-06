@@ -469,7 +469,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
     }
 
     return (
-        <div className='w-[20%] h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
+        <div className='w-full h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             {/* Imprimir factura */}
             <div className='hidden'>
                 <PrintInvoice ref={componentRef} data={invoiceData} />

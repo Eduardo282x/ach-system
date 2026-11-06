@@ -76,14 +76,14 @@ export const InventoryEntries = () => {
     };
 
     return (
-        <div>
-            <div className="rounded-xl bg-white p-4">
-                <div className="w-full flex items-center justify-between mb-4">
-                    <div className="w-96">
+        <div className="flex flex-1 min-h-0 flex-col">
+            <div className="rounded-xl bg-white p-4 flex flex-1 min-h-0 flex-col">
+                <div className="w-full flex shrink-0 flex-wrap items-center justify-between gap-3 mb-4">
+                    <div className="w-full sm:w-96">
                         <FilterComponent placeholder="Buscar por control o título..." onChange={changeSearch} loading={isLoading} />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <DownloadAndUploadProducts />
                         <SelectColumnsComponent columns={columns} onChange={setColumns} />
                         <Button variant="primary" onClick={openCreateForm}><IoMdAdd /> Agregar Entrada</Button>
@@ -99,7 +99,7 @@ export const InventoryEntries = () => {
                     totalElements={data?.pagination?.total}
                     onPaginationChange={changePagination}
                     isExpansible
-                    automaticHeight
+                    fillHeight
                     renderRow={renderDetails}
                 />
             </div>

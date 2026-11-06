@@ -16,6 +16,7 @@ import { Label } from "../ui/label";
 import { TableSkeleton } from "./TableSkeleton";
 import { IoIosArrowDown } from "react-icons/io";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type VariantType = 'primary' | 'error' | 'outline' | 'secondary';
 export interface ColumnDef<T> {
@@ -41,6 +42,7 @@ interface TableComponentProps<T> {
     ignorePagination?: boolean;
     isExpansible?: boolean;
     automaticHeight?: boolean;
+    fillHeight?: boolean;
     isLoading?: boolean;
     onChange: (action: string, data: T) => void;
     onPaginationChange?: (page: number, size: number) => void;
@@ -95,6 +97,7 @@ export const TableComponent = <T,>({
     isExpansible,
     renderRow,
     automaticHeight,
+    fillHeight,
     onPaginationChange
 }: TableComponentProps<T>) => {
     const [internalSize, setInternalSize] = useState(pagination?.size || 100);
@@ -181,9 +184,18 @@ export const TableComponent = <T,>({
     }, [data, columns, onChange, getRowKey]);
 
     return (
-        <div>
-            <div className="rounded-md border hidden lg:block shadow-md">
-                <Table noMaxHeight={!automaticHeight} className="relative">
+        <div className={fillHeight ? "flex min-h-0 flex-1 flex-col" : undefined}>
+            <div
+                className={cn(
+                    "rounded-md border shadow-md",
+                    fillHeight ? "flex flex-1 min-h-0 flex-col" : "hidden lg:block"
+                )}
+            >
+                <Table
+                    noMaxHeight={!automaticHeight && !fillHeight}
+                    containerClassName={fillHeight ? "flex-1 min-h-[280px] lg:min-h-0" : undefined}
+                    className="relative"
+                >
                     <TableHeader className={`shadow-md`}>
                         <TableRow>
                             {columns.map((column) => (
@@ -221,7 +233,7 @@ export const TableComponent = <T,>({
                 </Table>
             </div>
             {!ignorePagination && (pagination && totalElements ? totalElements > 0 : data.length > 10) && (
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className={cn("flex flex-wrap items-center justify-between gap-4", fillHeight && "shrink-0")}>
 
                     <p className="text-sm text-gray-700 mt-3 ml-1">{
                         pagination && totalElements ?

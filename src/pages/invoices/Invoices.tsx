@@ -163,13 +163,13 @@ export const Invoices = () => {
     }, [invoiceSelected]);
 
     return (
-        <div className="w-full">
-            <p className="text-2xl font-semibold mb-2 ml-2">Recibos</p>
-            <div className="rounded-xl bg-white p-4">
+        <div className="w-full h-full min-h-0 flex flex-col">
+            <p className="text-2xl font-semibold mb-2 ml-2 shrink-0">Recibos</p>
+            <div className="rounded-xl bg-white p-4 flex flex-1 min-h-0 flex-col">
                 {/* Filters */}
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-72">
+                <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 mb-4">
+                    <div className="flex flex-1 flex-wrap items-center gap-3">
+                        <div className="w-full sm:w-72">
                             <FilterComponent
                                 placeholder="Buscar por # factura, cliente o cedula..."
                                 onChange={handleSearch}
@@ -177,7 +177,7 @@ export const Invoices = () => {
                         </div>
 
                         <Select onValueChange={handleSessionChange}>
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Todas las sesiones" />
                             </SelectTrigger>
                             <SelectContent>
@@ -193,7 +193,7 @@ export const Invoices = () => {
                         </Select>
 
                         <Select onValueChange={handleUserChange}>
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Todos los cajeros" />
                             </SelectTrigger>
                             <SelectContent>
@@ -209,7 +209,7 @@ export const Invoices = () => {
                         </Select>
 
                         <Select onValueChange={handleShiftChange}>
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Todos los turnos" />
                             </SelectTrigger>
                             <SelectContent>
@@ -236,6 +236,7 @@ export const Invoices = () => {
                     data={invoices}
                     isLoading={isLoading}
                     isExpansible={true}
+                    fillHeight
                     pagination={pagination}
                     totalElements={pagination?.total}
                     onPaginationChange={changePagination}

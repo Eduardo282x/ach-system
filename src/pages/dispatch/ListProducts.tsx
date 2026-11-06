@@ -186,7 +186,7 @@ export const ListProducts = () => {
     }, [productList, setTotal, setTotalUSD, exchangeRates]);
 
     return (
-        <div className='w-full h-104 p-4 border-2 border-gray-300 rounded-md shadow-md'>
+        <div className='w-full h-full min-h-0 flex flex-col p-4 border-2 border-gray-300 rounded-md shadow-md'>
             <div className='relative' ref={searchContainerRef}>
                 <div className="w-full">
                     <FilterComponent placeholder='Buscar producto...' onChange={searchProducts} loading={isLoading} clearValue={clear} />
@@ -222,7 +222,7 @@ export const ListProducts = () => {
                     </div>
                 )}
             </div>
-            <div className='overflow-y-auto h-[85%] border-2 w-full bg-white mt-2 rounded-md shadow-md'>
+            <div className='overflow-y-auto flex-1 min-h-0 border-2 w-full bg-white mt-2 rounded-md shadow-md'>
                 <div className="flex items-center gap-3 p-2 border-b-2 text-sm">
                     <p className='font-semibold text-black w-40 shrink-0'>Código</p>
                     <p className='font-semibold text-black min-w-0 flex-1'>Nombre</p>

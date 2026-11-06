@@ -4,13 +4,18 @@ import { cn } from "@/lib/utils"
 
 interface TableProps extends React.ComponentProps<"table"> {
   noMaxHeight?: boolean
+  containerClassName?: string
 }
 
-function Table({ className, noMaxHeight, ...props }: TableProps) {
+function Table({ className, noMaxHeight, containerClassName, ...props }: TableProps) {
   return (
     <div
       data-slot="table-container"
-      className={`relative w-full rounded-md overflow-auto ${noMaxHeight ? 'h-98 max-h-98' : ""}`}
+      className={cn(
+        "relative w-full rounded-md overflow-auto",
+        noMaxHeight && "h-98 max-h-98",
+        containerClassName
+      )}
     >
       <table
         data-slot="table"
