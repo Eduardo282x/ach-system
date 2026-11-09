@@ -20,11 +20,23 @@ export interface Product {
     isDetail?: boolean;
     parentId?: number | null;
     unitsDetail?: number | null;
+    deleted?: boolean;
+    productParent?: Product | null;
+    productChild?: Product[];
     createdAt?: Date;
     updatedAt?: Date;
     exchangeRates?: { [key: string]: number };
 }
 
+export interface ProductChildBody {
+    id?: number;
+    name: string;
+    presentation: string;
+    barcode: string;
+    price: number;
+    purchasePrice?: number;
+    stock: number;
+}
 
 //Body
 export interface ProductBody {
@@ -38,7 +50,10 @@ export interface ProductBody {
     isDetail: boolean;
     parentId: number | null | undefined;
     unitsDetail: number | null;
+    child?: ProductChildBody;
 }
+
+export type ProductUpdateBody = Partial<ProductBody>;
 
 export interface ProductBreakdown {
     childId: number;

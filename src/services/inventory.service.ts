@@ -1,4 +1,4 @@
-import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryEntryBody, InventoryEntryContent, InventoryEntryImportResult, InventoryInterface, Product, ProductBody, ProductBreakdown, ProductImportResult } from "@/interfaces/inventory.interface";
+import type { DeleteProductPayload, ExchangeRate, ExchangeRateBody, ExchangeRateContent, HistoryInventoryContent, InventoryEntryBody, InventoryEntryContent, InventoryEntryImportResult, InventoryInterface, Product, ProductBody, ProductBreakdown, ProductImportResult, ProductUpdateBody } from "@/interfaces/inventory.interface";
 import { deleteDataBodyApi, getDataApi, getDataFileApi, postDataApi, putDataApi } from "./api.service";
 import type { Pagination } from "@/interfaces/base.interface";
 
@@ -53,8 +53,8 @@ export const createProductApi = async (data: ProductBody) => {
     const response = await postDataApi<ProductBody, Product>(`${inventoryUrl}`, data);
     return response;
 }
-export const updateProductApi = async (id: number, data: ProductBody) => {
-    const response = await putDataApi<ProductBody, Product>(`${inventoryUrl}/${id}`, data);
+export const updateProductApi = async (id: number, data: ProductUpdateBody) => {
+    const response = await putDataApi<ProductUpdateBody, Product>(`${inventoryUrl}/${id}`, data);
     return response;
 }
 export const breakDownProductApi = async (data: ProductBreakdown) => {

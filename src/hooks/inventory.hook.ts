@@ -1,9 +1,10 @@
-import type { DeleteProductPayload, ExchangeRateBody, ExchangeRateType, InventoryEntryBody, Product, ProductBody } from "@/interfaces/inventory.interface";
+import type { DeleteProductPayload, ExchangeRateBody, InventoryEntryBody, Product, ProductBody, ProductUpdateBody } from "@/interfaces/inventory.interface";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { breakDownProductApi, createInventoryEntryApi, createProductApi, deleteProductApi, getExchangeRateAutomaticApi, getExchangeRateTodayApi, getInventoryApi, getInventoryEntriesApi, getInventoryHistoryApi, postExchangeRateApi, putExchangeRateDefaultApi, updateProductApi, uploadInventoryEntryExcel, validatePasswordAdminApi } from "@/services/inventory.service";
 import { useInventoryStore } from "@/store/inventory.store";
 import { useEffect, useMemo } from "react";
 import type { Pagination } from "@/interfaces/base.interface";
+import toast from "react-hot-toast";
 
 export const INVENTORY_QUERY_KEY = "inventory";
 export const INVENTORY_HISTORY_QUERY_KEY = "inventory-history";
@@ -215,12 +216,13 @@ export const useCreateProductMutation = () => {
 
 	return useMutation({
 		mutationFn: async (data: ProductBody) => createProductApi(data),
-		onSuccess: (response) => {
+		onSuccess: async (response) => {
 			if (response.data == null) {
 				return;
 			}
 
 			upsertInventoryCache(queryClient, response.data);
+			await queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] });
 		},
 	});
 };
@@ -229,48 +231,22 @@ export const useUpdateProductMutation = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async ({ id, data }: { id: number; data: ProductBody }) => updateProductApi(id, data),
-		onMutate: async ({ id, data }) => {
-			const queries = queryClient.getQueriesData<{ products: Product[] }>({
-				queryKey: [INVENTORY_QUERY_KEY],
-			});
-
-			const previousQueries: Array<[readonly unknown[], { products: Product[] } | undefined]> = [];
-
-			queries.forEach(([queryKey, oldData]) => {
-				previousQueries.push([queryKey, oldData]);
-
-				if (!oldData) return;
-
-				const search = typeof queryKey[1] === "string" ? queryKey[1] : "";
-				const exists = oldData.products.some((item) => item.id === id);
-
-				if (exists) {
-					const partialProduct = { id, ...data, price: String(data.price), currency: data.currency as ExchangeRateType } as Product;
-					const matches = productMatchesSearch(partialProduct, search);
-					queryClient.setQueryData<{ products: Product[] }>(queryKey, {
-						products: matches
-							? oldData.products.map((item) => (item.id === id ? { ...item, ...data, price: String(data.price), currency: data.currency as ExchangeRateType } : item))
-							: oldData.products.filter((item) => item.id !== id),
-					});
-				}
-			});
-
-			return { previousQueries };
-		},
-		onError: (_err, _variables, context) => {
-			if (context?.previousQueries) {
-				context.previousQueries.forEach(([queryKey, data]) => {
-					queryClient.setQueryData(queryKey, data);
-				});
-			}
-		},
-		onSuccess: (response) => {
-			if (response.data == null) {
+		mutationFn: async ({ id, data }: { id: number; data: ProductUpdateBody }) => updateProductApi(id, data),
+		onSuccess: async (response) => {
+			if (response.data == null || !response.success) {
 				return;
 			}
 
-			upsertInventoryCache(queryClient, response.data);
+			const updatedProduct = response.data;
+			upsertInventoryCache(queryClient, updatedProduct);
+			updatedProduct.productChild?.forEach((child) =>
+				upsertInventoryCache(queryClient, { ...child, productParent: updatedProduct }),
+			);
+
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_QUERY_KEY] }),
+				queryClient.invalidateQueries({ queryKey: [INVENTORY_HISTORY_QUERY_KEY] }),
+			]);
 		},
 	});
 };
@@ -314,6 +290,11 @@ export const useDeleteProductMutation = () => {
 		},
 		onSuccess: (response, { id }, context) => {
 			if (!response.success) {
+				toast.error(response.message || "No se pudo eliminar el producto", {
+					duration: 2000,
+					position: 'top-right'
+				});
+
 				if (context?.previousQueries) {
 					context.previousQueries.forEach(([queryKey, data]) => {
 						queryClient.setQueryData(queryKey, data);

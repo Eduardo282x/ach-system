@@ -57,8 +57,7 @@ export const Inventory = () => {
             await breakDownProductMutation.mutateAsync(data.id);
         }
         if (action === "addDetail") {
-            const findParent = products.find((product) => product.parentId === data.id);
-            if (findParent) {
+            if ((data.productChild?.length ?? 0) > 0) {
                 toast.error("No se puede agregar un detalle a un producto que ya tiene un detalle.", {
                     duration: 1500,
                     position: 'top-right'

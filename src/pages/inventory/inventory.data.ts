@@ -77,23 +77,32 @@ export const inventoryColumns: ColumnDef<Product>[] = [
         element: () => '',
         visible: true,
         icons: (row) => [
+            ...(row.isDetail
+                ? [{
+                    label: 'Cargar y descargar',
+                    icon: IoCubeOutline,
+                    action: 'breakdown',
+                    variant: 'outline' as const,
+                }]
+                : (row.productChild?.length ?? 0) === 0
+                    ? [{
+                        label: 'Agregar Detalle',
+                        icon: IoMdAdd,
+                        action: 'addDetail',
+                        variant: 'outline' as const,
+                    }]
+                    : []),
             {
-                label: row.isDetail ? 'Cargar y descargar' : 'Agregar Detalle',
-                icon: row.isDetail ? IoCubeOutline : IoMdAdd,
-                action: row.isDetail ? 'breakdown' : 'addDetail',
-                variant: 'outline',
-            },
-            {
-                label:'Editar',
+                label: 'Editar',
                 icon: GoPencil,
                 action: 'edit',
-                variant: 'primary',
+                variant: 'primary' as const,
             },
             {
-                label:'Eliminar',
+                label: 'Eliminar',
                 icon: FaRegTrashCan,
                 action: 'delete',
-                variant: 'error',
+                variant: 'error' as const,
             },
         ]
     }
