@@ -17,6 +17,7 @@ import {
 import { formatDate, formatOnlyTime } from "@/helpers/formatters";
 import { PrintInvoice, type InvoiceData } from "../dispatch/PrintInvoice";
 import { useReactToPrint } from "react-to-print";
+import { INVOICE_BODY_CLASS, INVOICE_PAGE_STYLE } from "@/helpers/print.helper";
 import type { DateRange } from "react-day-picker";
 import { TableComponent } from "@/components/table/TableComponent";
 import { EmptyInvoice } from "../invoices/invoices.data";
@@ -77,6 +78,8 @@ export const Credits = () => {
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
         documentTitle: "Factura",
+        bodyClass: INVOICE_BODY_CLASS,
+        pageStyle: INVOICE_PAGE_STYLE,
     });
 
     const getActionTable = async (action: string, data: InvoiceResponse) => {
@@ -175,7 +178,7 @@ export const Credits = () => {
             </div>
 
             {/* Hidden PrintInvoice */}
-            <div className="hidden">
+            <div className="print-invoice-hidden" aria-hidden="true">
                 <PrintInvoice ref={componentRef} data={invoicePrint} />
             </div>
 

@@ -27,6 +27,7 @@ import { useAuthStore } from "@/store/auth.store";
 import toast from "react-hot-toast";
 import { PrintInvoice } from "./PrintInvoice";
 import { useReactToPrint } from 'react-to-print';
+import { INVOICE_BODY_CLASS, INVOICE_PAGE_STYLE } from "@/helpers/print.helper";
 import type { Client } from "@/interfaces/customer.interface";
 import { flushSync } from "react-dom";
 import type { ExchangeRateType } from "@/interfaces/inventory.interface";
@@ -311,6 +312,8 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
         documentTitle: 'Factura',
+        bodyClass: INVOICE_BODY_CLASS,
+        pageStyle: INVOICE_PAGE_STYLE,
         onAfterPrint: () => {
         }
     });
@@ -471,7 +474,7 @@ export const Payment = ({ customer, onCompleteSale }: PaymentProps) => {
     return (
         <div className='w-full h-full rounded-xl border-2 border-gray-300 bg-gray-100 overflow-hidden'>
             {/* Imprimir factura */}
-            <div className='hidden'>
+            <div className="print-invoice-hidden" aria-hidden="true">
                 <PrintInvoice ref={componentRef} data={invoiceData} />
             </div>
 

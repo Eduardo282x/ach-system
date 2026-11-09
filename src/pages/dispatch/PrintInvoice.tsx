@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { formatNumberWithDecimal, formatNumberWithDots } from "@/helpers/formatters";
 import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 
@@ -42,15 +42,46 @@ interface PrintInvoiceProps {
 
 export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref<HTMLDivElement>) => {
     const { data } = props;
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [printScale, setPrintScale] = useState(1);
+    const [printHeight, setPrintHeight] = useState<number | null>(null);
+
+    // Mide la altura real del contenido oculto para escalarlo y evitar una segunda página.
+    useLayoutEffect(() => {
+        const content = contentRef.current;
+        const page = content?.closest<HTMLDivElement>('.print-invoice');
+        if (!data || !content || !page) return;
+
+        const styles = window.getComputedStyle(page);
+        const paddingTop = Number.parseFloat(styles.paddingTop) || 0;
+        const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
+        const availableHeight = page.clientHeight - paddingTop - paddingBottom;
+        const naturalHeight = content.scrollHeight;
+
+        if (availableHeight <= 0 || naturalHeight <= 0) return;
+
+        const MIN_PRINT_SCALE = 0.55;
+        const nextScale = Math.max(MIN_PRINT_SCALE, Math.min(1, availableHeight / naturalHeight));
+        setPrintScale(nextScale);
+        setPrintHeight(Math.min(naturalHeight * nextScale, availableHeight));
+    }, [data]);
 
     if (!data) return null; // No renderizar nada si no hay data
 
     return (
-        <div ref={ref} className="w-full h-full relative">
-            <div className="p-4 w-96 scale-50 origin-top-left absolute top-0 left-0 text-base overflow-hidden">
-                <p className='text-2xl font-bold text-center'>{import.meta.env.VITE_NAME}</p>
+        <div ref={ref} className="print-invoice">
+            <div
+                className="print-invoice-viewport"
+                style={printHeight != null ? { height: `${printHeight}px` } : undefined}
+            >
+                <div
+                    ref={contentRef}
+                    className="print-invoice-content"
+                    style={{ transform: `scale(${printScale})` }}
+                >
+                    <p className='print-invoice-title text-2xl font-bold text-center'>{import.meta.env.VITE_NAME}</p>
 
-                <div className='flex items-start justify-between w-full my-4 text-lg'>
+                <div className='print-invoice-meta print-invoice-row flex items-start justify-between w-full my-4 text-lg'>
                     <div className="overflow-hidden wrap-break-words">
                         <p><strong>Despacho: </strong>#{data.invoiceNumber ?? '--'}</p>
                         <p><strong>Fecha: </strong>{data.date}</p>
@@ -64,10 +95,10 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     </div>
                 </div>
 
-                <div className="w-full border-2 border-dashed border-black"></div>
+                <div className="print-invoice-divider w-full border-2 border-dashed border-black"></div>
 
                 {data.productsList.map((product, index) => (
-                    <div key={index} className="flex items-start justify-between w-full my-4 text-xl">
+                    <div key={index} className="print-invoice-product print-invoice-row flex items-start justify-between w-full my-4 text-xl">
                         <div className="overflow-hidden wrap-break-words min-w-0 w-full">
                             <p><strong>{product.quantity}</strong> x {product.name}</p>
                             <p>X {formatNumberWithDecimal(product.unitPrice)} Bs</p>
@@ -76,10 +107,10 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     </div>
                 ))}
 
-                <div className="w-full border-2 border-dashed border-black"></div>
+                <div className="print-invoice-divider w-full border-2 border-dashed border-black"></div>
 
                 <div>
-                    <div className="flex items-start justify-between w-full my-4">
+                    <div className="print-invoice-total print-invoice-row flex items-start justify-between w-full my-4">
                         <p className="font-bold text-2xl">Total a Pagar:</p>
                         <div className="text-right">
                             <p className="font-bold text-2xl">{formatNumberWithDecimal(data.totals.totalBs)} Bs</p>
@@ -88,13 +119,13 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     </div>
                 </div>
 
-                <div className="text-xl">
+                <div className="print-invoice-payment text-xl">
                     <p className="font-bold">Métodos de pago:</p>
                     {data.payments.length === 0 ? (
                         <p>--</p>
                     ) : (
                         data.payments.map((payment, index) => (
-                            <div key={index} className="flex items-start justify-between w-full mt-2">
+                            <div key={index} className="print-invoice-row flex items-start justify-between w-full mt-2">
                                 <div className="overflow-hidden wrap-break-words min-w-0">
                                     <p>{payment.typePayment}</p>
                                     <p className="text-sm">Ref: {payment.reference || '--'}</p>
@@ -117,8 +148,9 @@ export const PrintInvoice = forwardRef((props: PrintInvoiceProps, ref: React.Ref
                     )}
                 </div>
 
-                <p className="text-center mt-4">¡Gracias por su compra!</p>
+                <p className="print-invoice-footer text-center mt-4">¡Gracias por su compra!</p>
 
+                </div>
             </div>
         </div>
     )
