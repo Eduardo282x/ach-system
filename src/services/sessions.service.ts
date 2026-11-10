@@ -33,7 +33,6 @@ export const getSessionsGroupApi = async (filter: SessionGroupFilter): Promise<S
         params += params ? `&shiftId=${filter.shiftId}` : `?shiftId=${filter.shiftId}`;
     }
     const response = await getDataApi<SessionsGroupContent>(`${sessionsUrl}/group${params}`);
-    console.log(response)
     if (response.data == null) {
         return { sessions: [] };
     }

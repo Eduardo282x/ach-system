@@ -3,9 +3,10 @@ import { useInvoicesQuery } from "@/hooks/dispatch.hook";
 import { useUsersQuery } from "@/hooks/users.hook";
 import { useSessionsGroupQueryRange } from "@/hooks/sessions.hook";
 import { useShiftsQuery } from "@/hooks/shifts.hook";
-import type { InvoicesFilter, InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
+import type { InvoiceResponse, PaymentDetail } from "@/interfaces/distpatch.interface";
 import type { ExchangeRateType } from "@/interfaces/inventory.interface";
 import { FilterComponent } from "@/components/table/FilterComponent";
+import { ClearFiltersButton } from "@/components/table/ClearFiltersButton";
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
 import {
     Select,
@@ -16,7 +17,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { formatDate, formatOnlyTime } from "@/helpers/formatters";
+import { formatDate, formatOnlyDateStringFilter, formatOnlyTime, parseDateOnlyString } from "@/helpers/formatters";
+import { useInvoicesFilterStore } from "@/store/invoices.store";
 import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
 import { PrintInvoice, type InvoiceData } from "../dispatch/PrintInvoice";
 import { useReactToPrint } from "react-to-print";
@@ -26,12 +28,9 @@ import { EmptyInvoice, invoiceColumns, invoiceDetailsColumns } from "./invoices.
 import { TableComponent } from "@/components/table/TableComponent";
 
 export const Invoices = () => {
-    const [filter, setFilter] = useState<InvoicesFilter>({
-        page: 1,
-        size: 100,
-        credit: false,
-    });
+    const { filter, setFilter, resetFilter } = useInvoicesFilterStore((state) => state);
     // const [expandedRow, setExpandedRow] = useState<number | null>(null);
+    const [filterResetKey, setFilterResetKey] = useState(0);
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [selectedPaymentDetails, setSelectedPaymentDetails] = useState<PaymentDetail[]>([]);
     const [selectedInvoiceTotals, setSelectedInvoiceTotals] = useState<{ totalAmountBs: string; totalAmountUsd: string }>({ totalAmountBs: "0", totalAmountUsd: "0" });
@@ -57,21 +56,32 @@ export const Invoices = () => {
 
     const handleSearch = useCallback((value: string) => {
         setFilter((prev) => ({ ...prev, search: value || undefined, page: 1 }));
-    }, []);
+    }, [setFilter]);
 
     const [invoiceSelected, setInvoiceSelected] = useState<InvoiceResponse | null>(null);
 
     const handleDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
         if (dateRange?.from && dateRange?.to) {
-            const startDate = new Date(dateRange.from);
-            const endDate = new Date(dateRange.to);
-            const startStr = startDate.toISOString().split("T")[0];
-            const endStr = endDate.toISOString().split("T")[0];
-            setFilter((prev) => ({ ...prev, startDate: startStr, endDate: endStr, page: 1 }));
+            setFilter((prev) => ({
+                ...prev,
+                startDate: formatOnlyDateStringFilter(dateRange.from),
+                endDate: formatOnlyDateStringFilter(dateRange.to),
+                page: 1,
+            }));
         } else {
             setFilter((prev) => ({ ...prev, startDate: undefined, endDate: undefined, page: 1 }));
         }
-    }, []);
+    }, [setFilter]);
+
+    const dateRangeValue = useMemo<DateRange | undefined>(() => ({
+        from: filter.startDate ? parseDateOnlyString(filter.startDate) : undefined,
+        to: filter.endDate ? parseDateOnlyString(filter.endDate) : undefined,
+    }), [filter.startDate, filter.endDate]);
+
+    const handleClearFilters = useCallback(() => {
+        resetFilter();
+        setFilterResetKey((key) => key + 1);
+    }, [resetFilter]);
 
     const handleSessionChange = useCallback((value: string) => {
         setFilter((prev) => ({
@@ -79,7 +89,7 @@ export const Invoices = () => {
             sessionId: value === "all" ? undefined : Number(value),
             page: 1,
         }));
-    }, []);
+    }, [setFilter]);
 
     const handleUserChange = useCallback((value: string) => {
         setFilter((prev) => ({
@@ -87,7 +97,7 @@ export const Invoices = () => {
             userId: value === "all" ? undefined : Number(value),
             page: 1,
         }));
-    }, []);
+    }, [setFilter]);
 
     const handleShiftChange = useCallback((value: string) => {
         setFilter((prev) => ({
@@ -95,7 +105,7 @@ export const Invoices = () => {
             shiftId: value === "all" ? undefined : Number(value),
             page: 1,
         }));
-    }, []);
+    }, [setFilter]);
 
     const changePagination = (page: number, size: number) => {
         setFilter((prev) => ({ ...prev, page, size }));
@@ -174,12 +184,17 @@ export const Invoices = () => {
                     <div className="flex flex-1 flex-wrap items-center gap-3">
                         <div className="w-full sm:w-72">
                             <FilterComponent
+                                key={filterResetKey}
                                 placeholder="Buscar por # factura, cliente o cedula..."
                                 onChange={handleSearch}
+                                defaultValue={filter.search ?? ""}
                             />
                         </div>
 
-                        <Select onValueChange={handleSessionChange}>
+                        <Select
+                            value={filter.sessionId?.toString() ?? "all"}
+                            onValueChange={handleSessionChange}
+                        >
                             <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Todas las sesiones" />
                             </SelectTrigger>
@@ -195,7 +210,10 @@ export const Invoices = () => {
                             </SelectContent>
                         </Select>
 
-                        <Select onValueChange={handleUserChange}>
+                        <Select
+                            value={filter.userId?.toString() ?? "all"}
+                            onValueChange={handleUserChange}
+                        >
                             <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Todos los cajeros" />
                             </SelectTrigger>
@@ -211,7 +229,10 @@ export const Invoices = () => {
                             </SelectContent>
                         </Select>
 
-                        <Select onValueChange={handleShiftChange}>
+                        <Select
+                            value={filter.shiftId?.toString() ?? "all"}
+                            onValueChange={handleShiftChange}
+                        >
                             <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Todos los turnos" />
                             </SelectTrigger>
@@ -228,7 +249,10 @@ export const Invoices = () => {
                         </Select>
                     </div>
 
-                    <DatePickerRange onChange={handleDateRangeChange} />
+                    <div className="flex items-center gap-2">
+                        <DatePickerRange value={dateRangeValue} onChange={handleDateRangeChange} />
+                        <ClearFiltersButton onClear={handleClearFilters} />
+                    </div>
 
                 </div>
 

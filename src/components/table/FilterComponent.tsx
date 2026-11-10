@@ -1,6 +1,6 @@
 import { IoMdClose } from 'react-icons/io';
 import { Input } from '../ui/input';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IoIosSearch } from "react-icons/io";
 import { Spinner } from "../ui/spinner";
 interface FilterComponentProps {
@@ -8,17 +8,22 @@ interface FilterComponentProps {
     loading?: boolean;
     onChange?: (value: string) => void;
     clearValue?: boolean;
+    defaultValue?: string;
 }
 
-export const FilterComponent = ({ placeholder, loading, onChange, clearValue }: FilterComponentProps) => {
-    const [value, setValue] = useState('');
+export const FilterComponent = ({ placeholder, loading, onChange, clearValue, defaultValue }: FilterComponentProps) => {
+    const [value, setValue] = useState(defaultValue ?? '');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
     };
 
+    const prevClearValue = useRef(clearValue);
+
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        // Solo limpiar cuando el padre cambia clearValue, no en el montaje.
+        if (prevClearValue.current === clearValue) return;
+        prevClearValue.current = clearValue;
         setValue('');
     }, [clearValue])
 

@@ -1,9 +1,9 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { DatePicker } from "@/components/datePickerRange/DatePickerRange"
+import { ClearFiltersButton } from "@/components/table/ClearFiltersButton";
 import { useResumenSalesQuery } from "@/hooks/dispatch.hook";
-import { formatNumberWithDecimal, formatOnlyDateStringFilter, translateCurrency } from "@/helpers/formatters";
-import type { ResumenFilter } from "@/interfaces/distpatch.interface";
-import { useEffect, useState } from "react";
+import { formatNumberWithDecimal, formatOnlyDateStringFilter, parseDateOnlyString, translateCurrency } from "@/helpers/formatters";
+import { useCashClosingFilterStore } from "@/store/cashClosing.store";
+import { useCallback, useEffect } from "react";
 import { LuEqualApproximately } from "react-icons/lu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,8 +16,14 @@ import type { SessionsGroup } from "@/interfaces/sessions.interface";
 
 export const CashClosing = () => {
 
-    const [filter, setFilter] = useState<ResumenFilter>({ date: formatOnlyDateStringFilter(new Date()) ?? '', sessionId: undefined, cashDrawerId: undefined, shiftId: undefined });
+    const { filter, setFilter, resetFilter } = useCashClosingFilterStore((state) => state);
     const { data: resumen, isLoading } = useResumenSalesQuery(filter);
+
+    const selectedDate = filter.date
+        ? typeof filter.date === 'string'
+            ? parseDateOnlyString(filter.date)
+            : filter.date
+        : undefined;
 
     const cashDrawerSessions = useSessionsGroupQuery({ date: filter.date, shiftId: filter.shiftId ?? 0 });
 
@@ -37,7 +43,7 @@ export const CashClosing = () => {
         value: cashDrawerSession.id.toString(),
     })) : [];
 
-    const getResumenAutomatic = (session: SessionsGroup) => {
+    const getResumenAutomatic = useCallback((session: SessionsGroup) => {
         setFilter((prev) => {
             if (prev.shiftId === session.shiftId && prev.sessionId === session.id) {
                 return prev;
@@ -48,7 +54,7 @@ export const CashClosing = () => {
                 shiftId: session.shiftId,
             };
         });
-    }
+    }, [setFilter]);
 
     useEffect(() => {
         if (userRole !== 'CAJERO' || filter.shiftId != null || !cashDrawerSessions.data?.sessions || !user?.id) {
@@ -62,7 +68,7 @@ export const CashClosing = () => {
         if (mySession) {
             getResumenAutomatic(mySession);
         }
-    }, [userRole, cashDrawerSessions.data?.sessions, user?.id, filter.shiftId]);
+    }, [userRole, cashDrawerSessions.data?.sessions, user?.id, filter.shiftId, getResumenAutomatic]);
 
     const handleCashDrawerSessionChange = (sessionId: string) => {
         if (sessionId === 'all') {
@@ -129,7 +135,10 @@ export const CashClosing = () => {
                     <p className='text-2xl font-semibold mb-4'>Cierre de Caja</p>
                 </div>
                 <div className="flex items-center justify-between mb-4 w-full">
-                    <DatePicker onChange={handleChangeDate} />
+                    <div className="flex items-end gap-2">
+                        <DatePicker onChange={handleChangeDate} value={selectedDate} />
+                        <ClearFiltersButton onClear={resetFilter} />
+                    </div>
 
                     {userRole !== 'CAJERO' && (
                         <div className="flex items-center gap-4">

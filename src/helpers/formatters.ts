@@ -51,6 +51,13 @@ export const formatOnlyDateStringFilter = (dateString: Date | undefined): string
     return `${year}-${month}-${day}`;
 }
 
+export const parseDateOnlyString = (value: string): Date | undefined => {
+    if (!value) return undefined;
+    const [year, month, day] = value.split('-').map(Number);
+    if (!year || !month || !day) return undefined;
+    return new Date(year, month - 1, day);
+}
+
 
 export const formatNumberWithDecimal = (number: number | string, digits?: number): string => {
     const parsed = typeof number === 'string' ? parseFloat(number) : number;

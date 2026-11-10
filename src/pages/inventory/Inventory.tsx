@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { FilterComponent } from "@/components/table/FilterComponent";
+import { ClearFiltersButton } from "@/components/table/ClearFiltersButton";
 import { IoMdAdd } from "react-icons/io";
 import { SelectColumnsComponent, TableComponent } from "@/components/table/TableComponent";
 import PageTransitionComponent from "@/components/PageTransition";
@@ -39,6 +40,7 @@ export const Inventory = () => {
     const [formMode, setFormMode] = useState<ProductFormMode>("create");
     const products = data?.products ?? [];
     const [openDialog, setOpenDialog] = useState(false);
+    const [searchResetKey, setSearchResetKey] = useState(0);
 
     const deleteProductMutation = useDeleteProductMutation();
     const breakDownProductMutation = useBreakDownProductMutation();
@@ -99,6 +101,12 @@ export const Inventory = () => {
         setActiveTab(value as "inventory" | "entries");
     };
 
+    const handleClearFilters = () => {
+        setSearch("");
+        setPagination({ page: 1, size: pagination.size });
+        setSearchResetKey((key) => key + 1);
+    };
+
     return (
         <div className="w-full h-full min-h-0">
 
@@ -119,8 +127,17 @@ export const Inventory = () => {
                     {activeTab === "inventory" ? (
                         <div className="rounded-xl bg-white p-4 flex flex-1 min-h-0 flex-col">
                             <div className="w-full flex shrink-0 flex-wrap items-center justify-between gap-3 mb-4">
-                                <div className="w-full sm:w-96">
-                                    <FilterComponent placeholder="Buscar producto..." onChange={setSearch} loading={isLoading} />
+                                <div className="flex w-full items-center gap-2 sm:w-96">
+                                    <div className="w-full">
+                                        <FilterComponent
+                                            key={searchResetKey}
+                                            placeholder="Buscar producto..."
+                                            onChange={setSearch}
+                                            loading={isLoading}
+                                            defaultValue={search}
+                                        />
+                                    </div>
+                                    <ClearFiltersButton onClear={handleClearFilters} />
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     <DownloadAndUploadProducts/>

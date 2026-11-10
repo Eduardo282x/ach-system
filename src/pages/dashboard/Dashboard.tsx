@@ -1,5 +1,6 @@
 import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
 import { SalesTrendPanel } from "@/components/dashboard/SalesTrendPanel";
+import { ClearFiltersButton } from "@/components/table/ClearFiltersButton";
 import { useDashboardSummaryQuery } from "@/hooks/dashboard.hook";
 import {
     formatDateString,
@@ -7,28 +8,34 @@ import {
     formatNumberWithDecimal,
     formatNumberWithDots,
     formatOnlyDateStringFilter,
+    parseDateOnlyString,
     translateCurrency,
 } from "@/helpers/formatters";
 import type { DateRangeFilter } from "@/interfaces/base.interface";
 import type { InvoiceStatus } from "@/interfaces/distpatch.interface";
-import type { TrendGroupBy, TrendPeriod } from "@/interfaces/dashboard.interface";
-import { useState } from "react";
+import type { TrendPeriod } from "@/interfaces/dashboard.interface";
+import { useDashboardStore, storedRangeToDateRange } from "@/store/dashboard.store";
+import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 
-const parseDateOnly = (value: string) => new Date(`${value}T00:00:00`);
-
 export const Dashboard = () => {
-    const today = new Date();
+    const {
+        dateFrom,
+        dateTo,
+        trendGroupBy,
+        activePeriod,
+        setDateRange,
+        setFullRange,
+        setTrendGroupBy,
+        setActivePeriod,
+        resetToFullRange,
+        resetFilters,
+    } = useDashboardStore((state) => state);
 
-    const defaultRange: DateRange = {
-        from: new Date(today.getFullYear(), 0, 1),
-        to: new Date(today.getFullYear(), 5, 30),
-    };
-
-    const [dateRange, setDateRange] = useState<DateRange | undefined>(defaultRange);
-    const [fullRange, setFullRange] = useState<DateRange | undefined>(defaultRange);
-    const [trendGroupBy, setTrendGroupBy] = useState<TrendGroupBy>("month");
-    const [activePeriod, setActivePeriod] = useState<{ key: string; label: string } | null>(null);
+    const dateRange = useMemo(
+        () => storedRangeToDateRange(dateFrom, dateTo),
+        [dateFrom, dateTo],
+    );
 
     const filter: DateRangeFilter = {
         startDate: dateRange?.from ? formatOnlyDateStringFilter(dateRange.from) : "",
@@ -48,18 +55,16 @@ export const Dashboard = () => {
     };
 
     const handleSelectPeriod = (period: TrendPeriod) => {
-        if (!period.startDate || !period.endDate) return;
+        const from = period.startDate ? parseDateOnlyString(period.startDate) : undefined;
+        const to = period.endDate ? parseDateOnlyString(period.endDate) : undefined;
+        if (!from || !to) return;
 
-        setDateRange({
-            from: parseDateOnly(period.startDate),
-            to: parseDateOnly(period.endDate),
-        });
+        setDateRange({ from, to });
         setActivePeriod({ key: period.key, label: period.label });
     };
 
     const handleResetPeriod = () => {
-        setDateRange(fullRange);
-        setActivePeriod(null);
+        resetToFullRange();
     };
 
     const translateStatus = (status: InvoiceStatus) => {
@@ -88,8 +93,11 @@ export const Dashboard = () => {
                                 : "Selecciona un rango de fecha"}
                     </p>
                 </div>
-                <div className="mt-4 w-full min-w-0 md:mt-0 md:w-auto">
-                    <DatePickerRange value={dateRange} onChange={handleChangeRange} />
+                <div className="mt-4 flex w-full min-w-0 items-end gap-2 md:mt-0 md:w-auto">
+                    <div className="min-w-0 flex-1">
+                        <DatePickerRange value={dateRange} onChange={handleChangeRange} />
+                    </div>
+                    <ClearFiltersButton onClear={resetFilters} />
                 </div>
             </div>
 

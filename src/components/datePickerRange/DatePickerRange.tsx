@@ -74,19 +74,28 @@ export function DatePickerRange({ display = 'block', onChange, value }: DatePick
 
 interface DatePickerProps {
     onChange: (date: Date | undefined) => void;
+    /** Permite usar el componente de forma controlada desde el padre. */
+    value?: Date;
 }
 
-export function DatePicker({ onChange }: DatePickerProps) {
-    const [date, setDate] = useState<Date | undefined>(new Date());
+export function DatePicker({ onChange, value }: DatePickerProps) {
+    const [internalDate, setInternalDate] = useState<Date | undefined>(new Date());
+
+    const isControlled = value !== undefined;
+    const date = isControlled ? value : internalDate;
 
     const changeDate = (selectedDate: Date | undefined) => {
-        setDate(selectedDate);
+        if (!isControlled) {
+            setInternalDate(selectedDate);
+        }
         onChange(selectedDate);
     }
 
     const onChangeToday = () => {
         const today = new Date();
-        setDate(today);
+        if (!isControlled) {
+            setInternalDate(today);
+        }
         onChange(today);
     }
 
