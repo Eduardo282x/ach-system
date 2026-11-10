@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { RotateCcw } from "lucide-react";
-import { DatePickerRange } from "@/components/datePickerRange/DatePickerRange";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDashboardTrendQuery } from "@/hooks/dashboard.hook";
@@ -13,31 +12,11 @@ import { cn } from "@/lib/utils";
 interface SalesTrendPanelProps {
     groupBy: TrendGroupBy;
     onChangeGroupBy: (groupBy: TrendGroupBy) => void;
-    overviewRange: DateRange | undefined;
-    onChangeOverviewRange: (range: DateRange | undefined) => void;
+    range: DateRange | undefined;
     activePeriodKey?: string | null;
     onSelectPeriod: (period: TrendPeriod) => void;
     onResetPeriod: () => void;
 }
-
-type PresetKey = "3m" | "6m" | "12m" | "all" | "custom";
-
-const PRESETS: Array<{ key: PresetKey; label: string; months?: number }> = [
-    { key: "3m", label: "3 meses", months: 3 },
-    { key: "6m", label: "6 meses", months: 6 },
-    { key: "12m", label: "12 meses", months: 12 },
-    { key: "all", label: "Historial completo" },
-];
-
-const buildMonthRange = (months: number): DateRange => {
-    const today = new Date();
-    return {
-        from: new Date(today.getFullYear(), today.getMonth() - (months - 1), 1),
-        to: new Date(today.getFullYear(), today.getMonth() + 1, 0),
-    };
-};
-
-const parseDateOnly = (value: string) => new Date(`${value}T00:00:00`);
 
 const formatCompact = (value: number) => {
     const absolute = Math.abs(value);
@@ -61,9 +40,10 @@ const TrendTooltip = ({ active, payload }: TrendTooltipProps) => {
             <p className="font-semibold text-blue-800">{period.label}</p>
             <p className="text-gray-600">Recibos: <span className="font-medium text-gray-900">{period.totalInvoices}</span></p>
             <p className="text-gray-600">Unidades: <span className="font-medium text-gray-900">{formatNumberWithDecimal(period.totalItems)}</span></p>
-            <p className="text-gray-600">Facturado: <span className="font-medium text-gray-900">{formatNumberWithDecimal(period.totalSalesBs)} {translateCurrency("BS")}</span></p>
-            <p className="text-gray-600">Ingreso neto: <span className="font-semibold text-blue-800">{formatNumberWithDecimal(period.netIncomeBs)} {translateCurrency("BS")}</span></p>
-            <p className="text-gray-500">≈ {formatNumberWithDecimal(period.netIncomeUsd)} {translateCurrency("USD")}</p>
+            <p className="text-gray-600">Vendido: <span className="font-medium text-gray-900">{formatNumberWithDecimal(period.totalSalesBs)} {translateCurrency("BS")}</span></p>
+            <p className="text-gray-600">Costo estimado: <span className="font-medium text-gray-900">{formatNumberWithDecimal(period.totalCostBs)} {translateCurrency("BS")}</span></p>
+            <p className="text-gray-600">Ganancia estimada: <span className="font-semibold text-emerald-700">{formatNumberWithDecimal(period.profitBs)} {translateCurrency("BS")}</span></p>
+            <p className="text-gray-500">≈ {formatNumberWithDecimal(period.profitUsd)} {translateCurrency("USD")}</p>
         </div>
     );
 };
@@ -71,21 +51,18 @@ const TrendTooltip = ({ active, payload }: TrendTooltipProps) => {
 export const SalesTrendPanel = ({
     groupBy,
     onChangeGroupBy,
-    overviewRange,
-    onChangeOverviewRange,
+    range,
     activePeriodKey,
     onSelectPeriod,
     onResetPeriod,
 }: SalesTrendPanelProps) => {
-    const [preset, setPreset] = useState<PresetKey>("12m");
-
     const filter = useMemo(
         () => ({
-            startDate: overviewRange?.from ? formatOnlyDateStringFilter(overviewRange.from) : undefined,
-            endDate: overviewRange?.to ? formatOnlyDateStringFilter(overviewRange.to) : undefined,
+            startDate: range?.from ? formatOnlyDateStringFilter(range.from) : undefined,
+            endDate: range?.to ? formatOnlyDateStringFilter(range.to) : undefined,
             groupBy,
         }),
-        [overviewRange, groupBy],
+        [range, groupBy],
     );
 
     const { data: trend, isLoading, isError } = useDashboardTrendQuery(filter);
@@ -95,34 +72,9 @@ export const SalesTrendPanel = ({
     const hasSales = periods.some((period) => period.totalInvoices > 0);
     const isSelectable = (period: TrendPeriod) => Boolean(period.startDate && period.endDate);
 
-    const handlePreset = (nextPreset: PresetKey, months?: number) => {
-        setPreset(nextPreset);
-
-        if (months) {
-            onChangeOverviewRange(buildMonthRange(months));
-            return;
-        }
-
-        if (nextPreset === "all" && trend?.bounds.firstInvoice && trend.bounds.lastInvoice) {
-            onChangeOverviewRange({
-                from: parseDateOnly(trend.bounds.firstInvoice),
-                to: parseDateOnly(trend.bounds.lastInvoice),
-            });
-        }
-    };
-
-    const handleCustomRange = (range: DateRange | undefined) => {
-        setPreset("custom");
-        onChangeOverviewRange(range);
-    };
-
     const handleSelectPeriod = (period: TrendPeriod) => {
         if (!isSelectable(period)) return;
         onSelectPeriod(period);
-    };
-
-    const handleReset = () => {
-        onResetPeriod();
     };
 
     const chartInterval = periods.length > 12 ? Math.ceil(periods.length / 12) - 1 : 0;
@@ -133,8 +85,8 @@ export const SalesTrendPanel = ({
                 <div>
                     <h3 className="text-lg font-bold text-blue-800">Resumen de ventas por periodo</h3>
                     <p className="text-sm text-gray-600">
-                        {overviewRange?.from && overviewRange?.to
-                            ? `Desde ${formatOnlyDateStringFilter(overviewRange.from)} hasta ${formatOnlyDateStringFilter(overviewRange.to)}`
+                        {range?.from && range?.to
+                            ? `Desde ${formatOnlyDateStringFilter(range.from)} hasta ${formatOnlyDateStringFilter(range.to)}`
                             : "Selecciona un rango para ver el resumen"}
                         {trend?.bounds.firstInvoice && (
                             <span className="text-gray-400"> · Registros desde {trend.bounds.firstInvoice}</span>
@@ -142,37 +94,17 @@ export const SalesTrendPanel = ({
                     </p>
                 </div>
 
-                <Tabs value={groupBy} onValueChange={(value) => onChangeGroupBy(value as TrendGroupBy)}>
-                    <TabsList className="w-full justify-start xl:w-auto">
-                        <TabsTrigger value="month">Mes</TabsTrigger>
-                        <TabsTrigger value="week">Semana</TabsTrigger>
-                        <TabsTrigger value="day">Día</TabsTrigger>
-                        <TabsTrigger value="weekday">Día de semana</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-            </div>
-
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium text-gray-600">Ver:</span>
-                    {PRESETS.map((item) => (
-                        <Button
-                            key={item.key}
-                            type="button"
-                            size="sm"
-                            variant={preset === item.key ? "primary" : "outline"}
-                            disabled={item.key === "all" && (!trend?.bounds.firstInvoice || !trend?.bounds.lastInvoice)}
-                            onClick={() => handlePreset(item.key, item.months)}
-                        >
-                            {item.label}
-                        </Button>
-                    ))}
-                </div>
-
-                <div className="flex flex-wrap items-end gap-2">
-                    <DatePickerRange display="flex" value={overviewRange} onChange={handleCustomRange} />
+                <div className="flex flex-col items-start gap-2 xl:items-end">
+                    <Tabs value={groupBy} onValueChange={(value) => onChangeGroupBy(value as TrendGroupBy)}>
+                        <TabsList className="w-full justify-start xl:w-auto">
+                            <TabsTrigger value="month">Mes</TabsTrigger>
+                            <TabsTrigger value="week">Semana</TabsTrigger>
+                            <TabsTrigger value="day">Día</TabsTrigger>
+                            <TabsTrigger value="weekday">Día de semana</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                     {activePeriodKey && (
-                        <Button type="button" size="sm" variant="outline" onClick={handleReset}>
+                        <Button type="button" size="sm" variant="outline" onClick={onResetPeriod}>
                             <RotateCcw /> Ver rango completo
                         </Button>
                     )}
@@ -180,9 +112,10 @@ export const SalesTrendPanel = ({
             </div>
 
             {totals && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
                     <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
-                        <p className="text-xs text-gray-600">Total de recibos</p>
+                        <p className="text-xs text-gray-600">Recibos del rango</p>
                         <p className="text-xl font-bold text-blue-800">{totals.totalInvoices}</p>
                     </div>
                     <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
@@ -190,20 +123,31 @@ export const SalesTrendPanel = ({
                         <p className="text-xl font-bold text-blue-800">{formatNumberWithDecimal(totals.totalItems)}</p>
                     </div>
                     <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
-                        <p className="text-xs text-gray-600">Total facturado</p>
+                        <p className="text-xs text-gray-600">Total vendido</p>
                         <p className="text-xl font-bold text-blue-800">
                             {formatNumberWithDecimal(totals.totalSalesBs)} {translateCurrency("BS")}
                         </p>
                         <p className="text-xs text-gray-500">≈ {formatNumberWithDecimal(totals.totalSalesUsd)} {translateCurrency("USD")}</p>
                     </div>
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                        <p className="text-xs text-gray-600">Ingresos netos</p>
-                        <p className="text-xl font-bold text-blue-900">
-                            {formatNumberWithDecimal(totals.netIncomeBs)} {translateCurrency("BS")}
+                    <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
+                        <p className="text-xs text-gray-600">Costo estimado</p>
+                        <p className="text-xl font-bold text-gray-700">
+                            {formatNumberWithDecimal(totals.totalCostBs)} {translateCurrency("BS")}
                         </p>
-                        <p className="text-xs text-gray-500">≈ {formatNumberWithDecimal(totals.netIncomeUsd)} {translateCurrency("USD")}</p>
+                        <p className="text-xs text-gray-500">≈ {formatNumberWithDecimal(totals.totalCostUsd)} {translateCurrency("USD")}</p>
+                    </div>
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+                        <p className="text-xs text-gray-600">Ganancia estimada</p>
+                        <p className="text-xl font-bold text-emerald-800">
+                            {formatNumberWithDecimal(totals.profitBs)} {translateCurrency("BS")}
+                        </p>
+                        <p className="text-xs text-gray-500">≈ {formatNumberWithDecimal(totals.profitUsd)} {translateCurrency("USD")}</p>
                     </div>
                 </div>
+                <p className="text-xs text-gray-500">
+                    La ganancia usa el costo registrado por producto. Si hay productos sin costo, la ganancia se sobreestima.
+                </p>
+                </>
             )}
 
             {isLoading && <p className="text-sm text-gray-600">Cargando resumen por periodo...</p>}
@@ -232,8 +176,8 @@ export const SalesTrendPanel = ({
                             />
                             <Tooltip content={<TrendTooltip />} cursor={{ fill: "#f3f4f6" }} />
                             <Bar
-                                dataKey="netIncomeBs"
-                                name="Ingreso neto"
+                                dataKey="profitBs"
+                                name="Ganancia estimada"
                                 radius={[6, 6, 0, 0]}
                                 onClick={(_, index) => {
                                     const period = periods[index];
@@ -248,7 +192,7 @@ export const SalesTrendPanel = ({
                                             activePeriodKey === period.key
                                                 ? "#f59e0b"
                                                 : isSelectable(period)
-                                                    ? "#1d4ed8"
+                                                    ? "#047857"
                                                     : "#94a3b8"
                                         }
                                     />
@@ -265,13 +209,15 @@ export const SalesTrendPanel = ({
                         Haz clic en un periodo para ver su detalle en el dashboard.
                         {groupBy === "weekday" && " En la agrupación por día de semana las filas son solo informativas."}
                     </p>
-                    <div className="rounded-md overflow-hidden border border-gray-200 max-h-80 overflow-y-auto">
+                    <div className="rounded-md overflow-x-auto border border-gray-200 max-h-80 overflow-y-auto">
+                        <div className="min-w-[760px]">
                         <div className="grid grid-cols-12 gap-1 bg-gray-100 p-2 text-xs font-semibold sticky top-0 z-10">
                             <p className="col-span-4">Periodo</p>
-                            <p className="col-span-2 text-right">Recibos</p>
-                            <p className="col-span-2 text-right">Unidades</p>
-                            <p className="col-span-2 text-right">Facturado</p>
-                            <p className="col-span-2 text-right">Ingreso neto</p>
+                            <p className="text-right">Recibos</p>
+                            <p className="text-right">Unidades</p>
+                            <p className="col-span-2 text-right">Vendido</p>
+                            <p className="col-span-2 text-right">Costo</p>
+                            <p className="col-span-2 text-right">Ganancia</p>
                         </div>
                         {periods.map((period) => {
                             const selectable = isSelectable(period);
@@ -290,19 +236,24 @@ export const SalesTrendPanel = ({
                                     <span className={cn("col-span-4 font-medium", activePeriodKey === period.key && "text-amber-800")}>
                                         {period.label}
                                     </span>
-                                    <span className="col-span-2 text-right">{period.totalInvoices}</span>
-                                    <span className="col-span-2 text-right">{formatNumberWithDecimal(period.totalItems)}</span>
+                                    <span className="text-right">{period.totalInvoices}</span>
+                                    <span className="text-right">{formatNumberWithDecimal(period.totalItems)}</span>
                                     <span className="col-span-2 text-right">
                                         {formatNumberWithDecimal(period.totalSalesBs)} {translateCurrency("BS")}
                                         <span className="block text-xs text-gray-500">≈ {formatNumberWithDecimal(period.totalSalesUsd)} {translateCurrency("USD")}</span>
                                     </span>
-                                    <span className="col-span-2 text-right font-semibold text-blue-800">
-                                        {formatNumberWithDecimal(period.netIncomeBs)} {translateCurrency("BS")}
-                                        <span className="block text-xs font-normal text-gray-500">≈ {formatNumberWithDecimal(period.netIncomeUsd)} {translateCurrency("USD")}</span>
+                                    <span className="col-span-2 text-right text-gray-700">
+                                        {formatNumberWithDecimal(period.totalCostBs)} {translateCurrency("BS")}
+                                        <span className="block text-xs text-gray-500">≈ {formatNumberWithDecimal(period.totalCostUsd)} {translateCurrency("USD")}</span>
+                                    </span>
+                                    <span className="col-span-2 text-right font-semibold text-emerald-700">
+                                        {formatNumberWithDecimal(period.profitBs)} {translateCurrency("BS")}
+                                        <span className="block text-xs font-normal text-gray-500">≈ {formatNumberWithDecimal(period.profitUsd)} {translateCurrency("USD")}</span>
                                     </span>
                                 </button>
                             );
                         })}
+                        </div>
                     </div>
                 </div>
             )}

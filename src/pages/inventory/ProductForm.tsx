@@ -57,6 +57,33 @@ const computeUnitsDetail = (value: unknown, fallback = 1) => {
     return Math.floor(parsed);
 };
 
+const validatePurchasePrice = (
+    purchasePrice: number | undefined,
+    salePrice: number | undefined,
+) => {
+    const purchase = Number(purchasePrice ?? 0);
+    const sale = Number(salePrice);
+
+    if (!Number.isFinite(purchase) || purchase < 0) {
+        return 'El precio de compra no puede ser negativo';
+    }
+
+    // Si el precio de venta aún no es válido, su propia validación lo informará.
+    if (!Number.isFinite(sale) || sale < 0) {
+        return true;
+    }
+
+    return purchase <= sale || 'El precio de compra no puede ser mayor al precio de venta';
+};
+
+const validateSalePrice = (value: number | undefined) => {
+    if (!Number.isFinite(value)) {
+        return 'El precio de venta es obligatorio';
+    }
+
+    return Number(value) >= 0 || 'El precio de venta no puede ser negativo';
+};
+
 export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: ProductFormProps) => {
     const createProductMutation = useCreateProductMutation();
     const updateProductMutation = useUpdateProductMutation();
@@ -485,10 +512,16 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                                 min="0"
                                 {...formProductFather.register('purchasePrice', {
                                     setValueAs: (value) => (value === '' || value === null || value === undefined ? 0 : Number(value)),
+                                    deps: ['price'],
+                                    min: { value: 0, message: 'El precio de compra no puede ser negativo' },
+                                    validate: (value) => validatePurchasePrice(value, formProductFather.getValues('price')),
                                 })}
                             />
                             {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
                         </div>
+                        {formProductFather.formState.errors.purchasePrice?.message && (
+                            <span className="text-sm text-red-500">{formProductFather.formState.errors.purchasePrice.message}</span>
+                        )}
                     </Field>
                     <Field className="col-span-1">
                         <FieldLabel>Precio de Venta {RequiredField()}</FieldLabel>
@@ -496,13 +529,19 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                             <Input
                                 type="number"
                                 step="0.01"
-                                {...formProductFather.register('price', { valueAsNumber: true })}
+                                {...formProductFather.register('price', {
+                                    valueAsNumber: true,
+                                    validate: validateSalePrice,
+                                })}
                                 onFocus={() => {
                                     if (formProductFather.getValues('price') === 0) formProductFather.setValue('price', '' as unknown as number)
                                 }}
                             />
                             {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
                         </div>
+                        {formProductFather.formState.errors.price?.message && (
+                            <span className="text-sm text-red-500">{formProductFather.formState.errors.price.message}</span>
+                        )}
                     </Field>
                     <Controller
                         name="currency"
@@ -583,10 +622,16 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                                 min="0"
                                 {...formProductChildren.register('purchasePrice', {
                                     setValueAs: (value) => (value === '' || value === null || value === undefined ? 0 : Number(value)),
+                                    deps: ['price'],
+                                    min: { value: 0, message: 'El precio de compra no puede ser negativo' },
+                                    validate: (value) => validatePurchasePrice(value, formProductChildren.getValues('price')),
                                 })}
                             />
                             {currencyValue && <span className="text-gray-500 font-medium">{translateCurrency(currencyValue as ExchangeRateType)}</span>}
                         </div>
+                        {childErrors.purchasePrice?.message && (
+                            <span className="text-sm text-red-500">{childErrors.purchasePrice.message}</span>
+                        )}
                     </Field>
                     <Field className="col-span-1">
                         <FieldLabel>Precio de Venta {RequiredField()}</FieldLabel>
@@ -596,7 +641,7 @@ export const ProductForm = ({ isFull, mode, product, closeForm, onCreated }: Pro
                                 step="0.01"
                                 {...formProductChildren.register('price', {
                                     valueAsNumber: true,
-                                    validate: (value) => (value != null && !Number.isNaN(value)) || 'El precio es obligatorio',
+                                    validate: validateSalePrice,
                                 })}
                                 onFocus={() => {
                                     if (formProductChildren.getValues('price') === 0) formProductChildren.setValue('price', '' as unknown as number)

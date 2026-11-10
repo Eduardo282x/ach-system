@@ -4,9 +4,15 @@ import type { TypeRole } from "./users.interface";
 
 export interface DashboardSummary {
     range:             Range;
-    ingresos:          Ingresos;
     totalSales:        TotalSales;
+    totalCost:         TotalSales;
+    profit:            Profit;
     totalInvoices:     number;
+    paidInvoices:      number;
+    pendingInvoices:   number;
+    receivable:        TotalSales;
+    collected:         Collected;
+    paymentBreakdown:  PaymentBreakdownItem[];
     invoices:          Invoice[];
     frequentCustomers: FrequentCustomer[];
     topProducts:       TopProduct[];
@@ -20,34 +26,75 @@ export interface FrequentCustomer {
     totalInvoices: number;
 }
 
-export interface Ingresos {
-    amountBs:        number;
-    changeAmountBs:  number;
-    totalNetBs:      number;
-    amountUsd:       number;
-    changeAmountUsd: number;
-    totalNetUsd:     number;
+export interface Profit {
+    amountBs:         number;
+    amountUsd:        number;
+    marginPercent:    number;
+    itemsWithoutCost: number;
+}
+
+export interface CollectedCurrency {
+    received: number;
+    change:   number;
+    net:      number;
+}
+
+export interface Collected {
+    original: {
+        bs:  CollectedCurrency;
+        usd: CollectedCurrency;
+        eur: CollectedCurrency;
+    };
+    equivalents: {
+        totalBs:  CollectedCurrency;
+        totalUsd: CollectedCurrency;
+    };
+    conversions: {
+        bsToUsd: number;
+        usdToBs: number;
+    };
+    grandTotal: {
+        bs:  number;
+        usd: number;
+    };
+}
+
+export interface PaymentBreakdownItem {
+    paymentTypeId: number;
+    payment:       string;
+    currency:      ExchangeRateType;
+    received:      number;
+    change:        number;
+    net:           number;
+    receivedBs:    number;
+    changeBs:      number;
+    netBs:         number;
+    receivedUsd:   number;
+    changeUsd:     number;
+    netUsd:        number;
 }
 
 export interface Invoice {
-    id:              number;
-    invoiceNumber:   string;
-    totalAmountBs:   string;
-    exchangeRateUsd: string;
-    exchangeRateEur: string;
-    totalAmountUsd:  string;
-    totalReceivedBs: string;
-    totalChangeBs:   string;
-    status:          InvoiceStatus;
-    userId:          number;
-    customerId:      number;
-    sessionId:       number;
-    createdAt:       Date;
-    customer:        Customer;
-    user:            User;
-    session:         Session;
-    items:           Item[];
-    paymentDetails:  PaymentDetail[];
+    id:               number;
+    invoiceNumber:    string;
+    totalAmountBs:    string;
+    exchangeRateUsd:  { id: number; rate: string };
+    exchangeRateEur:  { id: number; rate: string };
+    totalAmountUsd:   string;
+    totalReceivedBs:  string;
+    totalReceivedUsd: string;
+    totalChangeBs:    string;
+    totalChangeUsd:   string;
+    status:           InvoiceStatus;
+    userId:           number;
+    customerId:       number;
+    sessionId:        number;
+    createdAt:        Date;
+    customer:         Customer;
+    user:             User;
+    session:          Session;
+    items:            Item[];
+    paymentDetails:   PaymentDetail[];
 }
 
 export interface Customer {
@@ -57,11 +104,13 @@ export interface Customer {
 }
 
 export interface Item {
-    id:        number;
-    quantity:  number;
-    unitPrice: string;
-    subtotal:  string;
-    product:   Product;
+    id:           number;
+    quantity:     number;
+    unitPrice:    string;
+    unitCost:     string;
+    subtotal:     string;
+    costSubtotal: string;
+    product:      Product;
 }
 
 export interface Product {
@@ -81,7 +130,7 @@ export interface PaymentDetail {
     amountNetBs:    string;
     currency:       ExchangeRateType;
     denominations:  null;
-    paymentType:    Product;
+    paymentType:    { id: number; name: string; currency: ExchangeRateType };
 }
 
 export interface Session {
@@ -117,6 +166,8 @@ export interface TopProduct {
     presentation:      string;
     totalQuantitySold: number;
     totalAmountBs:     number;
+    totalCostBs:       number;
+    totalProfitBs:     number;
     totalInvoices:     number;
 }
 
@@ -154,8 +205,12 @@ export interface TrendPeriod {
     totalItems:        number;
     totalSalesBs:      number;
     totalSalesUsd:     number;
-    netIncomeBs:       number;
-    netIncomeUsd:      number;
+    totalCostBs:       number;
+    totalCostUsd:      number;
+    profitBs:          number;
+    profitUsd:         number;
+    netCashBs:         number;
+    netCashUsd:        number;
 }
 
 export interface TrendTotals {
@@ -163,6 +218,10 @@ export interface TrendTotals {
     totalItems:    number;
     totalSalesBs:  number;
     totalSalesUsd: number;
-    netIncomeBs:   number;
-    netIncomeUsd:  number;
+    totalCostBs:   number;
+    totalCostUsd:  number;
+    profitBs:      number;
+    profitUsd:     number;
+    netCashBs:     number;
+    netCashUsd:    number;
 }

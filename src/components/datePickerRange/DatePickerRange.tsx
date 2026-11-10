@@ -34,9 +34,15 @@ export function DatePickerRange({ display = 'block', onChange, value }: DatePick
         onChange(selectedDate);
     }
 
+    const dateLabel = date?.from
+        ? date.to
+            ? `${format(date.from, "dd/MM/yyyy", { locale: es })} - ${format(date.to, "dd/MM/yyyy", { locale: es })}`
+            : format(date.from, "dd/MM/yyyy", { locale: es })
+        : "Selecciona una fecha";
+
     return (
-        <Field className={`max-w-90 ${display === 'flex' ? 'flex flex-row items-center gap-2' : 'flex flex-col gap-1'}`}>
-            <div className="w-32 text-blue-800">
+        <Field className={`min-w-0 max-w-full ${display === 'flex' ? 'w-auto flex flex-row flex-wrap items-center gap-2' : 'flex w-full flex-col gap-1 sm:max-w-90'}`}>
+            <div className="w-32 shrink-0 text-blue-800">
                 <FieldLabel htmlFor="date-picker-range" className="w-32 font-semibold text-md">Rango de Fecha: </FieldLabel>
             </div>
             <Popover>
@@ -44,21 +50,11 @@ export function DatePickerRange({ display = 'block', onChange, value }: DatePick
                     <Button
                         variant="outline"
                         id="date-picker-range"
-                        className="justify-start px-2.5 font-normal"
+                        title={dateLabel}
+                        className="min-w-0 max-w-full shrink justify-start overflow-hidden px-2.5 font-normal"
                     >
-                        <CalendarIcon />
-                        {date?.from ? (
-                            date.to ? (
-                                <>
-                                    {format(date.from, "LLL dd, y", { locale: es })} -{" "}
-                                    {format(date.to, "LLL dd, y", { locale: es })}
-                                </>
-                            ) : (
-                                format(date.from, "LLL dd, y", { locale: es })
-                            )
-                        ) : (
-                            <span>Selecciona una fecha</span>
-                        )}
+                        <CalendarIcon className="shrink-0" />
+                        <span className="min-w-0 truncate">{dateLabel}</span>
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
